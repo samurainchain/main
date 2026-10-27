@@ -49,7 +49,7 @@ Full product spec: docs/SPEC.md. Read the relevant section before every task.
 - Screenshot reader: Tesseract.js runs in the browser with English and Russian models (src/features/entry/recognize.ts); text-to-fields parsing is pure and tested (src/core/ocr). Synthetic screenshots live in test-fixtures/ocr (regenerate with scripts/ocr-fixtures/generate.cjs); measure accuracy with scripts/ocr-fixtures/accuracy.cjs against a running preview. Never commit real exchange screenshots
 - Accessibility: token contrast is unit-tested (WCAG AA); `npm run audit:a11y` checks every screen in a browser against a running preview (names, alt text, ids, headings, 200% text, focus)
 - Before pushing: `npm run typecheck`, `npm test`, `npm run build` in web/
-- Monetization: the web app is free for now (no paywall, no free-tier limits). Later Pro via Stripe, preferably RevenueCat Web Billing so the `pro` entitlement is shared with iOS; web prices slightly below iOS (SPEC section 8, "Веб-версия")
+- Monetization: the web app is free for now (no paywall, no free-tier limits). Later Pro via Stripe, preferably RevenueCat Web Billing so the `pro` entitlement is shared with iOS; web prices slightly below iOS (SPEC section 8, "Веб-версия"). Stripe billing (web/supabase/functions/billing-*, src/app/billing.ts, ProSection) is built and was tested end to end in test mode; Profile hides it until `PRO_ON_SALE` in src/app/billing.ts is turned on with live keys and Terms/Privacy/Refund pages
 
 ## Design direction (final redesign, after features)
 - The owner likes the Supabase dashboard look: near-black background, thin 1px borders instead of shadows, green accent, small uppercase monospace labels (e.g. "WARNINGS", "RECENT BRANCH"), dense dashboard cards with small bar charts
