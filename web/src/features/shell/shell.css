@@ -870,16 +870,21 @@
   cursor: pointer;
 }
 
+/* Screenshots as previews side by side, never taller than the cap; a tap opens the full size. */
 .trade-gallery {
+  --gallery-height: 320px;
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: flex-start;
   gap: var(--space-xs);
   margin-top: var(--space-s);
 }
 
 .trade-gallery__item {
+  /* Wide screenshots (a desktop terminal) stay a preview too. */
+  max-width: min(100%, 28rem);
   padding: 0;
-  border: none;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
   overflow: hidden;
   background: none;
@@ -888,8 +893,15 @@
 
 .trade-gallery__image {
   display: block;
-  width: 100%;
+  width: auto;
+  max-width: 100%;
   height: auto;
+  max-height: var(--gallery-height);
+}
+
+.trade-gallery__image.image-placeholder {
+  width: auto;
+  height: var(--gallery-height);
 }
 
 .image-placeholder {
