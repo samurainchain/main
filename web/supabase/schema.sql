@@ -62,3 +62,28 @@ create policy "Users manage their own screenshots" on storage.objects
   for all to authenticated
   using (bucket_id = 'trade-images' and (storage.foldername(name))[1] = (select auth.uid())::text)
   with check (bucket_id = 'trade-images' and (storage.foldername(name))[1] = (select auth.uid())::text);
+
+-- Billing: one row per user with their Stripe customer and subscription status. Written only by
+-- the billing functions (service role); each user can read their own row to see Pro.
+create table if not exists public.billing_subscriptions (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  stripe_customer_id text not null,
+  stripe_subscription_id text,
+  status text not null default 'none',
+  plan text,
+  price_id text,
+  current_period_end timestamptz,
+  trial_end timestamptz,
+  cancel_at_period_end boolean not null default false,
+  event_at timestamptz,
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists billing_subscriptions_customer on public.billing_subscriptions (stripe_customer_id);
+
+alter table public.billing_subscriptions enable row level security;
+
+drop policy if exists "Users read their own subscription" on public.billing_subscriptions;
+create policy "Users read their own subscription"
+  on public.billing_subscriptions for select to authenticated
+  using ((select auth.uid()) = user_id);

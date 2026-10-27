@@ -1,0 +1,16 @@
+# Supabase CLI settings used when GitHub Actions deploys the functions
+# (.github/workflows/supabase-functions.yml). Every function checks the caller itself: the
+# billing functions read the user from the access token, the webhook checks Stripe's signature.
+project_id = "tiltless"
+
+[functions.billing-prices]
+verify_jwt = false
+
+[functions.billing-checkout]
+verify_jwt = false
+
+[functions.billing-portal]
+verify_jwt = false
+
+[functions.billing-webhook]
+verify_jwt = false

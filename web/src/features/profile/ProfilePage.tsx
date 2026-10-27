@@ -8,6 +8,7 @@ import { Button, Card, Field, SectionHeader } from '../../design/components'
 import { useI18n } from '../../i18n/i18n'
 import { useCloud } from '../../app/cloud'
 import { useInstall } from '../../app/install'
+import { ProSection } from '../billing/ProSection'
 import { CloudSection } from '../cloud/CloudSection'
 import { ImportSheet } from '../import/ImportSheet'
 import { PageHeader } from '../shell/PageHeader'
@@ -129,6 +130,8 @@ export function ProfilePage() {
           <CloudSection />
         </>
       )}
+
+      <ProSection />
 
       <SectionHeader title={t('profile.dataSection')} />
       <Card className="form-stack">

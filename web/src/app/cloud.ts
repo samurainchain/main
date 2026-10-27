@@ -45,6 +45,11 @@ export class CloudController {
 
   getState = (): CloudState => this.state
 
+  /** The Supabase client once started, for features beyond sync (billing). */
+  get supabase(): SupabaseClient | undefined {
+    return this.client
+  }
+
   async start(): Promise<void> {
     if (!SUPABASE_ANON_KEY) return
     const { createClient } = await import('@supabase/supabase-js')

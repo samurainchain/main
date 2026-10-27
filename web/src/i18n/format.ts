@@ -19,6 +19,11 @@ export function formatMoney(amount: Big, currency: Currency, locale: Locale, sig
   }).format(amount.toFixed(2) as `${number}`)
 }
 
+/** A price from the payment provider, in the smallest unit (cents), e.g. 4499 → "$44.99". */
+export function formatPrice(minorUnits: number, currency: string, locale: Locale): string {
+  return new Intl.NumberFormat(locale, { style: 'currency', currency: currency.toUpperCase() }).format(minorUnits / 100)
+}
+
 export function formatR(r: Big, locale: Locale): string {
   const number = new Intl.NumberFormat(locale, {
     minimumFractionDigits: 1,
@@ -43,6 +48,11 @@ export function formatDecimal(value: string, locale: Locale): string {
     minimumFractionDigits: fraction.length,
     maximumFractionDigits: Math.min(fraction.length, 20),
   }).format(value as `${number}`)
+}
+
+/** "Nov 3, 2026". */
+export function formatDate(date: Date, locale: Locale): string {
+  return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(date)
 }
 
 export function formatDay(date: Date, locale: Locale): string {
