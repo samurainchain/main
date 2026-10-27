@@ -89,6 +89,8 @@ async function main() {
     const routes = ['today', 'trades', 'analytics', 'profile', 'accounts', 'rules', 'review', 'tags']
     for (const route of routes) {
       await page.goto(`${URL}#/${route}`)
+      // Some screens load their code on first visit: wait for the page heading, then let it settle.
+      await page.locator('main h1').first().waitFor({ timeout: 5000 }).catch(() => {})
       await page.waitForTimeout(250)
       await report(route)
     }
@@ -120,6 +122,7 @@ async function main() {
     await page.addStyleTag({ content: 'html { font-size: 200% !important; }' })
     for (const route of routes) {
       await page.goto(`${URL}#/${route}`)
+      await page.locator('main h1').first().waitFor({ timeout: 5000 }).catch(() => {})
       await page.addStyleTag({ content: 'html { font-size: 200% !important; }' })
       await page.waitForTimeout(200)
       const { overflow, culprit } = await page.evaluate(() => {
@@ -155,6 +158,7 @@ async function main() {
     for (const textSize of ['100%', '200%']) {
       for (const route of ['today', 'trades', 'analytics', 'profile', 'accounts', 'rules', 'review', 'tags', detail?.replace(/^#\//, '') ?? 'trades']) {
         await page.goto(`${URL}#/${route}`)
+        await page.locator('main h1').first().waitFor({ timeout: 5000 }).catch(() => {})
         await page.addStyleTag({ content: `html { font-size: ${textSize} !important; }` })
         await page.waitForTimeout(200)
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)

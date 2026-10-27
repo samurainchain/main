@@ -1120,3 +1120,32 @@
   border-radius: var(--radius-field);
   color: var(--color-text-primary);
 }
+
+/* Week breakdown in the weekly review */
+.insights {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.insight {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-xs);
+  align-items: start;
+}
+
+.insight svg {
+  margin-top: 3px;
+}
+
+.insight--warning svg {
+  color: var(--color-warning);
+}
+
+.insight--good svg {
+  color: var(--color-profit);
+}

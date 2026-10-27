@@ -1,5 +1,5 @@
 import { CalendarCheck, ChevronRight, Download, FileSpreadsheet, FileUp, ShieldCheck, Smartphone, Tags, Trash2, Upload, Wallet } from 'lucide-react'
-import { useId, useRef, useState, type ChangeEvent } from 'react'
+import { lazy, Suspense, useId, useRef, useState, type ChangeEvent } from 'react'
 import { useFlaggedTrades, useJournal, useMistakeName, useStore } from '../../app/journal'
 import { downloadCsv, tradesToCsv } from '../../core/export/csv'
 import { routeHref } from '../../app/router'
@@ -10,9 +10,11 @@ import { useCloud } from '../../app/cloud'
 import { useInstall } from '../../app/install'
 import { ProSection } from '../billing/ProSection'
 import { CloudSection } from '../cloud/CloudSection'
-import { ImportSheet } from '../import/ImportSheet'
 import { PageHeader } from '../shell/PageHeader'
 import { downloadBackup, parseBackup, serializeBackup } from './backup'
+
+// The CSV importer loads only when opened.
+const ImportSheet = lazy(() => import('../import/ImportSheet').then((module) => ({ default: module.ImportSheet })))
 
 /** Settings, accounts and data management (SPEC section 4.10, web subset). */
 export function ProfilePage() {
@@ -161,7 +163,11 @@ export function ProfilePage() {
             {t('profile.import')}
           </Button>
           <input ref={fileInput} type="file" accept="application/json,.json" hidden onChange={importBackup} />
-          <ImportSheet open={importOpen} onClose={() => setImportOpen(false)} onDone={setMessage} />
+          {importOpen && (
+            <Suspense fallback={null}>
+              <ImportSheet open onClose={() => setImportOpen(false)} onDone={setMessage} />
+            </Suspense>
+          )}
           <Button variant="danger" icon={<Trash2 size={18} aria-hidden="true" />} onClick={deleteAll}>
             {t('profile.deleteAll')}
           </Button>

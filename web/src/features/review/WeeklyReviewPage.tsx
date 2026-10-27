@@ -15,6 +15,7 @@ import { PageHeader } from '../shell/PageHeader'
 import { dayFromKey, useVisibleTrades } from '../trades/tradeQueries'
 import { TradeRow } from '../trades/TradeRow'
 import { renderShareCard, shareCard, type ShareCardContent } from './shareCard'
+import { WeekBreakdown } from './WeekBreakdown'
 
 /** The week's results, three questions and a shareable card (SPEC section 4.9). */
 export function WeeklyReviewPage({ week }: { week?: string }) {
@@ -23,7 +24,6 @@ export function WeeklyReviewPage({ week }: { week?: string }) {
   const { mistakes, reviews, profile, accounts } = useJournal()
   const { trades, currency, selected } = useVisibleTrades()
   const weekStart = useWeekStart()
-  const mistakeName = useMistakeName()
 
   const start = week ? dayFromKey(week) : defaultReviewWeek(new Date(), weekStart)
   const startKey = localDayKey(start)
@@ -98,31 +98,7 @@ export function WeeklyReviewPage({ week }: { week?: string }) {
               </div>
             </>
           )}
-          {(summary.topMistake || summary.worstEmotion) && (
-            <>
-              <SectionHeader title={t('review.patterns')} />
-              <Card>
-                <dl className="detail-list">
-                  {summary.topMistake && (
-                    <div className="detail-list__row">
-                      <dt className="secondary-text">{t('review.topMistake')}</dt>
-                      <dd>
-                        {mistakeName(summary.topMistake.tag)} · <PnLText amount={summary.topMistake.cost.times(-1)} currency={currency} />
-                      </dd>
-                    </div>
-                  )}
-                  {summary.worstEmotion && (
-                    <div className="detail-list__row">
-                      <dt className="secondary-text">{t('review.worstEmotion')}</dt>
-                      <dd>
-                        {t(`emotion.${summary.worstEmotion.key}`)} · <PnLText amount={summary.worstEmotion.pnl} currency={currency} />
-                      </dd>
-                    </div>
-                  )}
-                </dl>
-              </Card>
-            </>
-          )}
+          <WeekBreakdown trades={summary.trades} currency={currency} />
         </>
       )}
 

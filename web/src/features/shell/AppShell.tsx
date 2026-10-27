@@ -1,5 +1,5 @@
 import { ChartColumn, CircleUser, ListChecks, Plus, Sun, type LucideIcon } from 'lucide-react'
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { useJournal } from '../../app/journal'
 import { useLimitAlerts } from '../../app/limitAlerts'
 import { routeHref, useRoute, type Route } from '../../app/router'
@@ -9,16 +9,19 @@ import { useI18n } from '../../i18n/i18n'
 import type { MessageKey } from '../../i18n/messages/en'
 import { AccountSheet } from '../accounts/AccountSheet'
 import { AccountsPage } from '../accounts/AccountsPage'
-import { AnalyticsPage } from '../analytics/AnalyticsPage'
 import { OnboardingFlow, useNeedsOnboarding } from '../onboarding/OnboardingFlow'
 import { TradeEntrySheet } from '../entry/TradeEntrySheet'
 import { ProfilePage } from '../profile/ProfilePage'
-import { WeeklyReviewPage } from '../review/WeeklyReviewPage'
 import { RulesPage } from '../rules/RulesPage'
 import { TagsPage } from '../tags/TagsPage'
 import { TodayPage } from '../today/TodayPage'
 import { TradeDetailPage } from '../trades/TradeDetailPage'
 import { TradesPage } from '../trades/TradesPage'
+
+// Heavier screens load when first opened, keeping the first download small; the service worker
+// still caches them for offline use.
+const AnalyticsPage = lazy(() => import('../analytics/AnalyticsPage').then((module) => ({ default: module.AnalyticsPage })))
+const WeeklyReviewPage = lazy(() => import('../review/WeeklyReviewPage').then((module) => ({ default: module.WeeklyReviewPage })))
 
 interface Tab {
   route: Route['name']
@@ -96,7 +99,11 @@ export function AppShell() {
             {t('common.loadError')}
           </p>
         )}
-        {status === 'ready' && <Page route={route} />}
+        {status === 'ready' && (
+          <Suspense fallback={null}>
+            <Page route={route} />
+          </Suspense>
+        )}
       </main>
 
       <nav className="tabbar" aria-label={t('nav.label')}>
