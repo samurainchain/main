@@ -4,7 +4,7 @@ Oct 26, 2026 · @Тимур
 
 ## 1. Обзор продукта
 
-**Рабочее название: Mirror — Trading Journal** (заменить после проверки занятости в App Store).
+**Название: Tiltless — Trading Journal**, домен tiltless.xyz (решение владельца, октябрь 2026). Прежнее рабочее название Mirror осталось во внутренних именах: проект Xcode и папки ниже, ключи хранилища в браузере. Перед подачей проверить, что имя свободно в App Store.
 
 **Что это:** нативное iOS-приложение, дневник сделок для трейдеров криптовалют и фондового рынка (акции, ETF, фьючерсы). Оно показывает, сколько денег стоит каждая ошибка трейдера: FOMO, отыгрыш, пересиживание стопа, слишком большое плечо. Не торгует, не подключается к счёту с правом торговли, не даёт сигналов.
 
@@ -526,7 +526,7 @@ MirrorTests/            тесты StatsEngine, ScreenshotParser
 **Готовый CLAUDE.md**
 
 ```markdown
-# Mirror — Trading Journal (iOS)
+# Tiltless — Trading Journal (iOS)
 
 Full product spec: docs/SPEC.md. Read the relevant section before every task.
 

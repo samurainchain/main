@@ -136,7 +136,7 @@ export function WeeklyReviewPage({ week }: { week?: string }) {
         showAmounts={profile.shareAmounts}
         onToggleAmounts={(shareAmounts) => void store.updateProfile({ shareAmounts })}
         weekLabel={formatWeekRange(start, locale)}
-        fileName={`mirror-week-${startKey}.png`}
+        fileName={`tiltless-week-${startKey}.png`}
       />
       <p className="caption share-note">{tp('review.tradesInWeek', summary.metrics.count)}</p>
     </>
@@ -219,7 +219,7 @@ function cardContent(
   if (summary.worstEmotion) rows.push({ label: t('review.worstEmotion'), value: t(`emotion.${summary.worstEmotion.key}`) })
 
   return {
-    brand: 'Mirror',
+    brand: 'Tiltless',
     weekLabel: options.weekLabel,
     headline: headlineR ? formatR(headlineR, locale) : summary.metrics.winRate ? formatShare(summary.metrics.winRate, locale) : '—',
     headlineLabel: headlineR ? t('review.totalR') : t('analytics.metric.winRate'),

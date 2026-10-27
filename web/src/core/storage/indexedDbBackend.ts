@@ -33,6 +33,7 @@ const VERSION = 4
 export class IndexedDbBackend implements JournalBackend {
   private readonly db: Promise<IDBPDatabase<MirrorDB>>
 
+  // The database keeps the app's first name, so journals saved before the rename open.
   constructor(name = 'mirror') {
     this.db = openDB<MirrorDB>(name, VERSION, {
       upgrade(db) {

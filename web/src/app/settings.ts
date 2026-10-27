@@ -14,6 +14,7 @@ export interface Settings {
   weekStart: WeekStartSetting
 }
 
+// Storage keys keep the app's first name, so saved settings survive the rename.
 const STORAGE_KEY = 'mirror.settings'
 const DEFAULTS: Settings = { language: 'system', theme: 'system', selectedAccount: 'all', weekStart: 'auto' }
 

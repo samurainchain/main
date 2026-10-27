@@ -1,6 +1,7 @@
 import type { JournalData } from '../../core/models'
 import { normalizeJournal } from '../../core/storage/backend'
 
+// Kept from the app's first name, so older backups still import.
 const FORMAT = 'mirror-backup'
 /** 1: accounts, trades, mistakes, setups. 2: adds rules, reviews and the profile. */
 const VERSION = 2
@@ -18,11 +19,11 @@ export function serializeBackup(data: JournalData, now = new Date()): string {
   return JSON.stringify(file, null, 2)
 }
 
-/** Reads a backup file, or throws when it isn't a Mirror backup this version understands. */
+/** Reads a backup file, or throws when it isn't a backup this version understands. */
 export function parseBackup(text: string): JournalData {
   const file = JSON.parse(text) as Partial<BackupFile>
   if (file.format !== FORMAT || typeof file.version !== 'number' || file.version > VERSION || !file.data) {
-    throw new Error('Not a Mirror backup')
+    throw new Error('Not a Tiltless backup')
   }
   const { accounts, trades, mistakes, setups } = file.data
   if (![accounts, trades, mistakes, setups].every(Array.isArray)) throw new Error('Backup is incomplete')
@@ -35,7 +36,7 @@ export function downloadBackup(json: string, now = new Date()): void {
   const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }))
   const link = document.createElement('a')
   link.href = url
-  link.download = `mirror-backup-${now.toISOString().slice(0, 10)}.json`
+  link.download = `tiltless-backup-${now.toISOString().slice(0, 10)}.json`
   link.click()
   URL.revokeObjectURL(url)
 }

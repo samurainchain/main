@@ -87,7 +87,7 @@ export function downloadCsv(csv: string, now = new Date()): void {
   const url = URL.createObjectURL(new Blob(['﻿', csv], { type: 'text/csv;charset=utf-8' }))
   const link = document.createElement('a')
   link.href = url
-  link.download = `mirror-trades-${now.toISOString().slice(0, 10)}.csv`
+  link.download = `tiltless-trades-${now.toISOString().slice(0, 10)}.csv`
   link.click()
   URL.revokeObjectURL(url)
 }

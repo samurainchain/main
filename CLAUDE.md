@@ -1,4 +1,6 @@
-# Mirror — Trading Journal (iOS)
+# Tiltless — Trading Journal (iOS)
+
+Product name: Tiltless, domain tiltless.xyz (renamed from the working name Mirror). The Xcode project, targets, Swift types and browser storage keys (`mirror.settings`, IndexedDB `mirror`, backup format `mirror-backup`) keep the old name on purpose: renaming them would lose users' data or needs a Mac to verify.
 
 Full product spec: docs/SPEC.md. Read the relevant section before every task.
 

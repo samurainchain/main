@@ -52,7 +52,7 @@ export function useLimitAlerts(): void {
     if (!shouldAlert(limits, readLastAlert(), now)) return
     writeLastAlert(localDayKey(now))
     if (notificationPermission() === 'granted') {
-      new Notification(t('limits.alertTitle'), { body: t('limits.alertBody'), tag: 'mirror-limit' })
+      new Notification(t('limits.alertTitle'), { body: t('limits.alertBody'), tag: 'tiltless-limit' })
     }
   }, [trades, profile, status, t])
 }

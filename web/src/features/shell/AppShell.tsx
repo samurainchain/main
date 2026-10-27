@@ -55,7 +55,7 @@ export function AppShell() {
   // Name the page after the screen, so screen readers announce where navigation went.
   useEffect(() => {
     const heading = document.querySelector('.content h1')?.textContent
-    document.title = heading ? `${heading} — Mirror` : 'Mirror'
+    document.title = heading ? `${heading} — Tiltless` : 'Tiltless'
   })
 
   if (needsOnboarding) return <OnboardingFlow />
@@ -83,7 +83,7 @@ export function AppShell() {
       <nav className="sidebar" aria-label={t('nav.label')}>
         <div className="sidebar__brand">
           <img src="./favicon.svg" alt="" width={28} height={28} />
-          <span>Mirror</span>
+          <span>Tiltless</span>
         </div>
         {addButton}
         {TABS.map(tabLink)}

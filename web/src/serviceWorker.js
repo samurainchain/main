@@ -1,4 +1,4 @@
-// Mirror's service worker: makes the installed app open without a connection.
+// Tiltless's service worker: makes the installed app open without a connection.
 // Built by vite.config.ts into sw.js, which fills in BUILD_ID and PRECACHE: every file of this
 // build except the screenshot reader's engine (about 12 MB), cached the first time it's used.
 // Pages: network first, falling back to the cached copy. Built assets and the reader's files:

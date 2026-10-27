@@ -47,7 +47,7 @@ describe('backup', () => {
     expect(parseBackup(serializeBackup(withImages)).images).toEqual([])
   })
 
-  it('rejects files that are not Mirror backups', () => {
+  it('rejects files that are not Tiltless backups', () => {
     expect(() => parseBackup('{"hello":1}')).toThrow()
     expect(() => parseBackup('not json')).toThrow()
     const future = JSON.parse(serializeBackup(data))

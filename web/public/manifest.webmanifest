@@ -1,6 +1,6 @@
 {
-  "name": "Mirror — Trading Journal",
-  "short_name": "Mirror",
+  "name": "Tiltless — Trading Journal",
+  "short_name": "Tiltless",
   "description": "A trading journal that shows which mistakes cost you money.",
   "start_url": "./#/today",
   "scope": "./",
