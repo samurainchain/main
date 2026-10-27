@@ -1,0 +1,252 @@
+[
+  {
+    "file": "01-binanceApp-dark.png",
+    "layout": "binanceApp",
+    "theme": "dark",
+    "symbol": "XRPUSDT",
+    "side": "short",
+    "entryPrice": "0.5499",
+    "exitPrice": "0.5544",
+    "quantity": "1971"
+  },
+  {
+    "file": "02-binanceApp-light.png",
+    "layout": "binanceApp",
+    "theme": "light",
+    "symbol": "ETHUSDT",
+    "side": "long",
+    "entryPrice": "3199.09",
+    "exitPrice": "3135.29",
+    "quantity": "4.74"
+  },
+  {
+    "file": "03-binanceApp-dark.png",
+    "layout": "binanceApp",
+    "theme": "dark",
+    "symbol": "ETHUSDT",
+    "side": "long",
+    "entryPrice": "3140.64",
+    "exitPrice": "3193.29",
+    "quantity": "3.98"
+  },
+  {
+    "file": "04-binanceApp-light.png",
+    "layout": "binanceApp",
+    "theme": "light",
+    "symbol": "BNBUSDT",
+    "side": "long",
+    "entryPrice": "595.94",
+    "exitPrice": "595.17",
+    "quantity": "6.80"
+  },
+  {
+    "file": "05-binanceApp-dark.png",
+    "layout": "binanceApp",
+    "theme": "dark",
+    "symbol": "ETHUSDT",
+    "side": "long",
+    "entryPrice": "2986.75",
+    "exitPrice": "3016.74",
+    "quantity": "1.09"
+  },
+  {
+    "file": "06-bybitApp-dark.png",
+    "layout": "bybitApp",
+    "theme": "dark",
+    "symbol": "BNBUSDT",
+    "side": "long",
+    "entryPrice": "571.76",
+    "exitPrice": "578.48",
+    "quantity": "9.41"
+  },
+  {
+    "file": "07-bybitApp-light.png",
+    "layout": "bybitApp",
+    "theme": "light",
+    "symbol": "BTCUSDT",
+    "side": "long",
+    "entryPrice": "59330.5",
+    "exitPrice": "59738.0",
+    "quantity": "0.270"
+  },
+  {
+    "file": "08-bybitApp-dark.png",
+    "layout": "bybitApp",
+    "theme": "dark",
+    "symbol": "BNBUSDT",
+    "side": "short",
+    "entryPrice": "586.11",
+    "exitPrice": "589.32",
+    "quantity": "1.24"
+  },
+  {
+    "file": "09-bybitApp-light.png",
+    "layout": "bybitApp",
+    "theme": "light",
+    "symbol": "BNBUSDT",
+    "side": "long",
+    "entryPrice": "583.50",
+    "exitPrice": "576.26",
+    "quantity": "2.60"
+  },
+  {
+    "file": "10-bybitApp-dark.png",
+    "layout": "bybitApp",
+    "theme": "dark",
+    "symbol": "SOLUSDT",
+    "side": "short",
+    "entryPrice": "157.064",
+    "exitPrice": "155.548",
+    "quantity": "53.9"
+  },
+  {
+    "file": "11-okxApp-dark.png",
+    "layout": "okxApp",
+    "theme": "dark",
+    "symbol": "DOGEUSDT",
+    "side": "short",
+    "entryPrice": "0.15190",
+    "exitPrice": "0.14907",
+    "quantity": "9683"
+  },
+  {
+    "file": "12-okxApp-light.png",
+    "layout": "okxApp",
+    "theme": "light",
+    "symbol": "BTCUSDT",
+    "side": "short",
+    "entryPrice": "58304.2",
+    "exitPrice": "57147.7",
+    "quantity": "0.484"
+  },
+  {
+    "file": "13-okxApp-dark.png",
+    "layout": "okxApp",
+    "theme": "dark",
+    "symbol": "BNBUSDT",
+    "side": "short",
+    "entryPrice": "575.06",
+    "exitPrice": "572.75",
+    "quantity": "2.88"
+  },
+  {
+    "file": "14-okxApp-light.png",
+    "layout": "okxApp",
+    "theme": "light",
+    "symbol": "BTCUSDT",
+    "side": "long",
+    "entryPrice": "62046.3",
+    "exitPrice": "61450.4",
+    "quantity": "0.463"
+  },
+  {
+    "file": "15-okxApp-dark.png",
+    "layout": "okxApp",
+    "theme": "dark",
+    "symbol": "XRPUSDT",
+    "side": "long",
+    "entryPrice": "0.5461",
+    "exitPrice": "0.5370",
+    "quantity": "451"
+  },
+  {
+    "file": "16-binanceDesktop-dark.png",
+    "layout": "binanceDesktop",
+    "theme": "dark",
+    "symbol": "DOGEUSDT",
+    "side": "short",
+    "entryPrice": "0.15194",
+    "exitPrice": "0.15097",
+    "quantity": "5486"
+  },
+  {
+    "file": "17-binanceDesktop-light.png",
+    "layout": "binanceDesktop",
+    "theme": "light",
+    "symbol": "XRPUSDT",
+    "side": "short",
+    "entryPrice": "0.5334",
+    "exitPrice": "0.5339",
+    "quantity": "1845"
+  },
+  {
+    "file": "18-binanceDesktop-dark.png",
+    "layout": "binanceDesktop",
+    "theme": "dark",
+    "symbol": "XRPUSDT",
+    "side": "long",
+    "entryPrice": "0.5377",
+    "exitPrice": "0.5390",
+    "quantity": "589"
+  },
+  {
+    "file": "19-binanceDesktop-light.png",
+    "layout": "binanceDesktop",
+    "theme": "light",
+    "symbol": "XRPUSDT",
+    "side": "long",
+    "entryPrice": "0.5136",
+    "exitPrice": "0.5157",
+    "quantity": "1683"
+  },
+  {
+    "file": "20-binanceDesktop-dark.png",
+    "layout": "binanceDesktop",
+    "theme": "dark",
+    "symbol": "SOLUSDT",
+    "side": "long",
+    "entryPrice": "145.740",
+    "exitPrice": "143.912",
+    "quantity": "57.2"
+  },
+  {
+    "file": "21-tradingViewDesktop-dark.png",
+    "layout": "tradingViewDesktop",
+    "theme": "dark",
+    "symbol": "DOGEUSDT",
+    "side": "short",
+    "entryPrice": "0.16080",
+    "exitPrice": "0.16397",
+    "quantity": "5447"
+  },
+  {
+    "file": "22-tradingViewDesktop-light.png",
+    "layout": "tradingViewDesktop",
+    "theme": "light",
+    "symbol": "XRPUSDT",
+    "side": "long",
+    "entryPrice": "0.5530",
+    "exitPrice": "0.5447",
+    "quantity": "3797"
+  },
+  {
+    "file": "23-tradingViewDesktop-dark.png",
+    "layout": "tradingViewDesktop",
+    "theme": "dark",
+    "symbol": "DOGEUSDT",
+    "side": "long",
+    "entryPrice": "0.14752",
+    "exitPrice": "0.14766",
+    "quantity": "11268"
+  },
+  {
+    "file": "24-tradingViewDesktop-light.png",
+    "layout": "tradingViewDesktop",
+    "theme": "light",
+    "symbol": "BTCUSDT",
+    "side": "long",
+    "entryPrice": "60883.0",
+    "exitPrice": "59735.3",
+    "quantity": "0.466"
+  },
+  {
+    "file": "25-tradingViewDesktop-dark.png",
+    "layout": "tradingViewDesktop",
+    "theme": "dark",
+    "symbol": "BTCUSDT",
+    "side": "long",
+    "entryPrice": "59282.2",
+    "exitPrice": "59096.7",
+    "quantity": "0.466"
+  }
+]

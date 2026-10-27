@@ -1,0 +1,156 @@
+// Generates synthetic exchange screenshots for testing the screenshot reader.
+//
+// Real exchange screenshots are copyrighted and can't live in this repository, so these
+// pages imitate the layouts and wording of Binance, Bybit, OKX and TradingView history
+// screens (not their branding) with varied pairs, sides, prices and themes.
+//
+// Usage (needs Playwright with Chromium installed):
+//   node scripts/ocr-fixtures/generate.cjs
+// Writes test-fixtures/ocr/*.png and test-fixtures/ocr/expected.json.
+
+const { mkdirSync, writeFileSync } = require('node:fs')
+const { join } = require('node:path')
+const { chromium } = require('playwright')
+
+const OUT = join(__dirname, '../../test-fixtures/ocr')
+
+// Deterministic pseudo-random numbers, so regenerating gives the same set.
+let seed = 20261027
+const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647
+const pick = (items) => items[Math.floor(random() * items.length)]
+
+const PAIRS = [
+  { base: 'BTC', price: 61000, decimals: 1, qty: [0.01, 0.5], qtyDecimals: 3 },
+  { base: 'ETH', price: 3100, decimals: 2, qty: [0.1, 5], qtyDecimals: 2 },
+  { base: 'SOL', price: 152, decimals: 3, qty: [1, 60], qtyDecimals: 1 },
+  { base: 'XRP', price: 0.5321, decimals: 4, qty: [100, 5000], qtyDecimals: 0 },
+  { base: 'DOGE', price: 0.1532, decimals: 5, qty: [500, 20000], qtyDecimals: 0 },
+  { base: 'BNB', price: 590, decimals: 2, qty: [0.5, 10], qtyDecimals: 2 },
+]
+
+const group = (value, decimals) =>
+  Number(value).toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+
+function makeTrade() {
+  const pair = pick(PAIRS)
+  const side = random() < 0.5 ? 'long' : 'short'
+  const entry = pair.price * (0.95 + random() * 0.1)
+  const move = entry * (random() * 0.04 - 0.02)
+  const exit = entry + move
+  const qty = pair.qty[0] + random() * (pair.qty[1] - pair.qty[0])
+  const r = (value, d) => Number(value.toFixed(d))
+  const trade = {
+    base: pair.base,
+    symbol: `${pair.base}USDT`,
+    side,
+    entry: r(entry, pair.decimals),
+    exit: r(exit, pair.decimals),
+    qty: r(qty, pair.qtyDecimals),
+    leverage: pick([3, 5, 10, 20, 25, 50]),
+    decimals: pair.decimals,
+    qtyDecimals: pair.qtyDecimals,
+  }
+  trade.pnl = (trade.exit - trade.entry) * trade.qty * (side === 'long' ? 1 : -1)
+  return trade
+}
+
+const THEMES = {
+  dark: { bg: '#0b0e11', card: '#1e2329', text: '#eaecef', muted: '#848e9c', green: '#2ebd85', red: '#f6465d', line: '#2b3139' },
+  light: { bg: '#f5f5f5', card: '#ffffff', text: '#1e2329', muted: '#707a8a', green: '#03a66d', red: '#cf304a', line: '#eaecef' },
+}
+
+const signed = (value, decimals = 2) => `${value >= 0 ? '+' : '-'}${group(Math.abs(value), decimals)}`
+const tone = (theme, value) => (value >= 0 ? theme.green : theme.red)
+const cap = (word) => word[0].toUpperCase() + word.slice(1)
+
+const page = (theme, width, body) => `<!doctype html><html><head><meta charset="utf-8"><style>
+  body { margin: 0; background: ${theme.bg}; color: ${theme.text}; font: 15px/1.4 -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; width: ${width}px; }
+  .card { background: ${theme.card}; margin: 12px; padding: 16px; border-radius: 12px; }
+  .row { display: flex; justify-content: space-between; padding: 6px 0; }
+  .muted { color: ${theme.muted}; }
+  .big { font-size: 22px; font-weight: 600; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid ${theme.line}; white-space: nowrap; }
+  th { color: ${theme.muted}; font-weight: 500; }
+  .tag { padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+</style></head><body>${body}</body></html>`
+
+// Phone layouts: label and value on one row, or label above value.
+const LAYOUTS = {
+  binanceApp: (t, th) => page(th, 390, `<div class="card">
+    <div class="row"><span class="big">${t.symbol} Perpetual</span><span class="muted">Closed</span></div>
+    <div class="row"><span><span class="tag" style="background:${tone(th, t.side === 'long' ? 1 : -1)}33;color:${tone(th, t.side === 'long' ? 1 : -1)}">${cap(t.side)}</span> <span class="muted">Cross ${t.leverage}x</span></span></div>
+    <div class="muted" style="margin-top:10px">Closing PNL</div>
+    <div class="big" style="color:${tone(th, t.pnl)}">${signed(t.pnl)} USDT</div>
+    <div class="row" style="margin-top:10px"><span class="muted">Entry Price</span><span class="muted">Avg. Close Price</span></div>
+    <div class="row"><span>${group(t.entry, t.decimals)}</span><span>${group(t.exit, t.decimals)}</span></div>
+    <div class="row"><span class="muted">Closed Vol.</span><span>${group(t.qty, t.qtyDecimals)} ${t.base}</span></div>
+    <div class="row"><span class="muted">Opened</span><span>2026-10-27 10:15:02</span></div>
+    <div class="row"><span class="muted">Closed</span><span>2026-10-27 12:40:11</span></div>
+  </div>`),
+
+  bybitApp: (t, th) => page(th, 390, `<div class="card">
+    <div class="row"><span class="big">${t.symbol}</span><span style="color:${tone(th, t.side === 'long' ? 1 : -1)}">Close ${cap(t.side)}</span></div>
+    <div class="row"><span class="muted">Closed P&amp;L</span><span style="color:${tone(th, t.pnl)}">${signed(t.pnl, 4)}</span></div>
+    <div class="row"><span class="muted">Qty</span><span>${group(t.qty, t.qtyDecimals)}</span></div>
+    <div class="row"><span class="muted">Entry Price</span><span>${group(t.entry, t.decimals)}</span></div>
+    <div class="row"><span class="muted">Exit Price</span><span>${group(t.exit, t.decimals)}</span></div>
+    <div class="row"><span class="muted">Trade Time</span><span>2026-10-27 12:40:11</span></div>
+  </div>`),
+
+  okxApp: (t, th) => page(th, 390, `<div class="card">
+    <div class="big">${t.base}-USDT-SWAP</div>
+    <div class="muted">${cap(t.side)} · ${t.leverage}x · Cross</div>
+    <div class="muted" style="margin-top:12px">Realized PnL</div>
+    <div class="big" style="color:${tone(th, t.pnl)}">${signed(t.pnl)} USDT</div>
+    <div class="muted" style="margin-top:10px">Avg. entry price</div><div>${group(t.entry, t.decimals)}</div>
+    <div class="muted" style="margin-top:10px">Avg. close price</div><div>${group(t.exit, t.decimals)}</div>
+    <div class="muted" style="margin-top:10px">Closed amount</div><div>${group(t.qty, t.qtyDecimals)} ${t.base}</div>
+  </div>`),
+
+  // Desktop layouts: a header row and a row of values.
+  binanceDesktop: (t, th) => page(th, 1100, `<div class="card"><table>
+    <tr><th>Symbol</th><th>Side</th><th>Entry Price</th><th>Avg. Close Price</th><th>Closed Vol.</th><th>Closing PNL</th></tr>
+    <tr><td>${t.symbol} Perp ${t.leverage}x</td><td style="color:${tone(th, t.side === 'long' ? 1 : -1)}">${cap(t.side)}</td><td>${group(t.entry, t.decimals)}</td><td>${group(t.exit, t.decimals)}</td><td>${group(t.qty, t.qtyDecimals)} ${t.base}</td><td style="color:${tone(th, t.pnl)}">${signed(t.pnl)} USDT</td></tr>
+  </table></div>`),
+
+  tradingViewDesktop: (t, th) => page(th, 1000, `<div class="card"><div class="muted" style="margin-bottom:8px">Paper Trading · History</div><table>
+    <tr><th>Symbol</th><th>Side</th><th>Qty</th><th>Avg Fill Price</th><th>Close Price</th><th>Realized P&amp;L</th></tr>
+    <tr><td>BINANCE:${t.symbol}</td><td>${cap(t.side)}</td><td>${group(t.qty, t.qtyDecimals)}</td><td>${group(t.entry, t.decimals)}</td><td>${group(t.exit, t.decimals)}</td><td style="color:${tone(th, t.pnl)}">${signed(t.pnl)}</td></tr>
+  </table></div>`),
+}
+
+async function main() {
+  mkdirSync(OUT, { recursive: true })
+  const browser = await chromium.launch()
+  const context = await browser.newContext({ deviceScaleFactor: 2 })
+  const tab = await context.newPage()
+  const expected = []
+  let index = 0
+  for (const [layout, render] of Object.entries(LAYOUTS)) {
+    for (const themeName of ['dark', 'light', 'dark', 'light', 'dark']) {
+      const trade = makeTrade()
+      const file = `${String(++index).padStart(2, '0')}-${layout}-${themeName}.png`
+      await tab.setContent(render(trade, THEMES[themeName]))
+      await tab.locator('.card').first().screenshot({ path: join(OUT, file) })
+      expected.push({
+        file,
+        layout,
+        theme: themeName,
+        symbol: trade.symbol,
+        side: trade.side,
+        entryPrice: trade.entry.toFixed(trade.decimals),
+        exitPrice: trade.exit.toFixed(trade.decimals),
+        quantity: trade.qty.toFixed(trade.qtyDecimals),
+      })
+    }
+  }
+  writeFileSync(join(OUT, 'expected.json'), `${JSON.stringify(expected, null, 2)}\n`)
+  await browser.close()
+  console.log(`Wrote ${expected.length} screenshots to ${OUT}`)
+}
+
+main().catch((error) => {
+  console.error(error)
+  process.exit(1)
+})

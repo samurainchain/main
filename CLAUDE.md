@@ -43,4 +43,5 @@ Full product spec: docs/SPEC.md. Read the relevant section before every task.
 - Data lives in the browser (IndexedDB) behind the JournalBackend interface, so a cloud backend can be added later
 - Per-trade math in src/core/pnl.ts, pure and unit-tested (Vitest)
 - Every user-facing string goes through src/i18n/messages (en, ru, es); the ru/es catalogs are type-checked against en
+- Screenshot reader: Tesseract.js runs in the browser (src/features/entry/recognize.ts); text-to-fields parsing is pure and tested (src/core/ocr). Synthetic screenshots live in test-fixtures/ocr (regenerate with scripts/ocr-fixtures/generate.cjs); measure accuracy with scripts/ocr-fixtures/accuracy.cjs against a running preview. Never commit real exchange screenshots
 - Before pushing: `npm run typecheck`, `npm test`, `npm run build` in web/

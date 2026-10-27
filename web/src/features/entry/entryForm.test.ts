@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { Account, AssetClass } from '../../core/models'
 import { tradePnl } from '../../core/pnl'
-import { buildTrade, editEntryForm, newEntryForm, previewResult, selectContract, type EntryForm } from './entryForm'
+import { parseScreenshotText } from '../../core/ocr/parseScreenshot'
+import { applyScreenshot, buildTrade, editEntryForm, newEntryForm, previewResult, selectContract, type EntryForm } from './entryForm'
 
 const NOW = new Date(2026, 9, 27, 15, 30)
 
@@ -135,5 +136,34 @@ describe('previewResult', () => {
 
   it('stays empty while the form is incomplete', () => {
     expect(previewResult(form('stock', { entryPrice: '100' }), 'stock')).toEqual({})
+  })
+})
+
+describe('applyScreenshot', () => {
+  const parsed = parseScreenshotText(`BTCUSDT Perpetual
+Short 20x
+Entry Price 60,000.0
+Avg. Close Price 59,400.0
+Closed Vol. 0.100 BTC
+Closing PNL +60.00 USDT`)
+
+  it('fills recognized fields, marks them and saves the trade as OCR', () => {
+    const { form: filled, recognized } = applyScreenshot(form('cryptoPerp', { note: 'kept' }), parsed, 'cryptoPerp')
+    expect(filled).toMatchObject({ symbol: 'BTCUSDT', side: 'short', entryPrice: '60000.0', exitPrice: '59400.0', size: '0.100', leverage: 20, note: 'kept' })
+    expect(recognized).toEqual({ symbol: 'high', side: 'high', entryPrice: 'high', exitPrice: 'high', size: 'high', leverage: 'high' })
+    const { trade } = buildTrade(filled, account('cryptoPerp'), undefined, NOW)
+    expect(trade?.source).toBe('ocr')
+    expect(trade?.quantity).toBe('0.100')
+  })
+
+  it('picks the futures preset for a known contract symbol', () => {
+    const { form: filled } = applyScreenshot(form('futures', {}), parseScreenshotText('CME_MINI:NQ1! Long'), 'futures')
+    expect(filled.contract).toBe('NQ')
+    expect(filled.multiplier).toBe('20')
+  })
+
+  it('switches the size unit when the screenshot gives a USDT size', () => {
+    const quote = parseScreenshotText('ETH-USDT-SWAP Long\nPosition size 1,500 USDT')
+    expect(applyScreenshot(form('cryptoPerp', {}), quote, 'cryptoPerp').form.sizeUnit).toBe('quote')
   })
 })

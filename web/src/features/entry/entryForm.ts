@@ -1,6 +1,7 @@
 import Big from 'big.js'
 import { parseDecimalInput, parsePositive } from '../../core/decimal'
-import { newId, type Account, type AssetClass, type Emotion, type Side, type Trade } from '../../core/models'
+import { newId, type Account, type AssetClass, type Emotion, type Side, type Trade, type TradeSource } from '../../core/models'
+import type { Confidence, ParsedScreenshot } from '../../core/ocr/parseScreenshot'
 import { quoteToBaseQuantity, rMultiple, tradePnl } from '../../core/pnl'
 import { FUTURES_PRESETS } from '../../core/presets'
 import type { MessageKey } from '../../i18n/messages/en'
@@ -31,6 +32,8 @@ export interface EntryForm {
   setupIds: string[]
   brokenRuleIds: string[]
   note: string
+  /** `ocr` once fields were filled from a screenshot. */
+  source: TradeSource
 }
 
 export type EntryField = 'symbol' | 'multiplier' | 'entryPrice' | 'exitPrice' | 'size' | 'stopLoss' | 'fees' | 'closedAt'
@@ -79,6 +82,7 @@ export function newEntryForm(account: Account | undefined, trades: readonly Trad
     setupIds: [],
     brokenRuleIds: [],
     note: '',
+    source: 'manual',
   }
 }
 
@@ -105,6 +109,7 @@ export function editEntryForm(trade: Trade): EntryForm {
     setupIds: trade.setupIds,
     brokenRuleIds: trade.brokenRuleIds,
     note: trade.note,
+    source: trade.source,
   }
 }
 
@@ -211,9 +216,49 @@ export function buildTrade(
     setupIds: form.setupIds,
     brokenRuleIds: form.brokenRuleIds,
     note: form.note.trim(),
-    source: existing?.source ?? 'manual',
+    source: existing?.source ?? form.source,
     createdAt: existing?.createdAt ?? timestamp,
     updatedAt: timestamp,
   }
   return { trade }
+}
+
+/** Fields filled from a screenshot, with how sure the recognition was about each. */
+export type RecognizedFields = Partial<Record<'symbol' | 'side' | 'entryPrice' | 'exitPrice' | 'size' | 'leverage', Confidence>>
+
+/**
+ * Prefills the form from a parsed screenshot. Only recognized fields change; the rest of
+ * what the user already typed stays. For futures, a known contract symbol picks its preset.
+ */
+export function applyScreenshot(form: EntryForm, parsed: ParsedScreenshot, market: AssetClass): { form: EntryForm; recognized: RecognizedFields } {
+  let next: EntryForm = { ...form, source: 'ocr' }
+  const recognized: RecognizedFields = {}
+
+  if (parsed.symbol) {
+    const preset = market === 'futures' ? FUTURES_PRESETS.find((item) => item.symbol === parsed.symbol!.value) : undefined
+    next = preset ? selectContract(next, preset.symbol) : market === 'futures' ? { ...next, contract: CUSTOM_CONTRACT, symbol: parsed.symbol.value } : { ...next, symbol: parsed.symbol.value }
+    recognized.symbol = parsed.symbol.confidence
+  }
+  if (parsed.side) {
+    next.side = parsed.side.value
+    recognized.side = parsed.side.confidence
+  }
+  if (parsed.entryPrice) {
+    next.entryPrice = parsed.entryPrice.value
+    recognized.entryPrice = parsed.entryPrice.confidence
+  }
+  if (parsed.exitPrice) {
+    next.exitPrice = parsed.exitPrice.value
+    recognized.exitPrice = parsed.exitPrice.confidence
+  }
+  if (parsed.quantity) {
+    next.size = parsed.quantity.value
+    next.sizeUnit = isCrypto(market) && parsed.quantityUnit === 'quote' ? 'quote' : 'base'
+    recognized.size = parsed.quantity.confidence
+  }
+  if (parsed.leverage && market === 'cryptoPerp') {
+    next.leverage = Math.min(125, Math.max(1, Number(parsed.leverage.value)))
+    recognized.leverage = parsed.leverage.confidence
+  }
+  return { form: next, recognized }
 }

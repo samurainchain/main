@@ -202,15 +202,20 @@ export function Field({
   hint,
   children,
   htmlFor,
+  recognized,
 }: {
   label: string
   error?: string
   hint?: string
   htmlFor?: string
   children: ReactNode
+  /** Filled from a screenshot: `high` is highlighted, `low` also asks to check the value. */
+  recognized?: 'high' | 'low'
 }) {
+  const { t } = useI18n()
+  const status = recognized === 'low' ? ' field--check' : recognized === 'high' ? ' field--recognized' : ''
   return (
-    <div className={`field${error ? ' field--invalid' : ''}`}>
+    <div className={`field${error ? ' field--invalid' : ''}${status}`}>
       <label className="field__label" htmlFor={htmlFor}>
         {label}
       </label>
@@ -219,6 +224,8 @@ export function Field({
         <p className="field__error" role="alert">
           {error}
         </p>
+      ) : recognized === 'low' ? (
+        <p className="field__hint field__hint--check">{t('entry.checkValue')}</p>
       ) : (
         hint && <p className="field__hint">{hint}</p>
       )}

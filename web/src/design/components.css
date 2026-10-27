@@ -395,3 +395,19 @@ textarea.input {
 .limit-bar--reached .limit-bar__text .numeric {
   color: var(--color-loss);
 }
+
+/* Fields filled from a screenshot */
+
+.field--recognized .input {
+  border-color: color-mix(in srgb, var(--color-accent) 60%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface-elevated));
+}
+
+.field--check .input {
+  border-color: var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 10%, var(--color-surface-elevated));
+}
+
+.field__hint--check {
+  color: var(--color-warning);
+}

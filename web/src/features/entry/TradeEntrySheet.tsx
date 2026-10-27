@@ -1,6 +1,6 @@
 import Big from 'big.js'
-import { Plus, Wallet } from 'lucide-react'
-import { useId, useMemo, useState, type FormEvent, type KeyboardEvent } from 'react'
+import { ImageUp, Plus, Wallet } from 'lucide-react'
+import { useId, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from 'react'
 import { activeAccounts, useJournal, useMistakeName, useSelectedAccount, useStore } from '../../app/journal'
 import { useSheets } from '../../app/sheets'
 import { EMOTIONS, type Account, type Trade } from '../../core/models'
@@ -10,7 +10,9 @@ import { formatMoney, formatR } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
 import type { MessageKey } from '../../i18n/messages/en'
 import { EMOTION_ICONS } from '../trades/TradeRow'
+import { recognizeScreenshot } from './recognize'
 import {
+  applyScreenshot,
   buildTrade,
   CUSTOM_CONTRACT,
   editEntryForm,
@@ -20,6 +22,7 @@ import {
   selectContract,
   type EntryErrors,
   type EntryForm,
+  type RecognizedFields,
 } from './entryForm'
 
 /** Quick trade entry (SPEC section 4.4): one sheet for new and edited trades. */
@@ -48,6 +51,9 @@ function EntrySheetContent({ existing, onClose }: { existing: Trade | undefined;
   const [errors, setErrors] = useState<EntryErrors>({})
   const [showMore, setShowMore] = useState(Boolean(existing && (existing.fees !== '0' || existing.note)))
   const [saving, setSaving] = useState(false)
+  const [recognized, setRecognized] = useState<RecognizedFields>({})
+  const [ocr, setOcr] = useState<{ state: 'idle' | 'running' | 'done' | 'empty' | 'error'; progress: number }>({ state: 'idle', progress: 0 })
+  const screenshotInput = useRef<HTMLInputElement>(null)
 
   const account = accounts.find((item) => item.id === form.accountId) ?? defaultAccount
   const market = existing?.market ?? account?.assetClass ?? 'cryptoSpot'
@@ -64,6 +70,30 @@ function EntrySheetContent({ existing, onClose }: { existing: Trade | undefined;
   }, [trades, market])
 
   const update = (patch: Partial<EntryForm>) => setForm((current) => ({ ...current, ...patch }))
+  /** An edit by hand: the field no longer needs the "recognized" highlight. */
+  const edit = (field: keyof RecognizedFields, patch: Partial<EntryForm>) => {
+    update(patch)
+    setRecognized(({ [field]: _removed, ...rest }) => rest)
+  }
+
+  const readScreenshot = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    setOcr({ state: 'running', progress: 0 })
+    try {
+      const parsed = await recognizeScreenshot(file, (progress) => setOcr({ state: 'running', progress }))
+      const applied = applyScreenshot(form, parsed, market)
+      if (Object.keys(applied.recognized).length === 0) return setOcr({ state: 'empty', progress: 1 })
+      setForm(applied.form)
+      setRecognized(applied.recognized)
+      setErrors({})
+      setOcr({ state: 'done', progress: 1 })
+    } catch (error) {
+      console.error('Screenshot recognition failed', error)
+      setOcr({ state: 'error', progress: 0 })
+    }
+  }
   const error = (field: keyof EntryErrors) => (errors[field] ? t(errors[field]) : undefined)
   const toggle = (list: string[], id: string) => (list.includes(id) ? list.filter((item) => item !== id) : [...list, id])
 
@@ -141,6 +171,29 @@ function EntrySheetContent({ existing, onClose }: { existing: Trade | undefined;
       }
     >
       <form id="trade-entry" className="form-stack" onSubmit={save} onKeyDown={onKeyDown} noValidate>
+        {!existing && (
+          <div className="screenshot-start">
+            <Button
+              icon={<ImageUp size={18} aria-hidden="true" />}
+              disabled={ocr.state === 'running'}
+              onClick={() => screenshotInput.current?.click()}
+            >
+              {t('entry.fromScreenshot')}
+            </Button>
+            <input ref={screenshotInput} type="file" accept="image/*" hidden onChange={readScreenshot} />
+            <p className="caption" role="status" aria-live="polite">
+              {ocr.state === 'running'
+                ? t('entry.ocrRunning', { percent: Math.round(ocr.progress * 100) })
+                : ocr.state === 'done'
+                  ? t('entry.ocrDone')
+                  : ocr.state === 'empty'
+                    ? t('entry.ocrEmpty')
+                    : ocr.state === 'error'
+                      ? t('entry.ocrError')
+                      : t('entry.ocrHint')}
+            </p>
+          </div>
+        )}
         {accountChoices.length > 1 && (
           <Field label={t('entry.account')} htmlFor={ids.account}>
             <select id={ids.account} className="input" value={account.id} onChange={(event) => changeAccount(event.target.value)}>
@@ -167,8 +220,8 @@ function EntrySheetContent({ existing, onClose }: { existing: Trade | undefined;
             </Field>
             {form.contract === CUSTOM_CONTRACT ? (
               <>
-                <Field label={t('entry.symbol')} htmlFor={ids.symbol} error={error('symbol')}>
-                  <input id={ids.symbol} className="input" value={form.symbol} autoCapitalize="characters" autoComplete="off" onChange={(event) => update({ symbol: event.target.value })} />
+                <Field label={t('entry.symbol')} htmlFor={ids.symbol} error={error('symbol')} recognized={recognized.symbol}>
+                  <input id={ids.symbol} className="input" value={form.symbol} autoCapitalize="characters" autoComplete="off" onChange={(event) => edit('symbol', { symbol: event.target.value })} />
                 </Field>
                 <Field label={t('entry.multiplier')} htmlFor={ids.multiplier} error={error('multiplier')} hint={t('entry.multiplierHint')}>
                   <DecimalInput id={ids.multiplier} value={form.multiplier} onChange={(multiplier) => update({ multiplier })} />
@@ -181,7 +234,7 @@ function EntrySheetContent({ existing, onClose }: { existing: Trade | undefined;
             )}
           </div>
         ) : (
-          <Field label={t('entry.symbol')} htmlFor={ids.symbol} error={error('symbol')}>
+          <Field label={t('entry.symbol')} htmlFor={ids.symbol} error={error('symbol')} recognized={recognized.symbol}>
             <input
               id={ids.symbol}
               className="input"
@@ -191,7 +244,7 @@ function EntrySheetContent({ existing, onClose }: { existing: Trade | undefined;
               autoCapitalize="characters"
               autoComplete="off"
               autoFocus={!existing}
-              onChange={(event) => update({ symbol: event.target.value })}
+              onChange={(event) => edit('symbol', { symbol: event.target.value })}
             />
             <datalist id={ids.symbols}>
               {symbolSuggestions.map((symbol) => (
@@ -205,7 +258,7 @@ function EntrySheetContent({ existing, onClose }: { existing: Trade | undefined;
           label={t('entry.side')}
           size="large"
           value={form.side}
-          onChange={(side) => update({ side })}
+          onChange={(side) => edit('side', { side })}
           options={[
             { value: 'long', label: t('side.long'), tone: 'profit' },
             { value: 'short', label: t('side.short'), tone: 'loss' },
@@ -213,7 +266,7 @@ function EntrySheetContent({ existing, onClose }: { existing: Trade | undefined;
         />
 
         {market === 'cryptoPerp' && (
-          <Field label={`${t('entry.leverage')}: ${form.leverage}×`} htmlFor={ids.leverage}>
+          <Field label={`${t('entry.leverage')}: ${form.leverage}×`} htmlFor={ids.leverage} recognized={recognized.leverage}>
             <input
               id={ids.leverage}
               className="slider"
@@ -222,23 +275,23 @@ function EntrySheetContent({ existing, onClose }: { existing: Trade | undefined;
               max={125}
               step={1}
               value={form.leverage}
-              onChange={(event) => update({ leverage: Number(event.target.value) })}
+              onChange={(event) => edit('leverage', { leverage: Number(event.target.value) })}
             />
           </Field>
         )}
 
         <div className="form-grid">
-          <Field label={t('entry.entryPrice')} htmlFor={ids.entry} error={error('entryPrice')}>
-            <DecimalInput id={ids.entry} value={form.entryPrice} onChange={(entryPrice) => update({ entryPrice })} />
+          <Field label={t('entry.entryPrice')} htmlFor={ids.entry} error={error('entryPrice')} recognized={recognized.entryPrice}>
+            <DecimalInput id={ids.entry} value={form.entryPrice} onChange={(entryPrice) => edit('entryPrice', { entryPrice })} />
           </Field>
-          <Field label={t('entry.exitPrice')} htmlFor={ids.exit} error={error('exitPrice')}>
-            <DecimalInput id={ids.exit} value={form.exitPrice} onChange={(exitPrice) => update({ exitPrice })} />
+          <Field label={t('entry.exitPrice')} htmlFor={ids.exit} error={error('exitPrice')} recognized={recognized.exitPrice}>
+            <DecimalInput id={ids.exit} value={form.exitPrice} onChange={(exitPrice) => edit('exitPrice', { exitPrice })} />
           </Field>
         </div>
 
-        <Field label={t(sizeLabel(market, form.sizeUnit))} htmlFor={ids.size} error={error('size')}>
+        <Field label={t(sizeLabel(market, form.sizeUnit))} htmlFor={ids.size} error={error('size')} recognized={recognized.size}>
           <div className="input-with-addon">
-            <DecimalInput id={ids.size} value={form.size} onChange={(size) => update({ size })} />
+            <DecimalInput id={ids.size} value={form.size} onChange={(size) => edit('size', { size })} />
             {isCrypto(market) && (
               <Segmented
                 label={t('entry.sizeUnit')}

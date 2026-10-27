@@ -690,3 +690,13 @@
   margin-top: var(--space-s);
   text-align: center;
 }
+
+/* Trade entry: start from a screenshot */
+
+.screenshot-start {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding-bottom: var(--space-m);
+  border-bottom: 1px solid var(--color-separator);
+}
