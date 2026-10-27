@@ -45,9 +45,9 @@ const LABELS: { field: NumericField; pattern: RegExp }[] = [
     pattern: /закрыт(?:ый|ая)\s*(?:p&l|pnl)|(?:p&l|pnl)\s*закрытия|реализованн(?:ый|ая)\s*(?:p&l|pnl|прибыль)|чистая прибыль|(?<!\p{L})прибыль(?!\p{L})/iu,
   },
   { field: 'exitPrice', pattern: /avg\.?\s*close price|average close price|avg\.?\s*exit price|close price|closing price|exit price/i },
-  { field: 'exitPrice', pattern: /(?:ср(?:едн(?:яя)?)?\.?\s*)?цена\s*(?:закрытия|выхода)/iu },
+  { field: 'exitPrice', pattern: /(?:ср(?:едн(?:яя)?)?\.?\s*)?цена\s*(?:закрытия|выхода)|выходн(?:ая|ой)\s*цена/iu },
   { field: 'entryPrice', pattern: /avg\.?\s*entry price|average entry price|entry price|avg\.?\s*open price|open price|opening price|avg\.?\s*fill price/i },
-  { field: 'entryPrice', pattern: /(?:ср(?:едн(?:яя)?)?\.?\s*)?цена\s*(?:входа|открытия|исполнения)/iu },
+  { field: 'entryPrice', pattern: /(?:ср(?:едн(?:яя)?)?\.?\s*)?цена\s*(?:входа|открытия|исполнения)|входн(?:ая|ой)\s*цена/iu },
   { field: 'quantity', pattern: /closed vol\.?|closed amount|closed qty|max open interest|position size|\bqty\b|quantity|\bsize\b|contracts|\bamount\b/i },
   {
     field: 'quantity',
@@ -158,7 +158,7 @@ function detectExchange(text: string): Exchange | undefined {
   if (/tradingview|\b[A-Z_]{3,}:[A-Z0-9]+/i.test(text)) return 'tradingview'
   if (/\bbybit\b|closed p&l/i.test(text)) return 'bybit'
   if (/\bokx\b|-SWAP\b|realized pnl/i.test(text)) return 'okx'
-  if (/binance|closing pnl|perpetual|бессрочн/i.test(text)) return 'binance'
+  if (/binance|closing pnl|perpetual/i.test(text)) return 'binance'
   return undefined
 }
 
@@ -261,7 +261,27 @@ export function parseScreenshotText(text: string, ocrConfidence = 100): ParsedSc
     })
   })
 
-  return crossCheck(alignPrices(result))
+  // Share cards (OKX, Binance) print the PnL as a bare amount under the ROI, with no label.
+  if (!result.pnl) {
+    const bare = lines.find((line) => labelsIn(line).length === 0 && /^[+\-−–]?\d[\d\s.,]*\s?[A-Z]{3,5}$/.test(line))
+    const amount = bare ? numbersIn(bare, russian).find((item) => QUOTES.includes(item.unit)) : undefined
+    if (amount) result.pnl = { value: amount.value, confidence: 'low' }
+  }
+
+  return deriveQuantity(crossCheck(alignPrices(result)))
+}
+
+/**
+ * Share cards show prices and PnL but not the size. Without fees the PnL is the price move times
+ * the size, so the size follows from them; it is approximate, so it is left for the user to check.
+ */
+function deriveQuantity(result: ParsedScreenshot): ParsedScreenshot {
+  const { quantity, pnl, entryPrice, exitPrice } = result
+  if (quantity || !pnl || !entryPrice || !exitPrice) return result
+  const move = new Big(exitPrice.value).minus(entryPrice.value).abs()
+  if (move.eq(0)) return result
+  const value = new Big(pnl.value).div(move).round(4).toString()
+  return { ...result, quantity: { value, confidence: 'low' }, quantityUnit: 'base' }
 }
 
 /**

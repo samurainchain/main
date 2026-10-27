@@ -188,7 +188,8 @@ PnL закрытия
 Объём закрытия    0,100 BTC
 Открыто 27.10.2026 10:15:02`
     expect(values(parseScreenshotText(text))).toEqual({
-      exchange: 'binance',
+      // "Бессрочный" is on OKX cards too, so it doesn't name the exchange.
+      exchange: undefined,
       symbol: 'BTCUSDT',
       side: 'long',
       entryPrice: '60000.0',
@@ -230,6 +231,30 @@ PnL закрытия
   it('keeps English thousands when OCR reads "Avg." as Cyrillic', () => {
     const parsed = parseScreenshotText('DOGE-USDT-SWAP\nАуд. close price\n0.14907\nClosed amount\n9,683 DOGE')
     expect(values(parsed)).toMatchObject({ exitPrice: '0.14907', quantity: '9683' })
+  })
+
+  it('reads the OKX share card: "Входная цена", an unlabelled PnL and no size', () => {
+    const parsed = parseScreenshotText(`27.10.2026, 12:50:52 (UTC-5)
+ZECUSDT Бессрочные
+Лонг | 20x | Закрытие
++15,80 %
+138,27 USDT
+Входная цена        Цена закрытия
+1 294,3             1 305,68
+Реферальный код LL65NYIK`)
+    expect(values(parsed)).toEqual({
+      exchange: undefined,
+      symbol: 'ZECUSDT',
+      side: 'long',
+      entryPrice: '1294.3',
+      exitPrice: '1305.68',
+      // 138.27 / (1305.68 − 1294.3): the card has no size, so it comes from the PnL.
+      quantity: '12.1503',
+      leverage: '20',
+      pnl: '138.27',
+    })
+    expect(parsed.quantity?.confidence).toBe('low')
+    expect(parsed.entryPrice?.confidence).toBe('low')
   })
 
   it('joins thousands split by a space on Russian lines', () => {
