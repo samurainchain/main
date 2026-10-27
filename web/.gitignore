@@ -1,2 +1,4 @@
 node_modules/
 dist/
+# Screenshots that local checks write next to the app; never part of the repo.
+shots/

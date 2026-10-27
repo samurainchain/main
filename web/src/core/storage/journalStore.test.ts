@@ -87,8 +87,10 @@ ETHUSDT,Buy,1.5,3100.25,3130.33,-45.38,2026-10-27 13:02:45`)
 
     const saved = (await openStore(db)).getSnapshot().trades
     expect(saved).toHaveLength(2)
-    expect(saved[0]).toMatchObject({ accountId: acc.id, market: 'cryptoPerp', source: 'csvImport', symbol: 'BTCUSDT', side: 'long', fees: '0.07' })
-    expect(saved[0]!.importKey).toBe(trades[0]!.key)
+    // Records come back in id order, which is random: find the trade by symbol.
+    const btc = saved.find((trade) => trade.symbol === 'BTCUSDT')
+    expect(btc).toMatchObject({ accountId: acc.id, market: 'cryptoPerp', source: 'csvImport', side: 'long', fees: '0.07' })
+    expect(btc!.importKey).toBe(trades.find((trade) => trade.symbol === 'BTCUSDT')!.key)
   })
 
   it('seeds the system mistakes exactly once', async () => {
