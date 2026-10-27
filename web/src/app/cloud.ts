@@ -6,10 +6,14 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL } from './cloudConfig'
 
 export type CloudStatus = 'unavailable' | 'signedOut' | 'syncing' | 'synced' | 'offline' | 'error'
 
+/** Why the last sign-in link didn't sign the user in. */
+export type SignInProblem = 'expired' | 'otherBrowser' | 'failed'
+
 export interface CloudState {
   status: CloudStatus
   email?: string
   lastSyncedAt?: Date
+  signInProblem?: SignInProblem
 }
 
 /** Sync after local edits settle, and regularly while the site is open. */
@@ -31,6 +35,8 @@ export class CloudController {
   private engine?: CloudSync
   private userId?: string
   private debounce?: ReturnType<typeof setTimeout>
+  /** Read when the page loads, before the router replaces an unknown "#error=…" hash. */
+  private readonly link = readAuthParams()
   private interval?: ReturnType<typeof setInterval>
 
   constructor(
@@ -53,8 +59,16 @@ export class CloudController {
   async start(): Promise<void> {
     if (!SUPABASE_ANON_KEY) return
     const { createClient } = await import('@supabase/supabase-js')
-    // PKCE: the email link comes back with ?code=…, which doesn't clash with the #/ routes.
-    this.client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { flowType: 'pkce', detectSessionInUrl: true, persistSession: true } })
+    // PKCE: the email link comes back with ?code=…, which doesn't clash with the #/ routes. The
+    // code is exchanged here rather than by the library, so a failure can be shown.
+    const link = this.link
+    this.client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { flowType: 'pkce', detectSessionInUrl: false, persistSession: true } })
+    if (link.code) {
+      const { error } = await this.client.auth.exchangeCodeForSession(link.code)
+      if (error) this.set({ signInProblem: signInProblem(error) })
+    } else if (link.error) {
+      this.set({ signInProblem: /expired|invalid/i.test(link.error) ? 'expired' : 'failed' })
+    }
     const { SupabaseRemote } = await import('../core/sync/supabaseRemote')
     this.engine = new CloudSync(this.backend, new SupabaseRemote(this.client), () => this.store.load())
 
@@ -77,6 +91,7 @@ export class CloudController {
   async signIn(email: string): Promise<void> {
     if (!this.client) throw new Error('Cloud sync is not configured')
     const redirect = `${window.location.origin}${window.location.pathname}`
+    this.set({ signInProblem: undefined })
     const { error } = await this.client.auth.signInWithOtp({ email: email.trim(), options: { emailRedirectTo: redirect } })
     if (error) throw error
   }
@@ -128,7 +143,7 @@ export class CloudController {
       this.set({ status: 'signedOut', email: undefined, lastSyncedAt: undefined })
       return
     }
-    this.set({ status: 'syncing', email: user.email })
+    this.set({ status: 'syncing', email: user.email, signInProblem: undefined })
     await this.engine!.connect(user.id)
     clearInterval(this.interval)
     this.interval = setInterval(() => this.scheduleSync(0), INTERVAL_MS)
@@ -165,12 +180,38 @@ function imagePath(userId: string, imageId: string): string {
   return `${userId}/${imageId}.jpg`
 }
 
-/** Drops ?code=… (or an error) from the address once Supabase has read it. */
+const AUTH_PARAMS = ['code', 'error', 'error_code', 'error_description']
+
+/**
+ * What the email link brought back: ?code=… on success, or an error, which Supabase puts in the
+ * query or in the hash (#error=…&error_description=…).
+ */
+function readAuthParams(): { code?: string; error?: string } {
+  const url = new URL(window.location.href)
+  const hash = new URLSearchParams(url.hash.startsWith('#error') ? url.hash.slice(1) : '')
+  const error = url.searchParams.get('error_description') ?? url.searchParams.get('error') ?? hash.get('error_description') ?? hash.get('error') ?? undefined
+  return { code: url.searchParams.get('code') ?? undefined, error }
+}
+
+/** Sorts a failed code exchange into what the user can do about it. */
+function signInProblem(error: { name?: string; message?: string }): SignInProblem {
+  const text = `${error.name ?? ''} ${error.message ?? ''}`
+  // The link was opened in another browser than the one that asked for it.
+  if (/verifier/i.test(text)) return 'otherBrowser'
+  if (/expired|invalid|already/i.test(text)) return 'expired'
+  return 'failed'
+}
+
+/** Drops ?code=… (or an error) from the address once it has been read. */
 function removeAuthParams(): void {
   const url = new URL(window.location.href)
-  if (!['code', 'error', 'error_code', 'error_description'].some((name) => url.searchParams.has(name))) return
-  for (const name of ['code', 'error', 'error_code', 'error_description']) url.searchParams.delete(name)
+  const errorHash = url.hash.startsWith('#error')
+  if (!AUTH_PARAMS.some((name) => url.searchParams.has(name)) && !errorHash) return
+  for (const name of AUTH_PARAMS) url.searchParams.delete(name)
+  if (errorHash) url.hash = '#/profile'
   window.history.replaceState(null, '', url.toString())
+  // replaceState doesn't announce the new hash: tell the router, so Profile shows the problem.
+  if (errorHash) window.dispatchEvent(new HashChangeEvent('hashchange'))
 }
 
 const CloudContext = createContext<CloudController | null>(null)

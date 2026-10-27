@@ -8,7 +8,7 @@ import { useI18n } from '../../i18n/i18n'
 /** Email sign-in: sends a link that brings the user back signed in. */
 export function SignInForm({ compact = false }: { compact?: boolean }) {
   const { t } = useI18n()
-  const { cloud } = useCloud()
+  const { cloud, state } = useCloud()
   const id = useId()
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState<string>()
@@ -23,8 +23,9 @@ export function SignInForm({ compact = false }: { compact?: boolean }) {
     try {
       await cloud.signIn(email)
       setSent(email.trim())
-    } catch {
-      setError(t('cloud.error.send'))
+    } catch (failure) {
+      const text = failure instanceof Error ? failure.message : ''
+      setError(t(/rate limit|too many/i.test(text) ? 'cloud.error.rateLimit' : 'cloud.error.send'))
     } finally {
       setSending(false)
     }
@@ -40,6 +41,11 @@ export function SignInForm({ compact = false }: { compact?: boolean }) {
 
   return (
     <form className={compact ? 'sign-in sign-in--compact' : 'sign-in'} onSubmit={submit} noValidate>
+      {state.signInProblem && (
+        <p className="import-warning" role="alert">
+          {t(`cloud.signInProblem.${state.signInProblem}`)}
+        </p>
+      )}
       <Field label={t('cloud.email')} htmlFor={id} error={error}>
         <input id={id} className="input" type="email" inputMode="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={(event) => setEmail(event.target.value)} />
       </Field>
