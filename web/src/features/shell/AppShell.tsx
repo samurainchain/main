@@ -1,9 +1,9 @@
 import { ChartColumn, CircleUser, ListChecks, Plus, Sun, type LucideIcon } from 'lucide-react'
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, Suspense, useEffect, type CSSProperties } from 'react'
 import { useJournal } from '../../app/journal'
 import { useLimitAlerts } from '../../app/limitAlerts'
 import { routeHref, useRoute, type Route } from '../../app/router'
-import { useSettings } from '../../app/settings'
+import { clampRailWidth, useSettings } from '../../app/settings'
 import { useSheets } from '../../app/sheets'
 import { useI18n } from '../../i18n/i18n'
 import type { MessageKey } from '../../i18n/messages/en'
@@ -48,6 +48,7 @@ export function AppShell() {
   const route = useRoute()
   const { status } = useJournal()
   const { newTrade } = useSheets()
+  const { railWidth, railHidden } = useSettings()
   useThemeAttribute()
   useLimitAlerts()
   const needsOnboarding = useNeedsOnboarding()
@@ -83,7 +84,7 @@ export function AppShell() {
   )
 
   return (
-    <div className="shell">
+    <div className={`shell${railHidden ? ' shell--rail-hidden' : ''}`} style={{ '--rail-width': `${clampRailWidth(railWidth)}px` } as CSSProperties}>
       <nav className="sidebar" aria-label={t('nav.label')}>
         <div className="sidebar__brand">
           <img src="./favicon.svg" alt="" width={28} height={28} />

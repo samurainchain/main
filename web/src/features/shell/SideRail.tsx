@@ -1,9 +1,9 @@
 import Big from 'big.js'
-import { AlertTriangle, CheckCircle2, ChevronRight } from 'lucide-react'
-import { useMemo } from 'react'
+import { AlertTriangle, CheckCircle2, ChevronRight, PanelRightClose, PanelRightOpen } from 'lucide-react'
+import { useMemo, useRef, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react'
 import { activeAccounts, useJournal } from '../../app/journal'
 import { routeHref } from '../../app/router'
-import { useWeekStart } from '../../app/settings'
+import { clampRailWidth, RAIL_DEFAULT_WIDTH, RAIL_MAX_WIDTH, RAIL_MIN_WIDTH, updateSettings, useSettings, useWeekStart } from '../../app/settings'
 import { weekInsights } from '../../core/insights'
 import { weekSummary } from '../../core/review'
 import { dailyPnl, localDayKey, startOfWeek } from '../../core/stats'
@@ -14,17 +14,107 @@ import { FeedbackSection } from '../feedback/FeedbackSection'
 import { useInsightText } from '../review/WeekBreakdown'
 import { dayFromKey, useVisibleTrades } from '../trades/tradeQueries'
 
+/** Released this far below the minimum width, a drag hides the column instead. */
+const COLLAPSE_SLACK = 80
+/** Arrow keys on the resize handle change the width by this much. */
+const KEY_STEP = 16
+
 /**
  * The right column on wide screens: this week at a glance (PnL, day bars, the costliest
- * pattern) and the feedback form at the bottom. Hidden below 1400 px by CSS.
+ * pattern) and the feedback form at the bottom. Hidden below 1400 px by CSS; the person can
+ * collapse it to a thin strip or drag its left edge to resize it, and the browser remembers.
  */
 export function SideRail() {
+  const { t } = useI18n()
   const { accounts } = useJournal()
+  const { railHidden } = useSettings()
+
+  if (railHidden) {
+    return (
+      <aside className="side-rail side-rail--collapsed" aria-label={t('rail.label')}>
+        <button type="button" className="icon-button" aria-label={t('rail.show')} title={t('rail.show')} aria-expanded={false} onClick={() => updateSettings({ railHidden: false })}>
+          <PanelRightOpen size={20} aria-hidden="true" />
+        </button>
+      </aside>
+    )
+  }
+
   return (
-    <aside className="side-rail">
-      {activeAccounts(accounts).length > 0 && <WeekGlance />}
-      <FeedbackSection className="side-rail__feedback" />
+    <aside className="side-rail" aria-label={t('rail.label')}>
+      <RailResizer />
+      <div className="side-rail__scroll">
+        <div className="side-rail__bar">
+          <button type="button" className="icon-button" aria-label={t('rail.hide')} title={t('rail.hide')} aria-expanded onClick={() => updateSettings({ railHidden: true })}>
+            <PanelRightClose size={20} aria-hidden="true" />
+          </button>
+        </div>
+        {activeAccounts(accounts).length > 0 && <WeekGlance />}
+        <FeedbackSection className="side-rail__feedback" />
+      </div>
     </aside>
+  )
+}
+
+/** The column's left edge: drag it (or use the arrow keys) to resize; a double click resets it. */
+function RailResizer() {
+  const { t } = useI18n()
+  const { railWidth } = useSettings()
+  const ref = useRef<HTMLDivElement>(null)
+  // While dragging, the width goes straight to the CSS variable so pages don't re-render on
+  // every mouse move; the setting is saved once, on release.
+  const preview = (width: number) => ref.current?.closest<HTMLElement>('.shell')?.style.setProperty('--rail-width', `${width}px`)
+
+  const startDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return
+    event.preventDefault()
+    const handle = event.currentTarget
+    handle.setPointerCapture(event.pointerId)
+    document.documentElement.classList.add('is-resizing')
+    let wanted = railWidth
+    const move = (moveEvent: PointerEvent) => {
+      wanted = window.innerWidth - moveEvent.clientX
+      preview(clampRailWidth(wanted))
+    }
+    const end = () => {
+      handle.removeEventListener('pointermove', move)
+      handle.removeEventListener('pointerup', end)
+      handle.removeEventListener('pointercancel', end)
+      document.documentElement.classList.remove('is-resizing')
+      if (wanted < RAIL_MIN_WIDTH - COLLAPSE_SLACK) {
+        preview(railWidth)
+        updateSettings({ railHidden: true })
+      } else {
+        updateSettings({ railWidth: clampRailWidth(wanted) })
+      }
+    }
+    handle.addEventListener('pointermove', move)
+    handle.addEventListener('pointerup', end)
+    handle.addEventListener('pointercancel', end)
+  }
+
+  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const next = { ArrowLeft: railWidth + KEY_STEP, ArrowRight: railWidth - KEY_STEP, Home: RAIL_MIN_WIDTH, End: RAIL_MAX_WIDTH }[event.key]
+    if (next === undefined) return
+    event.preventDefault()
+    updateSettings({ railWidth: clampRailWidth(next) })
+  }
+
+  return (
+    <div
+      ref={ref}
+      className="side-rail__resize"
+      role="separator"
+      tabIndex={0}
+      aria-orientation="vertical"
+      aria-label={t('rail.resize')}
+      aria-valuemin={RAIL_MIN_WIDTH}
+      aria-valuemax={RAIL_MAX_WIDTH}
+      aria-valuenow={railWidth}
+      title={t('rail.resizeHint')}
+      onPointerDown={startDrag}
+      onKeyDown={onKeyDown}
+      onDoubleClick={() => updateSettings({ railWidth: RAIL_DEFAULT_WIDTH })}
+    />
   )
 }
 

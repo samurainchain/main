@@ -465,6 +465,11 @@ export const es: Messages = {
   'profile.disclaimer': 'Tiltless es un diario de trading. No es asesoramiento financiero ni de inversión.',
 
   // Wide-screen right column and feedback
+  'rail.label': 'Panel lateral',
+  'rail.hide': 'Ocultar el panel lateral',
+  'rail.show': 'Mostrar el panel lateral',
+  'rail.resize': 'Ancho del panel lateral',
+  'rail.resizeHint': 'Arrastra para cambiar el ancho; doble clic para restablecerlo',
   'rail.week': 'Esta semana',
   'rail.trades': { one: '{count} operación cerrada', other: '{count} operaciones cerradas' },
   'rail.winRate': 'tasa de acierto {share}',

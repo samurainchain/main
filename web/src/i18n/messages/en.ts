@@ -466,6 +466,11 @@ export const en = {
   'profile.disclaimer': 'Tiltless is a trading journal. It is not financial or investment advice.',
 
   // Wide-screen right column and feedback
+  'rail.label': 'Side panel',
+  'rail.hide': 'Hide side panel',
+  'rail.show': 'Show side panel',
+  'rail.resize': 'Side panel width',
+  'rail.resizeHint': 'Drag to resize, double-click to reset',
   'rail.week': 'This week',
   'rail.trades': { one: '{count} closed trade', other: '{count} closed trades' },
   'rail.winRate': 'win rate {share}',

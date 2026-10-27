@@ -469,6 +469,11 @@ export const ru: Messages = {
   'profile.disclaimer': 'Tiltless — дневник трейдера. Не является финансовой или инвестиционной рекомендацией.',
 
   // Wide-screen right column and feedback
+  'rail.label': 'Боковая панель',
+  'rail.hide': 'Скрыть боковую панель',
+  'rail.show': 'Показать боковую панель',
+  'rail.resize': 'Ширина боковой панели',
+  'rail.resizeHint': 'Потяните, чтобы изменить ширину; двойной щелчок вернёт исходную',
   'rail.week': 'Эта неделя',
   'rail.trades': { one: '{count} закрытая сделка', few: '{count} закрытые сделки', many: '{count} закрытых сделок', other: '{count} закрытой сделки' },
   'rail.winRate': 'винрейт {share}',
