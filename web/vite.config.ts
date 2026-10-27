@@ -53,8 +53,27 @@ function tesseractAssets(): Plugin {
   }
 }
 
+/**
+ * Emits sw.js from src/serviceWorker.js with this build's id and the list of files to
+ * precache, so the installed app opens offline from the very first launch.
+ */
+function serviceWorker(): Plugin {
+  return {
+    name: 'service-worker',
+    apply: 'build',
+    generateBundle(_options, bundle) {
+      const files = Object.keys(bundle).filter((name) => !name.startsWith('tesseract/') && !name.endsWith('.map'))
+      const precache = [...files, 'manifest.webmanifest', 'favicon.svg', 'icons/icon-192.png', 'icons/icon-512.png'].map((name) => `./${name}`)
+      const buildId = Date.now().toString(36)
+      const source = readFileSync(new URL('./src/serviceWorker.js', import.meta.url), 'utf8')
+      const header = `self.BUILD_ID = ${JSON.stringify(buildId)}\nself.PRECACHE = ${JSON.stringify(precache)}\n`
+      this.emitFile({ type: 'asset', fileName: 'sw.js', source: header + source })
+    },
+  }
+}
+
 export default defineConfig({
-  plugins: [react(), tesseractAssets()],
+  plugins: [react(), tesseractAssets(), serviceWorker()],
   // Relative asset paths so the build works from the GitHub Pages project subpath.
   base: './',
   test: {

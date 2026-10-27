@@ -1,4 +1,4 @@
-import { CalendarCheck, ChevronRight, Download, FileSpreadsheet, ShieldCheck, Tags, Trash2, Upload, Wallet } from 'lucide-react'
+import { CalendarCheck, ChevronRight, Download, FileSpreadsheet, ShieldCheck, Smartphone, Tags, Trash2, Upload, Wallet } from 'lucide-react'
 import { useId, useRef, useState, type ChangeEvent } from 'react'
 import { useJournal, useMistakeName, useStore } from '../../app/journal'
 import { downloadCsv, tradesToCsv } from '../../core/export/csv'
@@ -7,6 +7,7 @@ import { updateSettings, useSettings, type LanguageSetting, type ThemeSetting, t
 import { Button, Card, Field, SectionHeader } from '../../design/components'
 import { useI18n } from '../../i18n/i18n'
 import { useCloud } from '../../app/cloud'
+import { useInstall } from '../../app/install'
 import { CloudSection } from '../cloud/CloudSection'
 import { PageHeader } from '../shell/PageHeader'
 import { downloadBackup, parseBackup, serializeBackup } from './backup'
@@ -19,6 +20,7 @@ export function ProfilePage() {
   const mistakeName = useMistakeName()
   const settings = useSettings()
   const { state: cloudState } = useCloud()
+  const install = useInstall()
   const fileInput = useRef<HTMLInputElement>(null)
   const [message, setMessage] = useState<string>()
   const ids = { language: useId(), theme: useId(), weekStart: useId() }
@@ -74,6 +76,23 @@ export function ProfilePage() {
           <ChevronRight size={18} aria-hidden="true" className="secondary-text" />
         </a>
       </div>
+
+      {(install.state === 'prompt' || install.state === 'ios') && (
+        <>
+          <SectionHeader title={t('install.section')} />
+          <Card className="form-stack">
+            <p className="cloud-line">
+              <Smartphone size={18} aria-hidden="true" />
+              <span>{t(install.state === 'ios' ? 'install.iosHint' : 'install.hint')}</span>
+            </p>
+            {install.state === 'prompt' && (
+              <Button variant="primary" onClick={() => void install.install()}>
+                {t('install.button')}
+              </Button>
+            )}
+          </Card>
+        </>
+      )}
 
       <SectionHeader title={t('profile.appearanceSection')} />
       <Card className="form-stack">

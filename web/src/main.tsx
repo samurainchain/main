@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { CloudController, CloudProvider } from './app/cloud'
+import { registerServiceWorker } from './app/install'
 import { JournalProvider } from './app/journal'
 import { SheetProvider } from './app/sheets'
 import { IndexedDbBackend } from './core/storage/indexedDbBackend'
@@ -20,6 +21,7 @@ const backend = new SyncingBackend(local, local.syncState())
 const store = new JournalStore(backend, local.imageBlobs())
 const cloud = new CloudController(backend, store)
 void store.load().then(() => cloud.start())
+registerServiceWorker()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
