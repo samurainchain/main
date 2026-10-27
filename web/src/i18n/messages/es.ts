@@ -342,6 +342,7 @@ export const es: Messages = {
   'profile.dataSection': 'Datos',
   'profile.storageNote': 'Tu diario se guarda solo en este navegador. Exporta una copia de vez en cuando; también sirve para pasarlo a otro navegador o dispositivo.',
   'profile.export': 'Exportar copia',
+  'profile.exportCsv': 'Exportar operaciones (CSV)',
   'profile.import': 'Importar copia',
   'profile.importConfirm': {
     one: '¿Reemplazar todo en este navegador con la copia ({count} operación)?',

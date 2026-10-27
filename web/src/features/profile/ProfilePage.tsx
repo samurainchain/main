@@ -1,6 +1,7 @@
-import { CalendarCheck, ChevronRight, Download, ShieldCheck, Tags, Trash2, Upload, Wallet } from 'lucide-react'
+import { CalendarCheck, ChevronRight, Download, FileSpreadsheet, ShieldCheck, Tags, Trash2, Upload, Wallet } from 'lucide-react'
 import { useId, useRef, useState, type ChangeEvent } from 'react'
-import { useJournal, useStore } from '../../app/journal'
+import { useJournal, useMistakeName, useStore } from '../../app/journal'
+import { downloadCsv, tradesToCsv } from '../../core/export/csv'
 import { routeHref } from '../../app/router'
 import { updateSettings, useSettings, type LanguageSetting, type ThemeSetting, type WeekStartSetting } from '../../app/settings'
 import { Button, Card, Field, SectionHeader } from '../../design/components'
@@ -14,7 +15,8 @@ import { downloadBackup, parseBackup, serializeBackup } from './backup'
 export function ProfilePage() {
   const { t, tp } = useI18n()
   const store = useStore()
-  const { accounts, trades, rules } = useJournal()
+  const { accounts, trades, rules, mistakes } = useJournal()
+  const mistakeName = useMistakeName()
   const settings = useSettings()
   const { state: cloudState } = useCloud()
   const fileInput = useRef<HTMLInputElement>(null)
@@ -112,6 +114,19 @@ export function ProfilePage() {
         <div className="action-row action-row--wrap">
           <Button icon={<Download size={18} aria-hidden="true" />} disabled={trades.length === 0 && accounts.length === 0} onClick={() => downloadBackup(serializeBackup(store.exportData()))}>
             {t('profile.export')}
+          </Button>
+          <Button
+            icon={<FileSpreadsheet size={18} aria-hidden="true" />}
+            disabled={trades.length === 0}
+            onClick={() => {
+              const data = store.exportData()
+              downloadCsv(tradesToCsv(data, (id) => {
+                const tag = mistakes.find((item) => item.id === id)
+                return tag ? mistakeName(tag) : undefined
+              }))
+            }}
+          >
+            {t('profile.exportCsv')}
           </Button>
           <Button icon={<Upload size={18} aria-hidden="true" />} onClick={() => fileInput.current?.click()}>
             {t('profile.import')}

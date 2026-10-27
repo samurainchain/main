@@ -343,6 +343,7 @@ export const en = {
   'profile.dataSection': 'Data',
   'profile.storageNote': 'Your journal is stored only in this browser. Export a backup now and then, and import it to move to another browser or device.',
   'profile.export': 'Export backup',
+  'profile.exportCsv': 'Export trades (CSV)',
   'profile.import': 'Import backup',
   'profile.importConfirm': {
     one: 'Replace everything in this browser with the backup ({count} trade)?',

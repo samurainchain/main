@@ -344,6 +344,7 @@ export const ru: Messages = {
   'profile.dataSection': 'Данные',
   'profile.storageNote': 'Журнал хранится только в этом браузере. Время от времени выгружай резервную копию — через неё же можно перенести журнал в другой браузер или на другое устройство.',
   'profile.export': 'Выгрузить копию',
+  'profile.exportCsv': 'Выгрузить сделки (CSV)',
   'profile.import': 'Загрузить копию',
   'profile.importConfirm': {
     one: 'Заменить всё в этом браузере данными из копии ({count} сделка)?',
