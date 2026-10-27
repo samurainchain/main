@@ -248,5 +248,155 @@
     "entryPrice": "59282.2",
     "exitPrice": "59096.7",
     "quantity": "0.466"
+  },
+  {
+    "file": "26-binanceAppRu-dark.png",
+    "layout": "binanceAppRu",
+    "theme": "dark",
+    "symbol": "BTCUSDT",
+    "side": "short",
+    "entryPrice": "61391.1",
+    "exitPrice": "60187.1",
+    "quantity": "0.139"
+  },
+  {
+    "file": "27-binanceAppRu-light.png",
+    "layout": "binanceAppRu",
+    "theme": "light",
+    "symbol": "SOLUSDT",
+    "side": "short",
+    "entryPrice": "156.294",
+    "exitPrice": "157.248",
+    "quantity": "33.8"
+  },
+  {
+    "file": "28-binanceAppRu-dark.png",
+    "layout": "binanceAppRu",
+    "theme": "dark",
+    "symbol": "BNBUSDT",
+    "side": "short",
+    "entryPrice": "579.15",
+    "exitPrice": "570.07",
+    "quantity": "6.21"
+  },
+  {
+    "file": "29-binanceAppRu-light.png",
+    "layout": "binanceAppRu",
+    "theme": "light",
+    "symbol": "ETHUSDT",
+    "side": "long",
+    "entryPrice": "3062.23",
+    "exitPrice": "3069.58",
+    "quantity": "2.08"
+  },
+  {
+    "file": "30-binanceAppRu-dark.png",
+    "layout": "binanceAppRu",
+    "theme": "dark",
+    "symbol": "DOGEUSDT",
+    "side": "short",
+    "entryPrice": "0.14670",
+    "exitPrice": "0.14705",
+    "quantity": "10197"
+  },
+  {
+    "file": "31-bybitAppRu-dark.png",
+    "layout": "bybitAppRu",
+    "theme": "dark",
+    "symbol": "BTCUSDT",
+    "side": "short",
+    "entryPrice": "58679.2",
+    "exitPrice": "57928.0",
+    "quantity": "0.165"
+  },
+  {
+    "file": "32-bybitAppRu-light.png",
+    "layout": "bybitAppRu",
+    "theme": "light",
+    "symbol": "ETHUSDT",
+    "side": "short",
+    "entryPrice": "3073.71",
+    "exitPrice": "3058.81",
+    "quantity": "3.84"
+  },
+  {
+    "file": "33-bybitAppRu-dark.png",
+    "layout": "bybitAppRu",
+    "theme": "dark",
+    "symbol": "DOGEUSDT",
+    "side": "long",
+    "entryPrice": "0.14880",
+    "exitPrice": "0.14586",
+    "quantity": "12186"
+  },
+  {
+    "file": "34-bybitAppRu-light.png",
+    "layout": "bybitAppRu",
+    "theme": "light",
+    "symbol": "SOLUSDT",
+    "side": "long",
+    "entryPrice": "157.822",
+    "exitPrice": "160.157",
+    "quantity": "37.8"
+  },
+  {
+    "file": "35-bybitAppRu-dark.png",
+    "layout": "bybitAppRu",
+    "theme": "dark",
+    "symbol": "DOGEUSDT",
+    "side": "long",
+    "entryPrice": "0.15252",
+    "exitPrice": "0.15350",
+    "quantity": "12368"
+  },
+  {
+    "file": "36-okxAppRu-dark.png",
+    "layout": "okxAppRu",
+    "theme": "dark",
+    "symbol": "SOLUSDT",
+    "side": "short",
+    "entryPrice": "146.803",
+    "exitPrice": "146.538",
+    "quantity": "4.7"
+  },
+  {
+    "file": "37-okxAppRu-light.png",
+    "layout": "okxAppRu",
+    "theme": "light",
+    "symbol": "BTCUSDT",
+    "side": "long",
+    "entryPrice": "63009.0",
+    "exitPrice": "63536.8",
+    "quantity": "0.201"
+  },
+  {
+    "file": "38-okxAppRu-dark.png",
+    "layout": "okxAppRu",
+    "theme": "dark",
+    "symbol": "SOLUSDT",
+    "side": "short",
+    "entryPrice": "158.097",
+    "exitPrice": "158.431",
+    "quantity": "34.5"
+  },
+  {
+    "file": "39-okxAppRu-light.png",
+    "layout": "okxAppRu",
+    "theme": "light",
+    "symbol": "BTCUSDT",
+    "side": "long",
+    "entryPrice": "58782.0",
+    "exitPrice": "58777.8",
+    "quantity": "0.174"
+  },
+  {
+    "file": "40-okxAppRu-dark.png",
+    "layout": "okxAppRu",
+    "theme": "dark",
+    "symbol": "XRPUSDT",
+    "side": "long",
+    "entryPrice": "0.5219",
+    "exitPrice": "0.5259",
+    "quantity": "4694"
   }
 ]

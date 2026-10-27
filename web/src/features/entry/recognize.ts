@@ -1,7 +1,7 @@
 import { parseScreenshotText, type ParsedScreenshot } from '../../core/ocr/parseScreenshot'
 
 // On-device text recognition with Tesseract.js. The image never leaves the browser; the engine
-// and the English model are fetched once and then cached by the browser.
+// and the English and Russian models are fetched once and then cached by the browser.
 
 export type RecognizeProgress = (fraction: number) => void
 
@@ -68,11 +68,12 @@ export async function recognizeScreenshot(file: Blob, onProgress?: RecognizeProg
   // Download failures inside the worker reach `errorHandler`, not the `createWorker` promise.
   let failLoading: (error: unknown) => void = () => undefined
   const loadFailed = new Promise<never>((_, reject) => (failLoading = reject))
-  const creating = createWorker('eng', OEM.LSTM_ONLY, {
+  // Both languages at once: a Russian exchange interface still prints pairs and units in Latin.
+  const creating = createWorker(['eng', 'rus'], OEM.LSTM_ONLY, {
     errorHandler: (error: unknown) => failLoading(error),
     workerPath: assetUrl('worker.min.js'),
     corePath: assetUrl(''),
-    // Without the bundled model, Tesseract.js downloads it from its default CDN.
+    // Without the bundled models, Tesseract.js downloads them from its default CDN.
     langPath: import.meta.env.VITE_OCR_LOCAL_MODEL ? assetUrl('lang') : undefined,
     logger: (message) => {
       if (message.status === 'recognizing text') onProgress?.(message.progress)

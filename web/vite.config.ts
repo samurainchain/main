@@ -7,10 +7,12 @@ import { defineConfig } from 'vitest/config'
 
 const require = createRequire(import.meta.url)
 
+const OCR_LANGUAGES = ['eng', 'rus']
+
 /**
  * Serves the Tesseract.js worker and engine from this site instead of a CDN, under
- * `tesseract/`. The English model too, when `@tesseract.js-data/eng` is installed;
- * otherwise Tesseract.js fetches it from its default CDN.
+ * `tesseract/`. The English and Russian models too, when `@tesseract.js-data/eng` and
+ * `@tesseract.js-data/rus` are installed; otherwise Tesseract.js fetches them from its CDN.
  */
 function tesseractAssets(): Plugin {
   const tesseractDir = dirname(require.resolve('tesseract.js/package.json'))
@@ -22,14 +24,17 @@ function tesseractAssets(): Plugin {
     'tesseract-core-simd-lstm.wasm.js': join(coreDir, 'tesseract-core-simd-lstm.wasm.js'),
     'tesseract-core-relaxedsimd-lstm.wasm.js': join(coreDir, 'tesseract-core-relaxedsimd-lstm.wasm.js'),
   }
-  let model: string | undefined
-  try {
-    model = join(dirname(require.resolve('@tesseract.js-data/eng/package.json')), '4.0.0_best_int/eng.traineddata.gz')
-  } catch {
-    model = undefined
+  // English and Russian models: exchanges are read in either interface language.
+  for (const language of OCR_LANGUAGES) {
+    let model: string | undefined
+    try {
+      model = join(dirname(require.resolve(`@tesseract.js-data/${language}/package.json`)), `4.0.0_best_int/${language}.traineddata.gz`)
+    } catch {
+      model = undefined
+    }
+    if (model && existsSync(model)) files[`lang/${language}.traineddata.gz`] = model
   }
-  if (model && existsSync(model)) files['lang/eng.traineddata.gz'] = model
-  const hasModel = 'lang/eng.traineddata.gz' in files
+  const hasModel = OCR_LANGUAGES.every((language) => `lang/${language}.traineddata.gz` in files)
 
   return {
     name: 'tesseract-assets',

@@ -2,7 +2,8 @@
 //
 // Real exchange screenshots are copyrighted and can't live in this repository, so these
 // pages imitate the layouts and wording of Binance, Bybit, OKX and TradingView history
-// screens (not their branding) with varied pairs, sides, prices and themes.
+// screens (not their branding) with varied pairs, sides, prices and themes, in English and,
+// for the phone screens, in Russian.
 //
 // Usage (needs Playwright with Chromium installed):
 //   node scripts/ocr-fixtures/generate.cjs
@@ -30,6 +31,9 @@ const PAIRS = [
 
 const group = (value, decimals) =>
   Number(value).toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+// Russian format: "61 234,5" with a space between thousands and a decimal comma.
+const groupRu = (value, decimals) =>
+  Number(value).toLocaleString('ru-RU', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
 
 function makeTrade() {
   const pair = pick(PAIRS)
@@ -60,6 +64,8 @@ const THEMES = {
 }
 
 const signed = (value, decimals = 2) => `${value >= 0 ? '+' : '-'}${group(Math.abs(value), decimals)}`
+const signedRu = (value, decimals = 2) => `${value >= 0 ? '+' : '−'}${groupRu(Math.abs(value), decimals)}`
+const sideRu = (side) => (side === 'long' ? 'Лонг' : 'Шорт')
 const tone = (theme, value) => (value >= 0 ? theme.green : theme.red)
 const cap = (word) => word[0].toUpperCase() + word.slice(1)
 
@@ -118,6 +124,38 @@ const LAYOUTS = {
     <tr><th>Symbol</th><th>Side</th><th>Qty</th><th>Avg Fill Price</th><th>Close Price</th><th>Realized P&amp;L</th></tr>
     <tr><td>BINANCE:${t.symbol}</td><td>${cap(t.side)}</td><td>${group(t.qty, t.qtyDecimals)}</td><td>${group(t.entry, t.decimals)}</td><td>${group(t.exit, t.decimals)}</td><td style="color:${tone(th, t.pnl)}">${signed(t.pnl)}</td></tr>
   </table></div>`),
+
+  // The same phone screens with the interface in Russian.
+  binanceAppRu: (t, th) => page(th, 390, `<div class="card">
+    <div class="row"><span class="big">${t.symbol} Бессрочный</span><span class="muted">Закрыто</span></div>
+    <div class="row"><span><span class="tag" style="background:${tone(th, t.side === 'long' ? 1 : -1)}33;color:${tone(th, t.side === 'long' ? 1 : -1)}">${sideRu(t.side)}</span> <span class="muted">Кросс ${t.leverage}x</span></span></div>
+    <div class="muted" style="margin-top:10px">PnL закрытия</div>
+    <div class="big" style="color:${tone(th, t.pnl)}">${signedRu(t.pnl)} USDT</div>
+    <div class="row" style="margin-top:10px"><span class="muted">Цена входа</span><span class="muted">Ср. цена закрытия</span></div>
+    <div class="row"><span>${groupRu(t.entry, t.decimals)}</span><span>${groupRu(t.exit, t.decimals)}</span></div>
+    <div class="row"><span class="muted">Объём закрытия</span><span>${groupRu(t.qty, t.qtyDecimals)} ${t.base}</span></div>
+    <div class="row"><span class="muted">Открыто</span><span>27.10.2026 10:15:02</span></div>
+    <div class="row"><span class="muted">Закрыто</span><span>27.10.2026 12:40:11</span></div>
+  </div>`),
+
+  bybitAppRu: (t, th) => page(th, 390, `<div class="card">
+    <div class="row"><span class="big">${t.symbol}</span><span style="color:${tone(th, t.side === 'long' ? 1 : -1)}">Закрыть ${sideRu(t.side).toLowerCase()}</span></div>
+    <div class="row"><span class="muted">Закрытый P&amp;L</span><span style="color:${tone(th, t.pnl)}">${signedRu(t.pnl, 4)}</span></div>
+    <div class="row"><span class="muted">Кол-во</span><span>${groupRu(t.qty, t.qtyDecimals)}</span></div>
+    <div class="row"><span class="muted">Цена входа</span><span>${groupRu(t.entry, t.decimals)}</span></div>
+    <div class="row"><span class="muted">Цена выхода</span><span>${groupRu(t.exit, t.decimals)}</span></div>
+    <div class="row"><span class="muted">Время сделки</span><span>27.10.2026 12:40:11</span></div>
+  </div>`),
+
+  okxAppRu: (t, th) => page(th, 390, `<div class="card">
+    <div class="big">${t.base}-USDT-SWAP</div>
+    <div class="muted">${sideRu(t.side)} · ${t.leverage}x · Кросс</div>
+    <div class="muted" style="margin-top:12px">Реализованный PnL</div>
+    <div class="big" style="color:${tone(th, t.pnl)}">${signedRu(t.pnl)} USDT</div>
+    <div class="muted" style="margin-top:10px">Средняя цена открытия</div><div>${groupRu(t.entry, t.decimals)}</div>
+    <div class="muted" style="margin-top:10px">Средняя цена закрытия</div><div>${groupRu(t.exit, t.decimals)}</div>
+    <div class="muted" style="margin-top:10px">Закрытая сумма</div><div>${groupRu(t.qty, t.qtyDecimals)} ${t.base}</div>
+  </div>`),
 }
 
 async function main() {

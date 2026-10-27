@@ -24,10 +24,18 @@ describe('normalizeNumber', () => {
     ['-0.100', '0.100'],
     ['6O,OOO.O', '60000.0'],
     ['S7,147.7', '57147.7'],
+    ['0,100', '0.100'],
+    ['014670', '0.14670'],
     ['1,2,3', undefined],
     ['abc', undefined],
   ])('%s → %s', (raw, expected) => {
     expect(normalizeNumber(raw)).toBe(expected)
+  })
+
+  it('reads a comma as the decimal point in a Russian interface', () => {
+    expect(normalizeNumber('1,500')).toBe('1500')
+    expect(normalizeNumber('1,500', true)).toBe('1.500')
+    expect(normalizeNumber('61,234.5', true)).toBe('61234.5')
   })
 })
 
@@ -166,6 +174,82 @@ BINANCE:BTCUSDT | Long | 0.1 | 60,000.0 | 61,234.5 | +123.45`
 BINANCE:BTCUSDT 0.1 60000 61000 12:30 41.5%`)
     expect(parsed.quantity?.value).toBe('0.1')
     expect(parsed.exitPrice?.value).toBe('61000')
+  })
+})
+
+describe('Russian interface', () => {
+  it('reads the Binance app card with Russian labels and number format', () => {
+    const text = `BTCUSDT Бессрочный   Закрыто
+Лонг  Кросс 20x
+PnL закрытия
++123,40 USDT
+Цена входа        Ср. цена закрытия
+60 000,0          61 234,0
+Объём закрытия    0,100 BTC
+Открыто 27.10.2026 10:15:02`
+    expect(values(parseScreenshotText(text))).toEqual({
+      exchange: 'binance',
+      symbol: 'BTCUSDT',
+      side: 'long',
+      entryPrice: '60000.0',
+      exitPrice: '61234.0',
+      quantity: '0.100',
+      leverage: '20',
+      pnl: '123.40',
+    })
+  })
+
+  it('reads the Bybit closed P&L entry and confirms it by the printed PnL', () => {
+    const parsed = parseScreenshotText(`ETHUSDT   Закрыть шорт
+Закрытый P&L   −45,1200
+Кол-во    1,50
+Цена входа   3 100,25
+Цена выхода  3 130,33`)
+    expect(values(parsed)).toMatchObject({ symbol: 'ETHUSDT', side: 'short', entryPrice: '3100.25', exitPrice: '3130.33', quantity: '1.50', pnl: '45.1200' })
+    expect(parsed.entryPrice?.confidence).toBe('high')
+  })
+
+  it('reads labels whose letters OCR took from the Latin alphabet', () => {
+    // "Цeнa вxoдa" with Latin e, a, x, o; "BTCUSDТ" with a Cyrillic Т.
+    const parsed = parseScreenshotText('BTCUSDТ\nЦeнa вxoдa 61 885,4\nЦeнa зaкpытия 62 010,1')
+    expect(values(parsed)).toMatchObject({ symbol: 'BTCUSDT', entryPrice: '61885.4', exitPrice: '62010.1' })
+  })
+
+  it('restores decimal commas that OCR dropped', () => {
+    const parsed = parseScreenshotText('Цена входа    Ср. цена закрытия\n61 3911    60 1871\nКол-во 12 186')
+    expect(values(parsed)).toMatchObject({ entryPrice: '61391.1', exitPrice: '60187.1', quantity: '12186' })
+  })
+
+  it('shifts a price that lost both its space and comma to the other price', () => {
+    const parsed = parseScreenshotText('BTCUSDT Шорт\nPnL закрытия +167,36\nЦена входа    Ср. цена закрытия\n613911    60 1871\nОбъём закрытия 0,139 BTC')
+    expect(values(parsed)).toMatchObject({ entryPrice: '61391.1', exitPrice: '60187.1' })
+    // The printed PnL matches the shifted price, so it is confirmed.
+    expect(parsed.entryPrice?.confidence).toBe('high')
+  })
+
+  it('keeps English thousands when OCR reads "Avg." as Cyrillic', () => {
+    const parsed = parseScreenshotText('DOGE-USDT-SWAP\nАуд. close price\n0.14907\nClosed amount\n9,683 DOGE')
+    expect(values(parsed)).toMatchObject({ exitPrice: '0.14907', quantity: '9683' })
+  })
+
+  it('joins thousands split by a space on Russian lines', () => {
+    expect(parseScreenshotText('Кол-во 1 000 XRP').quantity?.value).toBe('1000')
+  })
+
+  it('does not merge two columns of an English table row', () => {
+    const parsed = parseScreenshotText('Qty    Entry Price\n3    150.25')
+    expect(values(parsed)).toMatchObject({ quantity: '3', entryPrice: '150.25' })
+  })
+
+  it.each([
+    ['Покупка', 'long'],
+    ['Продажа', 'short'],
+  ])('reads %s as %s with low confidence', (word, side) => {
+    expect(parseScreenshotText(`SOLUSDT ${word}`).side).toEqual({ value: side, confidence: 'low' })
+  })
+
+  it('reads leverage written with a Cyrillic х', () => {
+    expect(parseScreenshotText('Кросс 25х').leverage?.value).toBe('25')
   })
 })
 

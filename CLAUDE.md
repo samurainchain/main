@@ -44,7 +44,7 @@ Full product spec: docs/SPEC.md. Read the relevant section before every task.
 - System mistake tags have fixed ids (`system-<key>`) so copies from different devices merge
 - Per-trade math in src/core/pnl.ts, pure and unit-tested (Vitest)
 - Every user-facing string goes through src/i18n/messages (en, ru, es); the ru/es catalogs are type-checked against en
-- Screenshot reader: Tesseract.js runs in the browser (src/features/entry/recognize.ts); text-to-fields parsing is pure and tested (src/core/ocr). Synthetic screenshots live in test-fixtures/ocr (regenerate with scripts/ocr-fixtures/generate.cjs); measure accuracy with scripts/ocr-fixtures/accuracy.cjs against a running preview. Never commit real exchange screenshots
+- Screenshot reader: Tesseract.js runs in the browser with English and Russian models (src/features/entry/recognize.ts); text-to-fields parsing is pure and tested (src/core/ocr). Synthetic screenshots live in test-fixtures/ocr (regenerate with scripts/ocr-fixtures/generate.cjs); measure accuracy with scripts/ocr-fixtures/accuracy.cjs against a running preview. Never commit real exchange screenshots
 - Accessibility: token contrast is unit-tested (WCAG AA); `npm run audit:a11y` checks every screen in a browser against a running preview (names, alt text, ids, headings, 200% text, focus)
 - Before pushing: `npm run typecheck`, `npm test`, `npm run build` in web/
 

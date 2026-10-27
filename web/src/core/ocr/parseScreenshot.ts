@@ -3,7 +3,8 @@ import type { Side } from '../models'
 import { tradePnl } from '../pnl'
 
 // ScreenshotParser (SPEC sections 4.4 and 7): turns the text recognized on an exchange
-// screenshot into trade fields. It reads labels ("Entry Price", "Avg. Close Price", "Qty"…)
+// screenshot into trade fields. It reads labels in English or Russian ("Entry Price",
+// "Цена входа", "Avg. Close Price", "Qty"…)
 // rather than positions, so it copes with layouts it hasn't seen as long as the wording is
 // familiar. Two layouts are understood: "label value" (or label above value) as on phone
 // screens, and a table header followed by a row of values as on desktop terminals.
@@ -36,12 +37,51 @@ type NumericField = 'entryPrice' | 'exitPrice' | 'quantity' | 'pnl'
 const QUOTES = ['USDT', 'USDC', 'BUSD', 'FDUSD', 'USD']
 
 // More specific labels first: "Avg. Close Price" must not be read as an entry "Price".
+// Russian patterns use \p{L} instead of \b, which only knows Latin letters.
 const LABELS: { field: NumericField; pattern: RegExp }[] = [
   { field: 'pnl', pattern: /closing pnl|closed p&l|closed pnl|realized p&l|realized pnl|realised pnl|net profit|\bprofit\b|\bpnl\b/i },
+  {
+    field: 'pnl',
+    pattern: /закрыт(?:ый|ая)\s*(?:p&l|pnl)|(?:p&l|pnl)\s*закрытия|реализованн(?:ый|ая)\s*(?:p&l|pnl|прибыль)|чистая прибыль|(?<!\p{L})прибыль(?!\p{L})/iu,
+  },
   { field: 'exitPrice', pattern: /avg\.?\s*close price|average close price|avg\.?\s*exit price|close price|closing price|exit price/i },
+  { field: 'exitPrice', pattern: /(?:ср(?:едн(?:яя)?)?\.?\s*)?цена\s*(?:закрытия|выхода)/iu },
   { field: 'entryPrice', pattern: /avg\.?\s*entry price|average entry price|entry price|avg\.?\s*open price|open price|opening price|avg\.?\s*fill price/i },
+  { field: 'entryPrice', pattern: /(?:ср(?:едн(?:яя)?)?\.?\s*)?цена\s*(?:входа|открытия|исполнения)/iu },
   { field: 'quantity', pattern: /closed vol\.?|closed amount|closed qty|max open interest|position size|\bqty\b|quantity|\bsize\b|contracts|\bamount\b/i },
+  {
+    field: 'quantity',
+    pattern:
+      /объ[её]м\s*закрытия|закрытый\s*объ[её]м|закрыт(?:ая|ое)\s*(?:сумма|кол-во|количество)|размер\s*позиции|макс\.?\s*открытый\s*интерес|кол-?во|количество|(?<!\p{L})(?:размер|объ[её]м)(?!\p{L})|контракт(?:ы|ов)?(?!\p{L})/iu,
+  },
 ]
+
+// Words of a Russian exchange interface. A stray Cyrillic letter (OCR reading "Avg." as "Ауд.")
+// must not switch an English screenshot to Russian number format.
+const RUSSIAN_INTERFACE = /цена|закры|объ[её]м|кол-?во|количеств|лонг|шорт|кросс|бессрочн|прибыль|сумма|размер|плечо/i
+// Letters that look alike in Latin and Cyrillic. With both models loaded, OCR mixes them up
+// inside a word: "Цeнa" with Latin e and a, or "BTCUSDТ" with a Cyrillic Т.
+const LATIN_LOOKALIKES = 'aceopxyABCEHKMOPTX'
+const CYRILLIC_LOOKALIKES = 'асеорхуАВСЕНКМОРТХ'
+
+/**
+ * Writes each word in one alphabet: the one its unambiguous letters (ц, д, U, S…) belong to,
+ * or, when it has none or both, the one most of its letters are in.
+ */
+function fixMixedScripts(line: string): string {
+  const count = (word: string, letters: RegExp, lookalikes: string) => {
+    const all = word.match(letters) ?? []
+    return { all: all.length, own: all.filter((letter) => !lookalikes.includes(letter)).length }
+  }
+  return line.replace(/\S+/g, (word) => {
+    const cyrillic = count(word, /[а-яё]/gi, CYRILLIC_LOOKALIKES)
+    const latin = count(word, /[a-z]/gi, LATIN_LOOKALIKES)
+    if (cyrillic.all === 0 || latin.all === 0) return word
+    const toCyrillic = cyrillic.own > 0 !== latin.own > 0 ? cyrillic.own > 0 : cyrillic.all >= latin.all
+    const [from, to] = toCyrillic ? [LATIN_LOOKALIKES, CYRILLIC_LOOKALIKES] : [CYRILLIC_LOOKALIKES, LATIN_LOOKALIKES]
+    return [...word].map((letter) => (from.includes(letter) ? to[from.indexOf(letter)]! : letter)).join('')
+  })
+}
 
 /** OCR slips that turn digits into look-alike letters inside numbers ("6O,OOO", "S7,147"). */
 function fixDigits(token: string): string {
@@ -50,11 +90,15 @@ function fixDigits(token: string): string {
 
 /**
  * Normalizes one printed number: "61,234.50" → "61234.50", "61.234,5" → "61234.5",
- * "0,25" → "0.25". The sign is dropped; direction comes from the side.
+ * "0,25" → "0.25". The sign is dropped; direction comes from the side. With `decimalComma`
+ * (a Russian interface) "1,500" is one and a half, not fifteen hundred; "0,100" always is.
  */
-export function normalizeNumber(raw: string): string | undefined {
+export function normalizeNumber(raw: string, decimalComma = false): string | undefined {
   let text = fixDigits(raw.trim()).replace(/^[+\-−–]/, '')
-  if (/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(text)) text = text.replace(/,/g, '')
+  // OCR drops small decimal marks: "0,1467" comes back as "01467". No amount starts with 0.
+  if (/^0\d+$/.test(text)) text = `0.${text.slice(1)}`
+  if (/^\d{1,3},\d{3}$/.test(text) && (decimalComma || text.startsWith('0'))) text = text.replace(',', '.')
+  else if (/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(text)) text = text.replace(/,/g, '')
   else if (/^\d{1,3}(\.\d{3})+,\d+$/.test(text)) text = text.replace(/\./g, '').replace(',', '.')
   else if (/^\d+,\d+$/.test(text)) text = text.replace(',', '.')
   return /^\d+(\.\d+)?$/.test(text) ? text : undefined
@@ -65,26 +109,48 @@ interface PrintedNumber {
   unit: string
 }
 
-/** Numbers on a line with the word right after each ("0.100 BTC", "20x", "41.2%"). */
-function numbersIn(line: string): PrintedNumber[] {
+/**
+ * Joins digit groups split by spaces, as Russian and other locales print thousands:
+ * "62 487,50" → "62487,50" anywhere; "1 000" only in a Russian interface, because in an
+ * English table row two short columns ("3 150") could otherwise merge.
+ */
+function joinDigitGroups(line: string, russian: boolean): string {
+  const join = (match: string) => match.replace(/\s/g, '')
+  const withComma = line.replace(/(?<![\d.,])\d{1,3}(?:\s\d{3})+,\d+/g, join)
+  if (!russian) return withComma
+  // A last group longer than three digits lost its decimal comma: "61 3911" is "61 391,1".
+  const restored = withComma.replace(/(?<![\d.,])\d{1,3}(?:\s\d{3})*\s\d{4,}(?![\d.,])/g, (match) => {
+    const digits = join(match)
+    const last = match.slice(match.lastIndexOf(' ') + 1)
+    return `${digits.slice(0, digits.length - last.length + 3)},${last.slice(3)}`
+  })
+  return restored.replace(/(?<![\d.,])\d{1,3}(?:\s\d{3})+(?!\d)/g, join)
+}
+
+/**
+ * Numbers on a line with the word right after each ("0.100 BTC", "20x", "41.2%").
+ * `russian`: the screenshot has Russian words, so spaces group thousands and commas are decimal.
+ */
+function numbersIn(line: string, russian: boolean): PrintedNumber[] {
   const withoutTimes = line.replace(/\d{4}[-/.]\d{1,2}[-/.]\d{1,2}|\d{1,2}[-/.]\d{1,2}[-/.]\d{4}|\d{1,2}:\d{2}(:\d{2})?/g, ' ')
+  const grouped = joinDigitGroups(withoutTimes, russian)
   const results: PrintedNumber[] = []
   // A leading "S" right before digits is a misread 5, unless it ends a word ("USDT 5").
-  for (const match of withoutTimes.matchAll(/([+\-−–]?(?:(?<![A-Za-z])S(?=\d))?[\dOo][\d,.Oo]*)\s*([A-Za-z%×]*)/g)) {
+  for (const match of grouped.matchAll(/([+\-−–]?(?:(?<![A-Za-z])S(?=\d))?[\dOo][\d,.Oo]*)\s*([A-Za-zА-Яа-яЁё%×]*)/g)) {
     if (!/\d/.test(match[1]!)) continue
-    const value = normalizeNumber(match[1]!.replace(/[.,]$/, ''))
+    const value = normalizeNumber(match[1]!.replace(/[.,]$/, ''), russian)
     if (value !== undefined) results.push({ value, unit: match[2]!.toUpperCase() })
   }
   return results
 }
 
 /** A number usable as a price, size or PnL: not a percentage and not leverage. */
-const isAmount = (item: PrintedNumber) => item.unit !== '%' && item.unit !== 'X' && item.unit !== '×'
+const isAmount = (item: PrintedNumber) => !['%', 'X', '×', 'Х'].includes(item.unit)
 
 function cleanLines(text: string): string[] {
   return text
     .split(/\r?\n/)
-    .map((line) => line.replace(/[|¦]/g, ' ').replace(/\s+/g, ' ').trim())
+    .map((line) => fixMixedScripts(line.replace(/[|¦]/g, ' ').replace(/\s+/g, ' ').trim()))
     .filter(Boolean)
 }
 
@@ -92,7 +158,7 @@ function detectExchange(text: string): Exchange | undefined {
   if (/tradingview|\b[A-Z_]{3,}:[A-Z0-9]+/i.test(text)) return 'tradingview'
   if (/\bbybit\b|closed p&l/i.test(text)) return 'bybit'
   if (/\bokx\b|-SWAP\b|realized pnl/i.test(text)) return 'okx'
-  if (/binance|closing pnl|perpetual/i.test(text)) return 'binance'
+  if (/binance|closing pnl|perpetual|бессрочн/i.test(text)) return 'binance'
   return undefined
 }
 
@@ -122,11 +188,18 @@ function findSide(text: string): Recognized<Side> | undefined {
     const buy = buySell[2]!.toLowerCase() === 'buy'
     return { value: buy !== closing ? 'long' : 'short', confidence: 'low' }
   }
+  // "Покупка", "Закрыть продажу", "Закрытие (продажа)"; "closing" only on the same line.
+  const russian = text.match(/(закры\p{L}*[ \t]*\(?)?(покупк|купить|продаж|продать)/iu)
+  if (russian) {
+    const closing = Boolean(russian[1])
+    const buy = /^(покупк|купить)$/i.test(russian[2]!)
+    return { value: buy !== closing ? 'long' : 'short', confidence: 'low' }
+  }
   return undefined
 }
 
 function findLeverage(text: string): Recognized<string> | undefined {
-  const match = text.match(/\b(\d{1,3})\s?[xX×](?![A-Za-z])/)
+  const match = text.match(/(?<![\d.,])(\d{1,3})\s?[xX×хХ](?![A-Za-zА-Яа-яЁё])/)
   if (!match) return undefined
   const value = Number(match[1])
   return value >= 1 && value <= 125 ? { value: String(value), confidence: 'high' } : undefined
@@ -136,7 +209,7 @@ function findLeverage(text: string): Recognized<string> | undefined {
 function labelsIn(line: string): { field: NumericField; start: number; end: number }[] {
   const found: { field: NumericField; start: number; end: number }[] = []
   for (const { field, pattern } of LABELS) {
-    for (const match of line.matchAll(new RegExp(pattern.source, 'gi'))) {
+    for (const match of line.matchAll(new RegExp(pattern.source, `${pattern.flags}g`))) {
       const start = match.index
       const end = start + match[0].length
       if (found.some((item) => start < item.end && end > item.start)) continue
@@ -150,6 +223,7 @@ export function parseScreenshotText(text: string, ocrConfidence = 100): ParsedSc
   const lines = cleanLines(text)
   const joined = lines.join('\n')
   const base: Confidence = ocrConfidence >= 75 ? 'high' : 'low'
+  const russian = RUSSIAN_INTERFACE.test(joined)
   const result: ParsedScreenshot = {
     exchange: detectExchange(joined),
     symbol: findSymbol(lines),
@@ -171,8 +245,8 @@ export function parseScreenshotText(text: string, ocrConfidence = 100): ParsedSc
 
     // Table header: several labels and no numbers of their own; the next row holds the values
     // in the same order. Used only when the counts match, so stray columns can't shift values.
-    if (labels.length >= 2 && numbersIn(line).filter(isAmount).length === 0 && next && !nextIsLabels) {
-      const values = numbersIn(next).filter(isAmount)
+    if (labels.length >= 2 && numbersIn(line, russian).filter(isAmount).length === 0 && next && !nextIsLabels) {
+      const values = numbersIn(next, russian).filter(isAmount)
       if (values.length === labels.length) labels.forEach((label, column) => assign(label.field, values[column]!, 'low'))
       return
     }
@@ -180,14 +254,33 @@ export function parseScreenshotText(text: string, ocrConfidence = 100): ParsedSc
     // "Label value" pairs on one line, or a single label with its value on the next line.
     labels.forEach((label, position) => {
       const until = labels[position + 1]?.start ?? line.length
-      const own = numbersIn(line.slice(label.end, until)).find(isAmount)
-      const below = labels.length === 1 && !nextIsLabels && next ? numbersIn(next).find(isAmount) : undefined
+      const own = numbersIn(line.slice(label.end, until), russian).find(isAmount)
+      const below = labels.length === 1 && !nextIsLabels && next ? numbersIn(next, russian).find(isAmount) : undefined
       const item = own ?? below
       if (item) assign(label.field, item, base)
     })
   })
 
-  return crossCheck(result)
+  return crossCheck(alignPrices(result))
+}
+
+/**
+ * Entry and exit of one trade are never an order of magnitude apart. When they are and one of
+ * them is a whole number, OCR lost its decimal mark ("613911" for "61 391,1"): shift it to
+ * the other price's magnitude and leave it for the user to check.
+ */
+function alignPrices(result: ParsedScreenshot): ParsedScreenshot {
+  const { entryPrice, exitPrice } = result
+  if (!entryPrice || !exitPrice) return result
+  const ratio = Number(entryPrice.value) / Number(exitPrice.value)
+  if (!Number.isFinite(ratio) || ratio === 0 || (ratio < 5 && ratio > 0.2)) return result
+  const [field, other] = ratio > 1 ? (['entryPrice', exitPrice] as const) : (['exitPrice', entryPrice] as const)
+  const digits = result[field]!.value
+  const shift = Math.round(Math.log10(Number(digits) / Number(other.value)))
+  if (digits.includes('.') || shift < 1 || shift >= digits.length) return result
+  const value = `${digits.slice(0, digits.length - shift)}.${digits.slice(digits.length - shift)}`
+  const close = Number(value) / Number(other.value)
+  return close < 2 && close > 0.5 ? { ...result, [field]: { value, confidence: 'low' } } : result
 }
 
 /**
