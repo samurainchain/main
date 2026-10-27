@@ -36,3 +36,11 @@ Full product spec: docs/SPEC.md. Read the relevant section before every task.
 - After coding: build, run tests, fix all warnings
 - Never delete or rename models without a migration plan
 - Ask me before adding any dependency
+
+## Web app (web/)
+- React + TypeScript + Vite, deployed to GitHub Pages by .github/workflows/web.yml
+- Same product rules as the iOS app: SPEC is the source of truth, money via big.js decimal strings (never floats), design tokens in src/design/tokens.css
+- Data lives in the browser (IndexedDB) behind the JournalBackend interface, so a cloud backend can be added later
+- Per-trade math in src/core/pnl.ts, pure and unit-tested (Vitest)
+- Every user-facing string goes through src/i18n/messages (en, ru, es); the ru/es catalogs are type-checked against en
+- Before pushing: `npm run typecheck`, `npm test`, `npm run build` in web/

@@ -1,0 +1,80 @@
+/* Design tokens from SPEC section 9. Dark is the base; light applies when the system asks
+   for it, unless the user forced a theme in settings (data-theme on <html>). */
+
+:root {
+  --color-background: #0b0b0f;
+  --color-surface: #16161c;
+  --color-surface-elevated: #1f1f27;
+  --color-text-primary: #f5f5f7;
+  --color-text-secondary: #8e8e99;
+  --color-accent: #7c6cff;
+  --color-accent-contrast: #ffffff;
+  --color-profit: #3ddc97;
+  --color-loss: #ff5c6c;
+  --color-warning: #ffb547;
+  --color-separator: #2a2a33;
+  --color-scrim: rgb(0 0 0 / 60%);
+  --color-on-profit: #0b0b0f;
+  --color-on-loss: #ffffff;
+  --shadow-card: none;
+
+  --space-xxs: 4px;
+  --space-xs: 8px;
+  --space-s: 12px;
+  --space-m: 16px;
+  --space-l: 24px;
+  --space-xl: 32px;
+  --space-screen: var(--space-m);
+
+  --radius-card: 20px;
+  --radius-button: 14px;
+  --radius-field: 12px;
+
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-rounded: ui-rounded, 'SF Pro Rounded', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --text-caption: 0.8125rem;
+  --text-body: 1rem;
+  --text-headline: 1.0625rem;
+  --text-title: 1.375rem;
+  --text-large-title: 2.125rem;
+  --text-hero: clamp(2.75rem, 9vw, 3.5rem);
+
+  --tabbar-height: 64px;
+  --sidebar-width: 232px;
+
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    --color-background: #f6f6f8;
+    --color-surface: #ffffff;
+    --color-surface-elevated: #f0f0f4;
+    --color-text-primary: #0b0b0f;
+    --color-text-secondary: #6b6b76;
+    --color-accent: #5b4be8;
+    --color-profit: #12a66b;
+    --color-loss: #d93448;
+    --color-warning: #c98400;
+    --color-separator: #e3e3e8;
+    --color-scrim: rgb(0 0 0 / 35%);
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 4%), 0 4px 16px rgb(0 0 0 / 4%);
+    color-scheme: light;
+  }
+}
+
+:root[data-theme='light'] {
+  --color-background: #f6f6f8;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #f0f0f4;
+  --color-text-primary: #0b0b0f;
+  --color-text-secondary: #6b6b76;
+  --color-accent: #5b4be8;
+  --color-profit: #12a66b;
+  --color-loss: #d93448;
+  --color-warning: #c98400;
+  --color-separator: #e3e3e8;
+  --color-scrim: rgb(0 0 0 / 35%);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 4%), 0 4px 16px rgb(0 0 0 / 4%);
+  color-scheme: light;
+}
