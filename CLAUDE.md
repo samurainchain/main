@@ -40,8 +40,13 @@ Full product spec: docs/SPEC.md. Read the relevant section before every task.
 ## Web app (web/)
 - React + TypeScript + Vite, deployed to GitHub Pages by .github/workflows/web.yml
 - Same product rules as the iOS app: SPEC is the source of truth, money via big.js decimal strings (never floats), design tokens in src/design/tokens.css
-- Data lives in the browser (IndexedDB) behind the JournalBackend interface, so a cloud backend can be added later
+- Data lives in the browser (IndexedDB) behind the JournalBackend interface; SyncingBackend records every write and CloudSync syncs with Supabase (last-write-wins per record, tombstones for deletes). Schema: web/supabase/schema.sql; project URL and anon key in src/app/cloudConfig.ts (never the service_role key)
+- System mistake tags have fixed ids (`system-<key>`) so copies from different devices merge
 - Per-trade math in src/core/pnl.ts, pure and unit-tested (Vitest)
 - Every user-facing string goes through src/i18n/messages (en, ru, es); the ru/es catalogs are type-checked against en
 - Screenshot reader: Tesseract.js runs in the browser (src/features/entry/recognize.ts); text-to-fields parsing is pure and tested (src/core/ocr). Synthetic screenshots live in test-fixtures/ocr (regenerate with scripts/ocr-fixtures/generate.cjs); measure accuracy with scripts/ocr-fixtures/accuracy.cjs against a running preview. Never commit real exchange screenshots
 - Before pushing: `npm run typecheck`, `npm test`, `npm run build` in web/
+
+## Design direction (final redesign, after features)
+- The owner likes the Supabase dashboard look: near-black background, thin 1px borders instead of shadows, green accent, small uppercase monospace labels (e.g. "WARNINGS", "RECENT BRANCH"), dense dashboard cards with small bar charts
+- Apply it to the web app (and the iOS DesignSystem) in one pass once the feature stages are done; until then keep UI changes functional

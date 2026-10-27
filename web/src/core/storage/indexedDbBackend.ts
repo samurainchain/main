@@ -1,6 +1,11 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
 import { PROFILE_ID, type Account, type JournalData, type JournalProfile, type MistakeTag, type Rule, type SetupTag, type Trade, type WeeklyReview } from '../models'
+import { changeKey, type Change, type SyncMeta, type SyncStateStore } from '../sync/types'
 import { COLLECTIONS, normalizeJournal, type Collection, type JournalBackend, type RecordOf } from './backend'
+
+interface StoredChange extends Change {
+  key: string
+}
 
 interface MirrorDB extends DBSchema {
   accounts: { key: string; value: Account }
@@ -10,13 +15,17 @@ interface MirrorDB extends DBSchema {
   rules: { key: string; value: Rule }
   reviews: { key: string; value: WeeklyReview }
   profile: { key: string; value: JournalProfile }
+  syncVersions: { key: string; value: { key: string; updatedAt: string } }
+  syncOutbox: { key: string; value: StoredChange }
+  syncMeta: { key: string; value: SyncMeta & { id: 'meta' } }
 }
 
 type StoreName = Collection | 'profile'
 const STORES: readonly StoreName[] = [...COLLECTIONS, 'profile']
+const SYNC_STORES = ['syncVersions', 'syncOutbox', 'syncMeta'] as const
 
-/** Schema version. 1: accounts, trades, mistakes, setups. 2: rules, reviews, profile. */
-const VERSION = 2
+/** Schema version. 1: accounts, trades, mistakes, setups. 2: rules, reviews, profile. 3: sync state. */
+const VERSION = 3
 
 export class IndexedDbBackend implements JournalBackend {
   private readonly db: Promise<IDBPDatabase<MirrorDB>>
@@ -27,6 +36,9 @@ export class IndexedDbBackend implements JournalBackend {
         for (const store of STORES) {
           if (!db.objectStoreNames.contains(store)) db.createObjectStore(store, { keyPath: 'id' })
         }
+        if (!db.objectStoreNames.contains('syncVersions')) db.createObjectStore('syncVersions', { keyPath: 'key' })
+        if (!db.objectStoreNames.contains('syncOutbox')) db.createObjectStore('syncOutbox', { keyPath: 'key' })
+        if (!db.objectStoreNames.contains('syncMeta')) db.createObjectStore('syncMeta', { keyPath: 'id' })
       },
     })
   }
@@ -71,5 +83,47 @@ export class IndexedDbBackend implements JournalBackend {
     })
     const profile = tx.objectStore('profile')
     await Promise.all([...writes, profile.clear(), profile.put(data.profile), tx.done])
+  }
+
+  /** Sync bookkeeping, kept in the same database as the journal. */
+  syncState(): SyncStateStore {
+    const db = this.db
+    return {
+      async versions() {
+        const rows = await (await db).getAll('syncVersions')
+        return new Map(rows.map((row) => [row.key, row.updatedAt]))
+      },
+      async setVersions(changes) {
+        const tx = (await db).transaction('syncVersions', 'readwrite')
+        await Promise.all([...changes.map((change) => tx.store.put({ key: changeKey(change.collection, change.id), updatedAt: change.updatedAt })), tx.done])
+      },
+      async outbox() {
+        return (await (await db).getAll('syncOutbox')).map(({ key: _key, ...change }) => change)
+      },
+      async enqueue(changes) {
+        const tx = (await db).transaction('syncOutbox', 'readwrite')
+        await Promise.all([...changes.map((change) => tx.store.put({ ...change, key: changeKey(change.collection, change.id) })), tx.done])
+      },
+      async dequeue(changes) {
+        const tx = (await db).transaction('syncOutbox', 'readwrite')
+        for (const change of changes) {
+          const key = changeKey(change.collection, change.id)
+          const current = await tx.store.get(key)
+          if (current && current.updatedAt === change.updatedAt) await tx.store.delete(key)
+        }
+        await tx.done
+      },
+      async getMeta() {
+        const { id: _id, ...meta } = (await (await db).get('syncMeta', 'meta')) ?? { id: 'meta' as const }
+        return meta
+      },
+      async setMeta(meta) {
+        await (await db).put('syncMeta', { ...meta, id: 'meta' })
+      },
+      async clear() {
+        const tx = (await db).transaction(SYNC_STORES, 'readwrite')
+        await Promise.all([...SYNC_STORES.map((store) => tx.objectStore(store).clear()), tx.done])
+      },
+    }
   }
 }

@@ -5,6 +5,8 @@ import { routeHref } from '../../app/router'
 import { updateSettings, useSettings, type LanguageSetting, type ThemeSetting, type WeekStartSetting } from '../../app/settings'
 import { Button, Card, Field, SectionHeader } from '../../design/components'
 import { useI18n } from '../../i18n/i18n'
+import { useCloud } from '../../app/cloud'
+import { CloudSection } from '../cloud/CloudSection'
 import { PageHeader } from '../shell/PageHeader'
 import { downloadBackup, parseBackup, serializeBackup } from './backup'
 
@@ -14,6 +16,7 @@ export function ProfilePage() {
   const store = useStore()
   const { accounts, trades, rules } = useJournal()
   const settings = useSettings()
+  const { state: cloudState } = useCloud()
   const fileInput = useRef<HTMLInputElement>(null)
   const [message, setMessage] = useState<string>()
   const ids = { language: useId(), theme: useId(), weekStart: useId() }
@@ -91,9 +94,16 @@ export function ProfilePage() {
         </Field>
       </Card>
 
+      {cloudState.status !== 'unavailable' && (
+        <>
+          <SectionHeader title={t('cloud.section')} />
+          <CloudSection />
+        </>
+      )}
+
       <SectionHeader title={t('profile.dataSection')} />
       <Card className="form-stack">
-        <p className="secondary-text">{t('profile.storageNote')}</p>
+        <p className="secondary-text">{t(cloudState.email ? 'profile.storageNoteSynced' : 'profile.storageNote')}</p>
         <div className="action-row action-row--wrap">
           <Button icon={<Download size={18} aria-hidden="true" />} disabled={trades.length === 0 && accounts.length === 0} onClick={() => downloadBackup(serializeBackup(store.exportData()))}>
             {t('profile.export')}

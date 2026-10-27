@@ -3,7 +3,8 @@ import { openDB } from 'idb'
 import { describe, expect, it } from 'vitest'
 import { newId, SYSTEM_MISTAKES, type Account, type Trade } from '../models'
 import { IndexedDbBackend } from './indexedDbBackend'
-import { JournalStore } from './journalStore'
+import { canonicalSystemMistakes, JournalStore, systemMistakeId } from './journalStore'
+import { emptyJournal } from './backend'
 
 function account(overrides: Partial<Account> = {}): Account {
   return {
@@ -181,5 +182,31 @@ describe('JournalStore', () => {
     expect(reopened.accounts.map((a) => a.name)).toEqual(['Binance — futures'])
     expect(reopened.profile.onboarding).toMatchObject({ goal: 'consistency', tradesPerWeek: '6-20' })
     expect(reopened.mistakes.slice(0, 3).map((tag) => tag.systemKey)).toEqual(['overtrading', 'earlyExit', 'fomo'])
+  })
+
+  it('moves system mistakes to fixed ids and merges copies from two devices', () => {
+    const tag = (id: string, name = '') => ({ id, name, colorHex: '#000000', isSystem: true, systemKey: 'fomo' as const, sortOrder: 0, isArchived: false })
+    const acc = account()
+    const data = {
+      ...emptyJournal(),
+      accounts: [acc],
+      mistakes: [tag('random-a'), tag('random-b', 'Chasing')],
+      trades: [{ ...trade(acc.id), mistakeIds: ['random-a', 'random-b'] }, trade(acc.id)],
+    }
+
+    const { data: result, writes } = canonicalSystemMistakes(data)
+
+    const fomo = result.mistakes.filter((item) => item.systemKey === 'fomo')
+    expect(fomo).toEqual([expect.objectContaining({ id: systemMistakeId('fomo'), name: 'Chasing' })])
+    expect(result.mistakes.filter((item) => item.isSystem)).toHaveLength(8)
+    expect(result.trades[0]?.mistakeIds).toEqual([systemMistakeId('fomo')])
+    expect(writes.trades).toHaveLength(1)
+    expect(writes.removedMistakeIds.sort()).toEqual(['random-a', 'random-b'])
+  })
+
+  it('leaves canonical data untouched', () => {
+    const once = canonicalSystemMistakes(emptyJournal()).data
+    const { writes } = canonicalSystemMistakes(once)
+    expect(writes).toEqual({ seeded: [], mistakes: [], trades: [], removedMistakeIds: [] })
   })
 })

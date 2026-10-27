@@ -1,5 +1,6 @@
 import { Bell, ChevronLeft } from 'lucide-react'
 import { useRef, useState, type ChangeEvent, type ReactNode } from 'react'
+import { useCloud } from '../../app/cloud'
 import { useJournal, useStore } from '../../app/journal'
 import { requestNotificationPermission } from '../../app/limitAlerts'
 import { navigate } from '../../app/router'
@@ -16,6 +17,7 @@ import {
 } from '../../core/onboarding'
 import { Button, Segmented } from '../../design/components'
 import { useI18n, type Translator } from '../../i18n/i18n'
+import { SignInForm } from '../cloud/CloudSection'
 import { parseBackup } from '../profile/backup'
 
 /** True for a fresh journal: no onboarding yet and nothing logged. */
@@ -49,6 +51,8 @@ export function OnboardingFlow() {
   const [finishing, setFinishing] = useState(false)
   const [importError, setImportError] = useState<string>()
   const backupInput = useRef<HTMLInputElement>(null)
+  const { state: cloudState } = useCloud()
+  const [signingIn, setSigningIn] = useState(false)
 
   const index = STEPS.indexOf(step)
   const go = (offset: number) => setStep(STEPS[Math.min(STEPS.length - 1, Math.max(0, index + offset))]!)
@@ -199,6 +203,19 @@ export function OnboardingFlow() {
             <Button variant="primary" block onClick={() => go(1)}>
               {t('onboarding.start')}
             </Button>
+            {signingIn ? (
+              <div className="onboarding__sign-in">
+                <SignInForm compact />
+              </div>
+            ) : cloudState.status === 'signedOut' ? (
+              <Button variant="plain" onClick={() => setSigningIn(true)}>
+                {t('onboarding.signIn')}
+              </Button>
+            ) : cloudState.email ? (
+              <p className="caption" role="status">
+                {t(cloudState.status === 'synced' ? 'onboarding.cloudEmpty' : 'onboarding.syncing', { email: cloudState.email })}
+              </p>
+            ) : null}
             <div className="onboarding__links">
               <Button variant="plain" onClick={() => backupInput.current?.click()}>
                 {t('onboarding.restore')}

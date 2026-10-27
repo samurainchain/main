@@ -8,6 +8,7 @@ import {
   type MistakeTag,
   type Rule,
   type SetupTag,
+  type SystemMistakeKey,
   type Trade,
   type WeeklyReview,
 } from '../models'
@@ -50,12 +51,12 @@ export class JournalStore {
 
   async load(): Promise<void> {
     try {
-      const data = await this.backend.load()
-      const missing = missingSystemMistakes(data.mistakes)
-      if (missing.length > 0) {
-        await this.backend.put('mistakes', missing)
-        data.mistakes = [...data.mistakes, ...missing]
-      }
+      const loaded = await this.backend.load()
+      const { data, writes } = canonicalSystemMistakes(loaded)
+      if (writes.seeded.length > 0) await this.backend.put('mistakes', writes.seeded, { asDefault: true })
+      if (writes.mistakes.length > 0) await this.backend.put('mistakes', writes.mistakes)
+      if (writes.trades.length > 0) await this.backend.put('trades', writes.trades)
+      if (writes.removedMistakeIds.length > 0) await this.backend.delete('mistakes', writes.removedMistakeIds)
       this.set({ ...sorted(data), status: 'ready' })
     } catch (error) {
       console.error('Could not load the journal', error)
@@ -114,6 +115,12 @@ export class JournalStore {
   }
 
   // Tags
+
+  /** Saves an edited mistake tag: a rename, color or archiving. */
+  async saveMistake(tag: MistakeTag): Promise<void> {
+    this.set(withRecord(this.snapshot, 'mistakes', tag))
+    await this.backend.put('mistakes', [tag])
+  }
 
   async addMistake(name: string): Promise<MistakeTag> {
     const tag: MistakeTag = {
@@ -216,7 +223,7 @@ export class JournalStore {
 
   async importData(imported: JournalData): Promise<void> {
     const data = normalizeJournal(imported)
-    const complete = { ...data, mistakes: [...data.mistakes, ...missingSystemMistakes(data.mistakes)] }
+    const { data: complete } = canonicalSystemMistakes(data)
     await this.backend.replaceAll(complete)
     this.set({ ...sorted(complete), status: 'ready' })
   }
@@ -232,13 +239,55 @@ export class JournalStore {
   }
 }
 
-function missingSystemMistakes(existing: MistakeTag[]): MistakeTag[] {
-  const keys = new Set(existing.map((tag) => tag.systemKey))
-  return SYSTEM_MISTAKES.flatMap((key, index) =>
-    keys.has(key)
-      ? []
-      : [{ id: newId(), name: '', colorHex: SYSTEM_MISTAKE_COLORS[key], isSystem: true, systemKey: key, sortOrder: index, isArchived: false }],
-  )
+/** System mistake tags have the same id on every device, so synced copies merge. */
+export function systemMistakeId(key: SystemMistakeKey): string {
+  return `system-${key}`
+}
+
+/**
+ * Gives every system mistake its fixed id and exactly one tag per key: seeds missing ones,
+ * renames tags created with random ids by older versions, and merges duplicates (two devices
+ * that seeded before syncing), moving trades onto the surviving tag. A user's rename, color or
+ * archiving is kept.
+ */
+export function canonicalSystemMistakes(data: JournalData): {
+  data: JournalData
+  /** `seeded`: new default tags; `mistakes`: existing tags moved to their fixed id. */
+  writes: { seeded: MistakeTag[]; mistakes: MistakeTag[]; trades: Trade[]; removedMistakeIds: string[] }
+} {
+  const remap = new Map<string, string>()
+  const removed: string[] = []
+  const written: MistakeTag[] = []
+  const seeded: MistakeTag[] = []
+  const others = data.mistakes.filter((tag) => !tag.isSystem || !tag.systemKey)
+  const system: MistakeTag[] = SYSTEM_MISTAKES.map((key, index) => {
+    const id = systemMistakeId(key)
+    const copies = data.mistakes.filter((tag) => tag.isSystem && tag.systemKey === key)
+    // Prefer the canonical copy, then one the user customized.
+    const keep = copies.find((tag) => tag.id === id) ?? copies.find((tag) => tag.name) ?? copies[0]
+    for (const copy of copies) {
+      if (copy.id === id) continue
+      remap.set(copy.id, id)
+      removed.push(copy.id)
+    }
+    const tag: MistakeTag = keep
+      ? { ...keep, id }
+      : { id, name: '', colorHex: SYSTEM_MISTAKE_COLORS[key], isSystem: true, systemKey: key, sortOrder: index, isArchived: false }
+    if (!keep) seeded.push(tag)
+    else if (keep.id !== id) written.push(tag)
+    return tag
+  })
+
+  const trades = data.trades.map((trade) => {
+    if (!trade.mistakeIds.some((id) => remap.has(id))) return trade
+    return { ...trade, mistakeIds: [...new Set(trade.mistakeIds.map((id) => remap.get(id) ?? id))] }
+  })
+  const changedTrades = trades.filter((trade, index) => trade !== data.trades[index])
+
+  return {
+    data: { ...data, mistakes: [...system, ...others], trades },
+    writes: { seeded, mistakes: written, trades: changedTrades, removedMistakeIds: removed },
+  }
 }
 
 function withRecord<C extends Collection>(

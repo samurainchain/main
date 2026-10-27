@@ -11,7 +11,8 @@ export const COLLECTIONS: readonly Collection[] = ['accounts', 'trades', 'mistak
  */
 export interface JournalBackend {
   load(): Promise<JournalData>
-  put<C extends Collection>(collection: C, records: RecordOf<C>[]): Promise<void>
+  /** `asDefault`: records the app created on its own (seeded tags), which any real edit beats when syncing. */
+  put<C extends Collection>(collection: C, records: RecordOf<C>[], options?: { asDefault?: boolean }): Promise<void>
   delete(collection: Collection, ids: string[]): Promise<void>
   saveProfile(profile: JournalData['profile']): Promise<void>
   /** Replaces everything, e.g. when importing a backup. */

@@ -1,9 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { CloudController, CloudProvider } from './app/cloud'
 import { JournalProvider } from './app/journal'
 import { SheetProvider } from './app/sheets'
 import { IndexedDbBackend } from './core/storage/indexedDbBackend'
 import { JournalStore } from './core/storage/journalStore'
+import { SyncingBackend } from './core/sync/cloudSync'
 import './design/tokens.css'
 import './design/base.css'
 import './design/components.css'
@@ -13,17 +15,22 @@ import './features/onboarding/onboarding.css'
 import { AppShell } from './features/shell/AppShell'
 import { I18nProvider } from './i18n/i18n'
 
-const store = new JournalStore(new IndexedDbBackend())
-void store.load()
+const local = new IndexedDbBackend()
+const backend = new SyncingBackend(local, local.syncState())
+const store = new JournalStore(backend)
+const cloud = new CloudController(backend, store)
+void store.load().then(() => cloud.start())
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <JournalProvider store={store}>
-      <I18nProvider>
-        <SheetProvider>
-          <AppShell />
-        </SheetProvider>
-      </I18nProvider>
+      <CloudProvider value={cloud}>
+        <I18nProvider>
+          <SheetProvider>
+            <AppShell />
+          </SheetProvider>
+        </I18nProvider>
+      </CloudProvider>
     </JournalProvider>
   </StrictMode>,
 )
