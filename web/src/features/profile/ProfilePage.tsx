@@ -8,6 +8,7 @@ import { Button, Card, Field, SectionHeader } from '../../design/components'
 import { useI18n } from '../../i18n/i18n'
 import { useCloud } from '../../app/cloud'
 import { useInstall } from '../../app/install'
+import { PRO_ON_SALE } from '../../app/billing'
 import { ProSection } from '../billing/ProSection'
 import { CloudSection } from '../cloud/CloudSection'
 import { FeedbackSection } from '../feedback/FeedbackSection'
@@ -134,7 +135,7 @@ export function ProfilePage() {
         </>
       )}
 
-      <ProSection />
+      {PRO_ON_SALE && <ProSection />}
 
       <FeedbackSection className="profile-feedback" />
 

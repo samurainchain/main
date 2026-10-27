@@ -6,6 +6,13 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL } from './cloudConfig'
 // webhook writes and the signed-in user can read. Nothing here limits features yet: the web app
 // is free for now.
 
+/**
+ * Whether Profile shows Tiltless Pro (plans, checkout, the subscription). Off while the web app
+ * is free; the checkout, portal and webhook were tested end to end in Stripe test mode. Turn on
+ * together with Stripe live keys and the Terms, Privacy and Refund pages.
+ */
+export const PRO_ON_SALE = false
+
 export type Plan = 'monthly' | 'annual'
 
 export interface PlanPrice {
