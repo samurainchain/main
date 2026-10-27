@@ -32,6 +32,7 @@ const SYSTEM_MISTAKE_COLORS: Record<(typeof SYSTEM_MISTAKES)[number], string> = 
   overtrading: '#7C6CFF',
   earlyExit: '#7C6CFF',
   offPlan: '#7C6CFF',
+  badHour: '#7C6CFF',
 }
 
 /**
@@ -108,6 +109,13 @@ export class JournalStore {
     const saved = { ...trade, updatedAt: new Date().toISOString() }
     this.set(withRecord(this.snapshot, 'trades', saved))
     await this.backend.put('trades', [saved])
+  }
+
+  /** Removes an automatic mistake flag from a trade for good: the trader said it was wrong. */
+  async dismissFlag(tradeId: string, key: SystemMistakeKey): Promise<void> {
+    const trade = this.snapshot.trades.find((item) => item.id === tradeId)
+    if (!trade || trade.dismissedFlags?.includes(key)) return
+    await this.saveTrade({ ...trade, dismissedFlags: [...(trade.dismissedFlags ?? []), key], updatedAt: new Date().toISOString() })
   }
 
   async deleteTrade(id: string): Promise<void> {

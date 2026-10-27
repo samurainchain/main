@@ -11,6 +11,7 @@ enum SystemMistake: String, CaseIterable, Sendable {
     case earlyExit
     case noStop
     case offPlan
+    case badHour
 
     var name: String {
         switch self {
@@ -22,6 +23,7 @@ enum SystemMistake: String, CaseIterable, Sendable {
         case .earlyExit: String(localized: "Early exit")
         case .noStop: String(localized: "No stop")
         case .offPlan: String(localized: "Against the plan")
+        case .badHour: String(localized: "Bad hour")
         }
     }
 
@@ -35,6 +37,7 @@ enum SystemMistake: String, CaseIterable, Sendable {
         case .earlyExit: "door.left.hand.open"
         case .noStop: "shield.slash"
         case .offPlan: "map"
+        case .badHour: "clock.badge.exclamationmark"
         }
     }
 
@@ -42,7 +45,7 @@ enum SystemMistake: String, CaseIterable, Sendable {
         switch self {
         case .fomo, .revengeTrading, .highLeverage: "#FF5C6C"
         case .heldPastStop, .noStop: "#FFB547"
-        case .overtrading, .earlyExit, .offPlan: "#7C6CFF"
+        case .overtrading, .earlyExit, .offPlan, .badHour: "#7C6CFF"
         }
     }
 }

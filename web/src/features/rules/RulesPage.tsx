@@ -4,6 +4,7 @@ import { useJournal, useStore } from '../../app/journal'
 import { notificationPermission, requestNotificationPermission } from '../../app/limitAlerts'
 import { routeHref } from '../../app/router'
 import { parsePositive } from '../../core/decimal'
+import { DEFAULT_REVENGE_MINUTES } from '../../core/mistakeDetector'
 import type { Rule } from '../../core/models'
 import { Button, Card, Field, SectionHeader } from '../../design/components'
 import { weekdayNames } from '../../i18n/format'
@@ -15,10 +16,11 @@ export function RulesPage() {
   const { t, locale } = useI18n()
   const store = useStore()
   const { profile, rules } = useJournal()
-  const ids = { loss: useId(), trades: useId(), weekday: useId(), newRule: useId() }
+  const ids = { loss: useId(), trades: useId(), weekday: useId(), newRule: useId(), revenge: useId() }
   const [lossLimit, setLossLimit] = useState(profile.dailyLossLimit ?? '')
   const [tradeLimit, setTradeLimit] = useState(profile.dailyTradeLimit ? String(profile.dailyTradeLimit) : '')
-  const [errors, setErrors] = useState<{ loss?: string; trades?: string }>({})
+  const [revengeMinutes, setRevengeMinutes] = useState(String(profile.revengeMinutes ?? DEFAULT_REVENGE_MINUTES))
+  const [errors, setErrors] = useState<{ loss?: string; trades?: string; revenge?: string }>({})
   const [permission, setPermission] = useState(notificationPermission())
   const [newRule, setNewRule] = useState('')
 
@@ -36,6 +38,13 @@ export function RulesPage() {
     if (!Number.isInteger(value) || value < 1) return setErrors((e) => ({ ...e, trades: t('limits.error.trades') }))
     setErrors((e) => ({ ...e, trades: undefined }))
     void store.updateProfile({ dailyTradeLimit: value })
+  }
+
+  const saveRevengeMinutes = () => {
+    const value = Number(revengeMinutes)
+    if (!Number.isInteger(value) || value < 1 || value > 240) return setErrors((e) => ({ ...e, revenge: t('limits.error.revengeMinutes') }))
+    setErrors((e) => ({ ...e, revenge: undefined }))
+    void store.updateProfile({ revengeMinutes: value })
   }
 
   const toggleAlerts = async (enabled: boolean) => {
@@ -94,6 +103,29 @@ export function RulesPage() {
         </label>
         {profile.limitAlerts && permission === 'default' && (
           <Button onClick={async () => setPermission(await requestNotificationPermission())}>{t('limits.allowNotifications')}</Button>
+        )}
+      </Card>
+
+      <SectionHeader title={t('limits.autoSection')} />
+      <Card className="form-stack">
+        <label className="toggle-row">
+          <input type="checkbox" checked={profile.autoMistakes !== false} onChange={(event) => void store.updateProfile({ autoMistakes: event.target.checked })} />
+          <span>
+            {t('limits.autoToggle')}
+            <span className="caption toggle-row__hint">{t('limits.autoHint')}</span>
+          </span>
+        </label>
+        {profile.autoMistakes !== false && (
+          <Field label={t('limits.revengeMinutes')} htmlFor={ids.revenge} error={errors.revenge} hint={t('limits.revengeHint')}>
+            <input
+              id={ids.revenge}
+              className="input numeric"
+              inputMode="numeric"
+              value={revengeMinutes}
+              onChange={(event) => setRevengeMinutes(event.target.value)}
+              onBlur={saveRevengeMinutes}
+            />
+          </Field>
         )}
       </Card>
 

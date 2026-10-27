@@ -49,6 +49,22 @@
         }
       }
     },
+    "Bad hour": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Плохой час"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mala hora"
+          }
+        }
+      }
+    },
     "Boredom": {
       "localizations": {
         "ru": {

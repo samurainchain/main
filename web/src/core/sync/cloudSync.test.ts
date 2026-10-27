@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto'
 import { describe, expect, it } from 'vitest'
-import { newId, type Account, type Trade } from '../models'
+import { newId, SYSTEM_MISTAKES, type Account, type Trade } from '../models'
 import { IndexedDbBackend } from '../storage/indexedDbBackend'
 import { JournalStore } from '../storage/journalStore'
 import { CloudSync, SyncingBackend } from './cloudSync'
@@ -73,7 +73,7 @@ describe('cloud sync', () => {
     expect(data.trades).toHaveLength(1)
     expect(data.rules.map((rule) => rule.text)).toEqual(['Never move the stop'])
     // Both devices seeded system mistakes; fixed ids keep exactly one of each.
-    expect(data.mistakes.filter((tag) => tag.isSystem)).toHaveLength(8)
+    expect(data.mistakes.filter((tag) => tag.isSystem)).toHaveLength(SYSTEM_MISTAKES.length)
   })
 
   it('keeps a renamed system mistake when a fresh device joins', async () => {

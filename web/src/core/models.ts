@@ -65,6 +65,8 @@ export interface Trade {
   setupIds: string[]
   /** Personal rules the trader marked as broken on this trade. */
   brokenRuleIds: string[]
+  /** Automatic mistake flags the trader said were wrong (SPEC section 13). */
+  dismissedFlags?: SystemMistakeKey[]
   note: string
   source: TradeSource
   createdAt: Timestamp
@@ -100,6 +102,7 @@ export const SYSTEM_MISTAKES = [
   'earlyExit',
   'noStop',
   'offPlan',
+  'badHour',
 ] as const
 export type SystemMistakeKey = (typeof SYSTEM_MISTAKES)[number]
 
@@ -152,6 +155,10 @@ export interface JournalProfile {
   reviewWeekday: number
   /** Show dollar amounts on the shared review card instead of only R and %. */
   shareAmounts: boolean
+  /** Flag mistakes automatically (SPEC section 13); on unless turned off. */
+  autoMistakes?: boolean
+  /** Minutes after a losing trade within which a new trade counts as revenge; 15 when missing. */
+  revengeMinutes?: number
   /** Onboarding answers, once onboarding is finished or skipped (SPEC section 4.1). */
   onboarding?: OnboardingAnswers & { completedAt: Timestamp; skipped?: boolean }
 }

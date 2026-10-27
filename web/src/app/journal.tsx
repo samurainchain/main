@@ -1,5 +1,6 @@
-import { createContext, useContext, useSyncExternalStore, type ReactNode } from 'react'
-import type { Account, MistakeTag } from '../core/models'
+import { createContext, useContext, useMemo, useSyncExternalStore, type ReactNode } from 'react'
+import { DEFAULT_REVENGE_MINUTES, detectMistakes, effectiveMistakeIds, type AutoFlag } from '../core/mistakeDetector'
+import type { Account, MistakeTag, Trade } from '../core/models'
 import type { JournalSnapshot, JournalStore } from '../core/storage/journalStore'
 import { useI18n } from '../i18n/i18n'
 import type { MessageKey } from '../i18n/messages/en'
@@ -20,6 +21,38 @@ export function useStore(): JournalStore {
 export function useJournal(): JournalSnapshot {
   const store = useStore()
   return useSyncExternalStore(store.subscribe, store.getSnapshot)
+}
+
+/**
+ * Automatic mistake flags for every trade (SPEC section 13), keyed by trade id. Empty when the
+ * trader turned them off; a flag whose system tag is archived is left out.
+ */
+export function useAutoFlags(): ReadonlyMap<string, AutoFlag[]> {
+  const { trades, profile, mistakes } = useJournal()
+  return useMemo(() => {
+    if (profile.autoMistakes === false) return new Map<string, AutoFlag[]>()
+    const archived = new Set(mistakes.filter((tag) => tag.isArchived && tag.systemKey).map((tag) => tag.systemKey))
+    const flags = detectMistakes(trades, {
+      revengeMinutes: profile.revengeMinutes ?? DEFAULT_REVENGE_MINUTES,
+      dailyTradeLimit: profile.dailyTradeLimit,
+    })
+    if (archived.size === 0) return flags
+    return new Map([...flags].map(([id, list]) => [id, list.filter((flag) => !archived.has(flag.key))]))
+  }, [trades, profile, mistakes])
+}
+
+/** Every trade with its active automatic flags merged into `mistakeIds`, for lists and stats. */
+export function useFlaggedTrades(): Trade[] {
+  const { trades } = useJournal()
+  const flags = useAutoFlags()
+  return useMemo(
+    () =>
+      trades.map((trade) => {
+        const mistakeIds = effectiveMistakeIds(trade, flags.get(trade.id))
+        return mistakeIds.length === trade.mistakeIds.length ? trade : { ...trade, mistakeIds }
+      }),
+    [trades, flags],
+  )
 }
 
 export function activeAccounts(accounts: readonly Account[]): Account[] {

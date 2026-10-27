@@ -199,7 +199,7 @@ describe('JournalStore', () => {
 
     const fomo = result.mistakes.filter((item) => item.systemKey === 'fomo')
     expect(fomo).toEqual([expect.objectContaining({ id: systemMistakeId('fomo'), name: 'Chasing' })])
-    expect(result.mistakes.filter((item) => item.isSystem)).toHaveLength(8)
+    expect(result.mistakes.filter((item) => item.isSystem)).toHaveLength(SYSTEM_MISTAKES.length)
     expect(result.trades[0]?.mistakeIds).toEqual([systemMistakeId('fomo')])
     expect(writes.trades).toHaveLength(1)
     expect(writes.removedMistakeIds.sort()).toEqual(['random-a', 'random-b'])

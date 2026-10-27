@@ -215,6 +215,7 @@ export function buildTrade(
     mistakeIds: form.mistakeIds,
     setupIds: form.setupIds,
     brokenRuleIds: form.brokenRuleIds,
+    dismissedFlags: existing?.dismissedFlags,
     note: form.note.trim(),
     source: existing?.source ?? form.source,
     createdAt: existing?.createdAt ?? timestamp,

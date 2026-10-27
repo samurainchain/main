@@ -173,10 +173,17 @@
   gap: var(--space-s);
 }
 
+.page-header__row > :first-child {
+  min-width: 0;
+}
+
+/* Long single words ("Еженедельный") break rather than push the page sideways at large text. */
 .page-header__title {
   font-size: var(--text-large-title);
   font-weight: 500;
   letter-spacing: -0.02em;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .page-header__subtitle {
@@ -399,10 +406,15 @@
 }
 
 .action-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-xs);
   margin-top: var(--space-l);
+}
+
+/* Buttons share the row and wrap when longer labels (Russian, large text) don't fit. */
+.action-row:not(.action-row--wrap) > * {
+  flex: 1 1 auto;
 }
 
 .action-row--wrap {
@@ -700,7 +712,9 @@
 
 .week-nav {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
+  gap: var(--space-xs);
   margin: calc(var(--space-xs) * -1) 0 var(--space-s);
 }
 
@@ -978,4 +992,40 @@
   .content > .segmented {
     max-width: 480px;
   }
+}
+
+/* Automatic mistake flags on the trade card: the tag, why it was raised, and a dismiss button. */
+.auto-flags {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.auto-flags__list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.auto-flag {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-s);
+  padding: var(--space-xs) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.auto-flag:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.auto-flag__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+  min-width: 0;
 }

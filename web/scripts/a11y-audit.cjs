@@ -4,8 +4,9 @@
 //   node scripts/a11y-audit.cjs [url]
 // Loads a sample journal, then on every screen and sheet, in dark and light themes, checks:
 // controls and fields have accessible names, images have alt text, ids are unique, the page
-// has a language and one h1, text at 200% size doesn't scroll sideways at phone width, and
-// keyboard focus is visible. Exits with an error when anything fails.
+// has a language and one h1, text at 200% size doesn't scroll sideways at phone width (in
+// English, Russian and Spanish), and keyboard focus is visible. Exits with an error when
+// anything fails.
 
 const { join } = require('node:path')
 const { chromium } = require('playwright')
@@ -140,6 +141,26 @@ async function main() {
     await page.goto(`${URL}#/today`)
     await page.waitForTimeout(200)
     for (const problem of await checkFocus(page)) failures.push(`[${scheme}] keyboard: ${problem}`)
+    await context.close()
+  }
+  // Russian and Spanish labels run longer: no screen may scroll sideways in them either.
+  for (const locale of ['ru-RU', 'es-ES']) {
+    const context = await browser.newContext({ viewport: { width: 360, height: 780 }, locale })
+    const page = await context.newPage()
+    await page.goto(URL)
+    await page.locator('.onboarding input[type=file]').setInputFiles(BACKUP)
+    await page.locator('.tabbar .nav-add').waitFor()
+    await page.goto(`${URL}#/trades`)
+    const detail = await page.locator('.trade-row').first().getAttribute('href')
+    for (const textSize of ['100%', '200%']) {
+      for (const route of ['today', 'trades', 'analytics', 'profile', 'accounts', 'rules', 'review', 'tags', detail?.replace(/^#\//, '') ?? 'trades']) {
+        await page.goto(`${URL}#/${route}`)
+        await page.addStyleTag({ content: `html { font-size: ${textSize} !important; }` })
+        await page.waitForTimeout(200)
+        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
+        if (overflow > 1) failures.push(`[${locale}] ${route} at ${textSize} text: scrolls sideways by ${overflow}px`)
+      }
+    }
     await context.close()
   }
   await browser.close()

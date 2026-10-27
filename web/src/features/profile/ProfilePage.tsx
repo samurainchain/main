@@ -1,6 +1,6 @@
 import { CalendarCheck, ChevronRight, Download, FileSpreadsheet, ShieldCheck, Smartphone, Tags, Trash2, Upload, Wallet } from 'lucide-react'
 import { useId, useRef, useState, type ChangeEvent } from 'react'
-import { useJournal, useMistakeName, useStore } from '../../app/journal'
+import { useFlaggedTrades, useJournal, useMistakeName, useStore } from '../../app/journal'
 import { downloadCsv, tradesToCsv } from '../../core/export/csv'
 import { routeHref } from '../../app/router'
 import { updateSettings, useSettings, type LanguageSetting, type ThemeSetting, type WeekStartSetting } from '../../app/settings'
@@ -17,6 +17,7 @@ export function ProfilePage() {
   const { t, tp } = useI18n()
   const store = useStore()
   const { accounts, trades, rules, mistakes } = useJournal()
+  const flaggedTrades = useFlaggedTrades()
   const mistakeName = useMistakeName()
   const settings = useSettings()
   const { state: cloudState } = useCloud()
@@ -138,7 +139,8 @@ export function ProfilePage() {
             icon={<FileSpreadsheet size={18} aria-hidden="true" />}
             disabled={trades.length === 0}
             onClick={() => {
-              const data = store.exportData()
+              // Mistakes as the journal shows them: the trader's tags plus automatic flags.
+              const data = { ...store.exportData(), trades: flaggedTrades }
               downloadCsv(tradesToCsv(data, (id) => {
                 const tag = mistakes.find((item) => item.id === id)
                 return tag ? mistakeName(tag) : undefined

@@ -1,6 +1,6 @@
 import type Big from 'big.js'
 import { useMemo } from 'react'
-import { useJournal, useSelectedAccount } from '../../app/journal'
+import { useFlaggedTrades, useJournal, useSelectedAccount } from '../../app/journal'
 import type { Account, Currency, Trade } from '../../core/models'
 import { totalPnl } from '../../core/pnl'
 
@@ -54,9 +54,13 @@ export function totalsCurrency(selected: Account | undefined, accounts: readonly
   return currencies.size === 1 ? [...currencies][0]! : 'USD'
 }
 
-/** Trades of the account picked in the switcher, or of all accounts. */
+/**
+ * Trades of the account picked in the switcher, or of all accounts, with automatic mistake
+ * flags merged in. For editing, read the stored trade instead: flags are not the trader's tags.
+ */
 export function useVisibleTrades(): { trades: Trade[]; currency: Currency; selected: Account | undefined } {
-  const { trades, accounts } = useJournal()
+  const { accounts } = useJournal()
+  const trades = useFlaggedTrades()
   const selected = useSelectedAccount()
   return useMemo(
     () => ({
