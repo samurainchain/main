@@ -464,6 +464,27 @@ export const en = {
   'profile.deleteAllConfirm': 'Delete all accounts, trades and tags from this browser? This can’t be undone.',
   'profile.deleteAllDone': 'All data deleted.',
   'profile.disclaimer': 'Tiltless is a trading journal. It is not financial or investment advice.',
+
+  // Wide-screen right column and feedback
+  'rail.week': 'This week',
+  'rail.trades': { one: '{count} closed trade', other: '{count} closed trades' },
+  'rail.winRate': 'win rate {share}',
+  'rail.openReview': 'Open weekly review',
+  'feedback.section': 'Feedback',
+  'feedback.intro': 'What should the next update bring? Ideas and problems go straight to the developer.',
+  'feedback.kind': 'Type of feedback',
+  'feedback.kind.idea': 'Idea',
+  'feedback.kind.problem': 'Problem',
+  'feedback.kind.other': 'Other',
+  'feedback.message': 'Message',
+  'feedback.placeholder.idea': 'I wish Tiltless could…',
+  'feedback.placeholder.problem': 'What happened, and what did you expect?',
+  'feedback.placeholder.other': 'Anything on your mind',
+  'feedback.email': 'Email for a reply (optional)',
+  'feedback.send': 'Send',
+  'feedback.sending': 'Sending…',
+  'feedback.thanks': 'Thanks! Your message was sent.',
+  'feedback.failed': 'Could not send. Check the connection and try again.',
 } satisfies Record<string, string | PluralMessage>
 
 export type MessageKey = keyof typeof en

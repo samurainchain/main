@@ -15,14 +15,37 @@ const capitalize = (text: string) => text.charAt(0).toLocaleUpperCase() + text.s
  * as plain sentences from the rules in core/insights.ts (no AI).
  */
 export function WeekBreakdown({ trades, currency }: { trades: readonly ClosedTrade[]; currency: Currency }) {
-  const { t, tp, locale } = useI18n()
-  const { mistakes, setups } = useJournal()
-  const mistakeName = useMistakeName()
+  const { t } = useI18n()
+  const { mistakes } = useJournal()
+  const text = useInsightText(currency)
   const insights = weekInsights(trades, mistakes)
   if (insights.length === 0) return null
 
+  return (
+    <>
+      <SectionHeader title={t('review.patterns')} />
+      <Card className="form-stack">
+        <ul className="insights">
+          {insights.map(({ insight, tone }, index) => (
+            <li key={`${insight.kind}-${index}`} className={`insight insight--${tone}`}>
+              {tone === 'warning' ? <AlertTriangle size={18} aria-hidden="true" /> : <CheckCircle2 size={18} aria-hidden="true" />}
+              <span>{text(insight)}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="caption">{t('insights.note')}</p>
+      </Card>
+    </>
+  )
+}
+
+/** One insight as a sentence with its numbers, in the reader's language. */
+export function useInsightText(currency: Currency): (insight: Insight) => string {
+  const { t, tp, locale } = useI18n()
+  const { mistakes, setups } = useJournal()
+  const mistakeName = useMistakeName()
   const money = (amount: Big) => formatMoney(amount, currency, locale)
-  const text = (insight: Insight): string => {
+  return (insight: Insight): string => {
     switch (insight.kind) {
       case 'revenge':
         return tp('insights.revenge', insight.count, { losses: String(insight.losses), pnl: money(insight.pnl) })
@@ -65,21 +88,4 @@ export function WeekBreakdown({ trades, currency }: { trades: readonly ClosedTra
         return t('insights.clean')
     }
   }
-
-  return (
-    <>
-      <SectionHeader title={t('review.patterns')} />
-      <Card className="form-stack">
-        <ul className="insights">
-          {insights.map(({ insight, tone }, index) => (
-            <li key={`${insight.kind}-${index}`} className={`insight insight--${tone}`}>
-              {tone === 'warning' ? <AlertTriangle size={18} aria-hidden="true" /> : <CheckCircle2 size={18} aria-hidden="true" />}
-              <span>{text(insight)}</span>
-            </li>
-          ))}
-        </ul>
-        <p className="caption">{t('insights.note')}</p>
-      </Card>
-    </>
-  )
 }

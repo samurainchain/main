@@ -17,6 +17,7 @@ import { TagsPage } from '../tags/TagsPage'
 import { TodayPage } from '../today/TodayPage'
 import { TradeDetailPage } from '../trades/TradeDetailPage'
 import { TradesPage } from '../trades/TradesPage'
+import { SideRail } from './SideRail'
 
 // Heavier screens load when first opened, keeping the first download small; the service worker
 // still caches them for offline use.
@@ -105,6 +106,8 @@ export function AppShell() {
           </Suspense>
         )}
       </main>
+
+      {status === 'ready' && <SideRail />}
 
       <nav className="tabbar" aria-label={t('nav.label')}>
         {TABS.slice(0, 2).map(tabLink)}

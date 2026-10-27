@@ -1149,3 +1149,95 @@
 .insight--good svg {
   color: var(--color-profit);
 }
+
+/* Right column on wide screens: this week at a glance and the feedback form at the bottom. */
+.side-rail {
+  display: none;
+}
+
+@media (min-width: 1400px) {
+  .content {
+    padding-right: calc(var(--rail-width) + var(--space-xl));
+  }
+
+  /* With the rail beside it, the content takes the width between the two columns. */
+  :where(.content > *) {
+    max-width: 1360px;
+  }
+
+  .side-rail {
+    position: fixed;
+    inset: 0 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-m);
+    width: var(--rail-width);
+    padding: var(--space-xl) var(--space-m);
+    overflow-y: auto;
+    border-left: 1px solid var(--color-border);
+    background: var(--color-background);
+  }
+
+  .side-rail__feedback {
+    margin-top: auto;
+  }
+
+  /* The rail has its own form, so Profile doesn't repeat it. */
+  .profile-feedback {
+    display: none;
+  }
+}
+
+.week-glance .insight {
+  margin: 0;
+}
+
+.week-bars {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-xs);
+  height: 96px;
+}
+
+.week-bars__day {
+  display: grid;
+  grid-template-rows: 1fr 1fr auto;
+  min-width: 0;
+}
+
+.week-bars__half {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.week-bars__half--up {
+  align-items: flex-end;
+  border-bottom: 1px solid var(--color-border-strong);
+}
+
+.week-bars__half--down {
+  align-items: flex-start;
+}
+
+.week-bars__bar {
+  width: min(100%, 14px);
+}
+
+.week-bars__bar--profit {
+  border-radius: var(--radius-tiny) var(--radius-tiny) 0 0;
+  background: var(--color-chart-profit);
+}
+
+.week-bars__bar--loss {
+  border-radius: 0 0 var(--radius-tiny) var(--radius-tiny);
+  background: var(--color-chart-loss);
+}
+
+.week-bars__label {
+  padding-top: var(--space-xxs);
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-tick);
+  text-align: center;
+}

@@ -10,6 +10,7 @@ import { useCloud } from '../../app/cloud'
 import { useInstall } from '../../app/install'
 import { ProSection } from '../billing/ProSection'
 import { CloudSection } from '../cloud/CloudSection'
+import { FeedbackSection } from '../feedback/FeedbackSection'
 import { PageHeader } from '../shell/PageHeader'
 import { downloadBackup, parseBackup, serializeBackup } from './backup'
 
@@ -134,6 +135,8 @@ export function ProfilePage() {
       )}
 
       <ProSection />
+
+      <FeedbackSection className="profile-feedback" />
 
       <SectionHeader title={t('profile.dataSection')} />
       <Card className="form-stack">
