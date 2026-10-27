@@ -23,6 +23,7 @@ describe('normalizeNumber', () => {
     ['+123.45', '123.45'],
     ['-0.100', '0.100'],
     ['6O,OOO.O', '60000.0'],
+    ['S7,147.7', '57147.7'],
     ['1,2,3', undefined],
     ['abc', undefined],
   ])('%s → %s', (raw, expected) => {
@@ -175,6 +176,12 @@ describe('noise and missing data', () => {
 | Avg. Close Price | 162.4O |`)
     expect(parsed.entryPrice?.value).toBe('150.20')
     expect(parsed.exitPrice?.value).toBe('162.40')
+  })
+
+  it('reads a 5 misread as S at the start of a price', () => {
+    const parsed = parseScreenshotText('Avg. close price\n\nS7147.7\n\nClosed amount\n\n0.484 BTC')
+    expect(parsed.exitPrice?.value).toBe('57147.7')
+    expect(parsed.quantity?.value).toBe('0.484')
   })
 
   it('does not take the ROI percentage or leverage as a price', () => {

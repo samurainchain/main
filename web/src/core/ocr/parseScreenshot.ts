@@ -43,9 +43,9 @@ const LABELS: { field: NumericField; pattern: RegExp }[] = [
   { field: 'quantity', pattern: /closed vol\.?|closed amount|closed qty|max open interest|position size|\bqty\b|quantity|\bsize\b|contracts|\bamount\b/i },
 ]
 
-/** OCR slips that turn digits into look-alike letters inside numbers. */
+/** OCR slips that turn digits into look-alike letters inside numbers ("6O,OOO", "S7,147"). */
 function fixDigits(token: string): string {
-  return token.replace(/[Oo]/g, '0').replace(/[Il|]/g, '1')
+  return token.replace(/^([+\-−–]?)S(?=\d)/, '$15').replace(/[Oo]/g, '0').replace(/[Il|]/g, '1')
 }
 
 /**
@@ -69,7 +69,8 @@ interface PrintedNumber {
 function numbersIn(line: string): PrintedNumber[] {
   const withoutTimes = line.replace(/\d{4}[-/.]\d{1,2}[-/.]\d{1,2}|\d{1,2}[-/.]\d{1,2}[-/.]\d{4}|\d{1,2}:\d{2}(:\d{2})?/g, ' ')
   const results: PrintedNumber[] = []
-  for (const match of withoutTimes.matchAll(/([+\-−–]?[\dOo][\d,.Oo]*)\s*([A-Za-z%×]*)/g)) {
+  // A leading "S" right before digits is a misread 5, unless it ends a word ("USDT 5").
+  for (const match of withoutTimes.matchAll(/([+\-−–]?(?:(?<![A-Za-z])S(?=\d))?[\dOo][\d,.Oo]*)\s*([A-Za-z%×]*)/g)) {
     if (!/\d/.test(match[1]!)) continue
     const value = normalizeNumber(match[1]!.replace(/[.,]$/, ''))
     if (value !== undefined) results.push({ value, unit: match[2]!.toUpperCase() })

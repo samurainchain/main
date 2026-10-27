@@ -39,10 +39,10 @@ async function main() {
     const number = (value) => (value ? String(Number(value)) : '')
     const got = {
       symbol: await sheet.getByLabel('Symbol', { exact: true }).inputValue(),
-      side: (await sheet.getByRole('radio', { checked: true }).first().innerText()).toLowerCase(),
+      side: (await sheet.getByRole('radiogroup', { name: 'Direction' }).getByRole('radio', { checked: true }).innerText()).toLowerCase(),
       entryPrice: number(await sheet.getByLabel('Entry price').inputValue()),
       exitPrice: number(await sheet.getByLabel('Exit price').inputValue()),
-      quantity: number(await sheet.getByLabel(/^Size/).inputValue()),
+      quantity: number(await sheet.getByRole('textbox', { name: /^Size/ }).inputValue()),
     }
     const want = { ...item, entryPrice: number(item.entryPrice), exitPrice: number(item.exitPrice), quantity: number(item.quantity) }
     const misses = fields.filter((field) => got[field] !== want[field])
