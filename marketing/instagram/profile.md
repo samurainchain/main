@@ -8,7 +8,7 @@ First /ig-profile pass, 2026-10-27: 11/100 (new account: avatar and handle only)
   Tiltless spots 7 tilt patterns in your trades and shows what each one cost you.
   Free, in your browser.
   ("7 patterns" = the seven automatic flags in web/src/core/mistakeDetector.ts AUTO_MISTAKES; update if that list changes.)
-- **Link:** https://tiltless.xyz/?utm_source=instagram&utm_medium=bio
+- **Link:** https://tiltless.xyz (title "Tiltless — free trading journal"; no UTM until the site has analytics; link taps show in Instagram insights)
 - **Account:** Professional, Business, category App Page or Software; email tiltless.xyz@gmail.com
 - **Pinned three (to make):** the "$620 in 40 minutes" reel; a "7 tilt patterns" carousel; an intro ("a journal you'll actually fill in")
 - **Highlights (once stories exist):** How it works, Auto flags, Free?, Updates

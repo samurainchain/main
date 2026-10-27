@@ -72,4 +72,4 @@ Real numbers only. Until there are users, demo numbers must be labelled as demo.
 
 - **My keyword CTA, if I use one:** TILT
 - **What the keyword sends them:** the link to tiltless.xyz
-- **Where my link goes:** https://tiltless.xyz/?utm_source=instagram&utm_medium=bio
+- **Where my link goes:** https://tiltless.xyz
