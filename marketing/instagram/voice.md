@@ -8,7 +8,7 @@ lines marked TODO are for the owner to fill in.
 ## Who I am
 
 - **Name:** Tiltless (brand account, not a personal one)
-- **Handle:** TODO
+- **Handle:** @tiltless.xyz (https://www.instagram.com/tiltless.xyz/), contact tiltless.xyz@gmail.com
 - **What I do, in one sentence:** Tiltless is a trading journal that catches tilt:
   it flags revenge trades, trades without a stop and your worst hours, and shows
   what each mistake costs you.
@@ -72,4 +72,4 @@ Real numbers only. Until there are users, demo numbers must be labelled as demo.
 
 - **My keyword CTA, if I use one:** TILT
 - **What the keyword sends them:** the link to tiltless.xyz
-- **Where my link goes:** https://tiltless.xyz
+- **Where my link goes:** https://tiltless.xyz/?utm_source=instagram&utm_medium=bio
