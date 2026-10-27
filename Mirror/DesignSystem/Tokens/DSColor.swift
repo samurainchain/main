@@ -3,6 +3,8 @@ import UIKit
 
 /// Color tokens from SPEC section 9. Each token resolves to its dark or light
 /// value from the current trait collection, so the app follows the system theme.
+/// Light profit, loss and warning are darker than the SPEC values to reach WCAG AA
+/// as text (checked in web/src/design/contrast.test.ts, same palette).
 enum DSColor {
     static let background = dynamic(dark: 0x0B0B0F, light: 0xF6F6F8)
     static let surface = dynamic(dark: 0x16161C, light: 0xFFFFFF)
@@ -10,9 +12,9 @@ enum DSColor {
     static let textPrimary = dynamic(dark: 0xF5F5F7, light: 0x0B0B0F)
     static let textSecondary = dynamic(dark: 0x8E8E99, light: 0x6B6B76)
     static let accent = dynamic(dark: 0x7C6CFF, light: 0x5B4BE8)
-    static let profit = dynamic(dark: 0x3DDC97, light: 0x12A66B)
-    static let loss = dynamic(dark: 0xFF5C6C, light: 0xD93448)
-    static let warning = dynamic(dark: 0xFFB547, light: 0xC98400)
+    static let profit = dynamic(dark: 0x3DDC97, light: 0x0A7D4F)
+    static let loss = dynamic(dark: 0xFF5C6C, light: 0xC92C40)
+    static let warning = dynamic(dark: 0xFFB547, light: 0x8F5F00)
     static let separator = dynamic(dark: 0x2A2A33, light: 0xE3E3E8)
 
     private static func dynamic(dark: UInt32, light: UInt32) -> Color {

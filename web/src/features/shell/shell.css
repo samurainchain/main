@@ -26,7 +26,7 @@
   inset: auto 0 0;
   z-index: 10;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   align-items: center;
   height: calc(var(--tabbar-height) + env(safe-area-inset-bottom));
   padding: 0 var(--space-xs) env(safe-area-inset-bottom);
@@ -41,6 +41,7 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
+  min-width: 0;
   padding: var(--space-xs) 0;
   color: var(--color-text-secondary);
   font-size: 0.6875rem;
@@ -50,6 +51,14 @@
 
 .nav-link[aria-current='page'] {
   color: var(--color-accent);
+}
+
+/* Like iOS tab bars: with very large text, labels shorten instead of widening the bar. */
+.tabbar .nav-link span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .nav-add {
@@ -166,8 +175,10 @@
 
 .page-header__trailing {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-xs);
+  min-width: 0;
 }
 
 .back-link {
@@ -228,6 +239,7 @@
 
 .day-group__header {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
   gap: var(--space-s);
@@ -246,6 +258,7 @@
 
 .trade-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-s);
@@ -289,6 +302,7 @@
   flex-direction: column;
   align-items: flex-end;
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 .side-badge {

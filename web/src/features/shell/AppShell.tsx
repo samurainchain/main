@@ -52,6 +52,12 @@ export function AppShell() {
     window.scrollTo(0, 0)
   }, [route.name])
 
+  // Name the page after the screen, so screen readers announce where navigation went.
+  useEffect(() => {
+    const heading = document.querySelector('.content h1')?.textContent
+    document.title = heading ? `${heading} — Mirror` : 'Mirror'
+  })
+
   if (needsOnboarding) return <OnboardingFlow />
 
   const tabLink = (tab: Tab) => {

@@ -8,14 +8,15 @@
   --color-text-primary: #f5f5f7;
   --color-text-secondary: #8e8e99;
   --color-accent: #7c6cff;
-  --color-accent-contrast: #ffffff;
+  /* Text on filled accent, profit and loss: dark in the dark theme for WCAG AA contrast. */
+  --color-accent-contrast: #0b0b0f;
   --color-profit: #3ddc97;
   --color-loss: #ff5c6c;
   --color-warning: #ffb547;
   --color-separator: #2a2a33;
   --color-scrim: rgb(0 0 0 / 60%);
   --color-on-profit: #0b0b0f;
-  --color-on-loss: #ffffff;
+  --color-on-loss: #0b0b0f;
   /* Photo viewer: always black behind images, white controls, in both themes. */
   --color-media-background: #000000;
   --color-on-media: #ffffff;
@@ -57,9 +58,13 @@
     --color-text-primary: #0b0b0f;
     --color-text-secondary: #6b6b76;
     --color-accent: #5b4be8;
-    --color-profit: #12a66b;
-    --color-loss: #d93448;
-    --color-warning: #c98400;
+    --color-accent-contrast: #ffffff;
+    /* Darker than SPEC section 9's light values (#12A66B, #D93448, #C98400) to reach WCAG AA as text. */
+    --color-profit: #0a7d4f;
+    --color-loss: #c92c40;
+    --color-warning: #8f5f00;
+    --color-on-profit: #ffffff;
+    --color-on-loss: #ffffff;
     --color-separator: #e3e3e8;
     --color-scrim: rgb(0 0 0 / 35%);
     --shadow-card: 0 1px 2px rgb(0 0 0 / 4%), 0 4px 16px rgb(0 0 0 / 4%);
@@ -74,9 +79,12 @@
   --color-text-primary: #0b0b0f;
   --color-text-secondary: #6b6b76;
   --color-accent: #5b4be8;
-  --color-profit: #12a66b;
-  --color-loss: #d93448;
-  --color-warning: #c98400;
+  --color-accent-contrast: #ffffff;
+  --color-profit: #0a7d4f;
+  --color-loss: #c92c40;
+  --color-warning: #8f5f00;
+  --color-on-profit: #ffffff;
+  --color-on-loss: #ffffff;
   --color-separator: #e3e3e8;
   --color-scrim: rgb(0 0 0 / 35%);
   --shadow-card: 0 1px 2px rgb(0 0 0 / 4%), 0 4px 16px rgb(0 0 0 / 4%);
