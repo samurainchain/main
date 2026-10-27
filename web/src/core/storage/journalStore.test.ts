@@ -167,4 +167,19 @@ describe('JournalStore', () => {
     expect(reopened.profile).toMatchObject({ dailyLossLimit: '300', dailyTradeLimit: 6 })
     expect(reopened.reviews[0]?.nextRule).toBe('No entries without a stop')
   })
+
+  it('finishes onboarding: accounts, answers and the picked weaknesses first', async () => {
+    const db = newId()
+    const store = await openStore(db)
+    const acc = account({ name: 'Binance — futures' })
+    await store.completeOnboarding(
+      { goal: 'consistency', markets: ['cryptoPerp'], venues: ['binance'], weaknesses: ['overtrading', 'earlyExit'], tradesPerWeek: '6-20', currency: 'USDT' },
+      [acc],
+    )
+
+    const reopened = (await openStore(db)).getSnapshot()
+    expect(reopened.accounts.map((a) => a.name)).toEqual(['Binance — futures'])
+    expect(reopened.profile.onboarding).toMatchObject({ goal: 'consistency', tradesPerWeek: '6-20' })
+    expect(reopened.mistakes.slice(0, 3).map((tag) => tag.systemKey)).toEqual(['overtrading', 'earlyExit', 'fomo'])
+  })
 })

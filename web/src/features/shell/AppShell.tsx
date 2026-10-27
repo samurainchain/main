@@ -10,6 +10,7 @@ import type { MessageKey } from '../../i18n/messages/en'
 import { AccountSheet } from '../accounts/AccountSheet'
 import { AccountsPage } from '../accounts/AccountsPage'
 import { AnalyticsPage } from '../analytics/AnalyticsPage'
+import { OnboardingFlow, useNeedsOnboarding } from '../onboarding/OnboardingFlow'
 import { TradeEntrySheet } from '../entry/TradeEntrySheet'
 import { ProfilePage } from '../profile/ProfilePage'
 import { WeeklyReviewPage } from '../review/WeeklyReviewPage'
@@ -44,10 +45,13 @@ export function AppShell() {
   const { newTrade } = useSheets()
   useThemeAttribute()
   useLimitAlerts()
+  const needsOnboarding = useNeedsOnboarding()
 
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [route.name])
+
+  if (needsOnboarding) return <OnboardingFlow />
 
   const tabLink = (tab: Tab) => {
     const Icon = tab.icon

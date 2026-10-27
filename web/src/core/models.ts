@@ -1,3 +1,5 @@
+import type { OnboardingAnswers } from './onboarding'
+
 // Data model, mirroring SPEC section 5. Money and prices are decimal strings so they keep
 // full precision (and the precision the user typed); math goes through big.js in `pnl.ts`.
 
@@ -136,6 +138,8 @@ export interface JournalProfile {
   reviewWeekday: number
   /** Show dollar amounts on the shared review card instead of only R and %. */
   shareAmounts: boolean
+  /** Onboarding answers, once onboarding is finished or skipped (SPEC section 4.1). */
+  onboarding?: OnboardingAnswers & { completedAt: Timestamp; skipped?: boolean }
 }
 
 export function defaultProfile(): JournalProfile {

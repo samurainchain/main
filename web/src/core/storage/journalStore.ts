@@ -11,6 +11,7 @@ import {
   type Trade,
   type WeeklyReview,
 } from '../models'
+import type { OnboardingAnswers } from '../onboarding'
 import { emptyJournal, normalizeJournal, type Collection, type JournalBackend } from './backend'
 
 export type StoreStatus = 'loading' | 'ready' | 'error'
@@ -177,6 +178,33 @@ export class JournalStore {
     const saved = { ...review, updatedAt: new Date().toISOString() }
     this.set(withRecord(this.snapshot, 'reviews', saved))
     await this.backend.put('reviews', [saved])
+  }
+
+  // Onboarding
+
+  /**
+   * Saves the answers, creates the first accounts and moves the weaknesses the trader picked
+   * to the front of the mistake tags, so they're the first chips in the entry sheet.
+   */
+  async completeOnboarding(answers: OnboardingAnswers, accounts: Account[]): Promise<void> {
+    const picked = new Set<string>(answers.weaknesses)
+    const ranked = [...this.snapshot.mistakes].sort((a, b) => {
+      const pa = a.systemKey && picked.has(a.systemKey) ? 0 : 1
+      const pb = b.systemKey && picked.has(b.systemKey) ? 0 : 1
+      return pa - pb || a.sortOrder - b.sortOrder
+    })
+    const mistakes = ranked.map((tag, index) => ({ ...tag, sortOrder: index }))
+    const profile = { ...this.snapshot.profile, onboarding: { ...answers, completedAt: new Date().toISOString() } }
+    this.set(sorted({ ...this.snapshot, accounts: [...this.snapshot.accounts, ...accounts], mistakes, profile }))
+    await this.backend.put('accounts', accounts)
+    await this.backend.put('mistakes', mistakes)
+    await this.backend.saveProfile(profile)
+  }
+
+  async skipOnboarding(): Promise<void> {
+    await this.updateProfile({
+      onboarding: { markets: [], venues: [], weaknesses: [], currency: 'USDT', completedAt: new Date().toISOString(), skipped: true },
+    })
   }
 
   // Whole journal
