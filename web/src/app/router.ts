@@ -10,6 +10,8 @@ export type Route =
   | { name: 'analytics' }
   | { name: 'profile' }
   | { name: 'accounts' }
+  | { name: 'rules' }
+  | { name: 'review'; week?: string }
 
 export function parseRoute(hash: string): Route {
   const [first, second] = hash.replace(/^#\/?/, '').split('/')
@@ -22,6 +24,10 @@ export function parseRoute(hash: string): Route {
       return { name: 'profile' }
     case 'accounts':
       return { name: 'accounts' }
+    case 'rules':
+      return { name: 'rules' }
+    case 'review':
+      return second && /^\d{4}-\d{2}-\d{2}$/.test(second) ? { name: 'review', week: second } : { name: 'review' }
     default:
       return { name: 'today' }
   }
@@ -31,6 +37,8 @@ export function routeHref(route: Route): string {
   switch (route.name) {
     case 'trade':
       return `#/trades/${encodeURIComponent(route.id)}`
+    case 'review':
+      return route.week ? `#/review/${route.week}` : '#/review'
     default:
       return `#/${route.name}`
   }

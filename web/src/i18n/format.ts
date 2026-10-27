@@ -97,9 +97,15 @@ export function formatMonth(date: Date, locale: Locale): string {
 }
 
 /** Short weekday names indexed like `Date.getDay()` (0 = Sunday). */
-export function weekdayNames(locale: Locale, width: 'short' | 'narrow' = 'short'): string[] {
+export function weekdayNames(locale: Locale, width: 'long' | 'short' | 'narrow' = 'short'): string[] {
   const sunday = new Date(2026, 0, 4)
   return Array.from({ length: 7 }, (_, index) =>
     new Intl.DateTimeFormat(locale, { weekday: width }).format(new Date(sunday.getFullYear(), 0, 4 + index)),
   )
+}
+
+/** "Oct 26 – Nov 1" for a week starting at `start`. */
+export function formatWeekRange(start: Date, locale: Locale): string {
+  const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6)
+  return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }).formatRange(start, end)
 }

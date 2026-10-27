@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { JournalData } from '../../core/models'
+import { defaultProfile, type JournalData } from '../../core/models'
 import { parseBackup, serializeBackup } from './backup'
 
 const data: JournalData = {
@@ -22,6 +22,7 @@ const data: JournalData = {
       closedAt: '2026-10-27T11:00:00.000Z',
       mistakeIds: [],
       setupIds: [],
+      brokenRuleIds: [],
       note: '',
       source: 'manual',
       createdAt: '2026-10-27T11:00:00.000Z',
@@ -30,6 +31,9 @@ const data: JournalData = {
   ],
   mistakes: [],
   setups: [],
+  rules: [{ id: 'r1', text: 'No trades in the first 30 minutes after news', isActive: true, sortOrder: 0 }],
+  reviews: [],
+  profile: { ...defaultProfile(), dailyLossLimit: '300', dailyTradeLimit: 6 },
 }
 
 describe('backup', () => {
@@ -43,6 +47,19 @@ describe('backup', () => {
     const future = JSON.parse(serializeBackup(data))
     future.version = 99
     expect(() => parseBackup(JSON.stringify(future))).toThrow()
+  })
+
+  it('opens version 1 backups, filling the fields added since', () => {
+    const v1 = JSON.parse(serializeBackup(data))
+    v1.version = 1
+    delete v1.data.rules
+    delete v1.data.reviews
+    delete v1.data.profile
+    delete v1.data.trades[0].brokenRuleIds
+    const parsed = parseBackup(JSON.stringify(v1))
+    expect(parsed.rules).toEqual([])
+    expect(parsed.profile).toEqual(defaultProfile())
+    expect(parsed.trades[0]?.brokenRuleIds).toEqual([])
   })
 
   it('rejects trades that point at a missing account', () => {

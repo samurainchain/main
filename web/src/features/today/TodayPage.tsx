@@ -1,31 +1,38 @@
-import { Plus, Sun, Wallet } from 'lucide-react'
+import { CalendarCheck, Flame, Plus, Sun, Wallet } from 'lucide-react'
 import { activeAccounts, useJournal, useMistakeName } from '../../app/journal'
+import { routeHref } from '../../app/router'
+import { useWeekStart } from '../../app/settings'
 import { useSheets } from '../../app/sheets'
+import { dayLimits, ruleStreak } from '../../core/limits'
+import { defaultReviewWeek } from '../../core/review'
 import { totalPnl } from '../../core/pnl'
-import { closedTrades, mistakeOfTheWeek } from '../../core/stats'
-import { Button, Card, EmptyState, PnLText, SectionHeader } from '../../design/components'
+import { closedTrades, localDayKey, mistakeOfTheWeek } from '../../core/stats'
+import { Button, Card, EmptyState, LimitBar, PnLText, SectionHeader } from '../../design/components'
 import { formatDay, formatMoney } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
 import { PageHeader } from '../shell/PageHeader'
-import { dayKey, tradeDayKey, useVisibleTrades } from '../trades/tradeQueries'
+import { dayKey, newestFirst, tradeDayKey, useVisibleTrades } from '../trades/tradeQueries'
 import { TradeRow } from '../trades/TradeRow'
 
-/**
- * Today's PnL, the mistake of the week and today's trades (SPEC section 4.3). Limits and
- * the rule streak arrive with the rules stage.
- */
+/** Today's PnL, limits, streak, the mistake of the week and today's trades (SPEC section 4.3). */
 export function TodayPage() {
   const { t, tp, locale } = useI18n()
-  const { accounts, mistakes } = useJournal()
+  const { accounts, mistakes, trades: allTrades, profile, reviews } = useJournal()
+  const weekStart = useWeekStart()
   const { trades, currency } = useVisibleTrades()
   const mistakeName = useMistakeName()
   const { newTrade, newAccount } = useSheets()
   const today = new Date()
   const todayTrades = trades
     .filter((trade) => tradeDayKey(trade) === dayKey(today))
-    .sort((a, b) => Date.parse(b.closedAt ?? b.openedAt) - Date.parse(a.closedAt ?? a.openedAt))
+    .sort(newestFirst)
   const closedCount = todayTrades.filter((trade) => trade.exitPrice !== undefined).length
   const weekMistake = mistakeOfTheWeek(closedTrades(trades), mistakes, today)
+  // Limits and the streak cover all accounts: tilt is about the trader's day.
+  const limits = dayLimits(allTrades, profile, today)
+  const streak = ruleStreak(allTrades, profile, today)
+  const reviewWeek = localDayKey(defaultReviewWeek(today, weekStart))
+  const reviewDue = today.getDay() === profile.reviewWeekday && !reviews.some((review) => review.weekStart === reviewWeek)
 
   const header = <PageHeader title={t('tab.today')} subtitle={formatDay(today, locale)} showAccountSwitcher />
 
@@ -54,7 +61,49 @@ export function TodayPage() {
         <p className="caption">{t('today.pnlLabel')}</p>
         <PnLText amount={totalPnl(todayTrades)} currency={currency} size="hero" />
         <p className="secondary-text">{tp('today.tradeCount', closedCount)}</p>
+        {streak > 0 && (
+          <p className="streak">
+            <Flame size={16} aria-hidden="true" />
+            {tp('today.streak', streak)}
+          </p>
+        )}
       </Card>
+
+      {reviewDue && (
+        <a className="card review-reminder" href={routeHref({ name: 'review' })}>
+          <CalendarCheck size={20} aria-hidden="true" />
+          <span>
+            <strong>{t('today.reviewDue')}</strong>
+            <span className="caption">{t('today.reviewDueHint')}</span>
+          </span>
+        </a>
+      )}
+
+      {(limits.loss || limits.trades) && (
+        <Card className="limits-card">
+          {limits.reached && (
+            <p className="limit-reached" role="alert">
+              {t('limits.reached')}
+            </p>
+          )}
+          {limits.loss && (
+            <LimitBar
+              label={t('limits.dayLoss')}
+              level={limits.loss.level}
+              ratio={limits.loss.ratio}
+              value={t('limits.of', { used: formatMoney(limits.loss.used.times(-1), currency, locale), limit: formatMoney(limits.loss.limit, currency, locale, false) })}
+            />
+          )}
+          {limits.trades && (
+            <LimitBar
+              label={t('limits.dayTrades')}
+              level={limits.trades.level}
+              ratio={limits.trades.ratio}
+              value={t('limits.of', { used: String(limits.trades.used), limit: String(limits.trades.limit) })}
+            />
+          )}
+        </Card>
+      )}
 
       {weekMistake && (
         <Card className="week-mistake">

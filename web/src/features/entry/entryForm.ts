@@ -29,6 +29,7 @@ export interface EntryForm {
   emotion?: Emotion
   mistakeIds: string[]
   setupIds: string[]
+  brokenRuleIds: string[]
   note: string
 }
 
@@ -76,6 +77,7 @@ export function newEntryForm(account: Account | undefined, trades: readonly Trad
     closedAt: toLocalInput(now),
     mistakeIds: [],
     setupIds: [],
+    brokenRuleIds: [],
     note: '',
   }
 }
@@ -101,6 +103,7 @@ export function editEntryForm(trade: Trade): EntryForm {
     emotion: trade.emotion,
     mistakeIds: trade.mistakeIds,
     setupIds: trade.setupIds,
+    brokenRuleIds: trade.brokenRuleIds,
     note: trade.note,
   }
 }
@@ -206,6 +209,7 @@ export function buildTrade(
     emotion: form.emotion,
     mistakeIds: form.mistakeIds,
     setupIds: form.setupIds,
+    brokenRuleIds: form.brokenRuleIds,
     note: form.note.trim(),
     source: existing?.source ?? 'manual',
     createdAt: existing?.createdAt ?? timestamp,

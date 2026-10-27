@@ -225,3 +225,28 @@ export function Field({
     </div>
   )
 }
+
+/** A daily limit as a bar: neutral, then warning at 80% and loss color at 100%. */
+export function LimitBar({
+  label,
+  value,
+  ratio,
+  level,
+}: {
+  label: string
+  value: string
+  ratio: number
+  level: 'ok' | 'warning' | 'reached'
+}) {
+  return (
+    <div className={`limit-bar limit-bar--${level}`}>
+      <div className="limit-bar__text">
+        <span>{label}</span>
+        <span className="numeric">{value}</span>
+      </div>
+      <div className="limit-bar__track" role="progressbar" aria-label={label} aria-valuetext={value} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(ratio, 1) * 100)}>
+        <span className="limit-bar__fill" style={{ width: `${Math.min(ratio, 1) * 100}%` }} />
+      </div>
+    </div>
+  )
+}

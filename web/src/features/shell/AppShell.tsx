@@ -1,6 +1,7 @@
 import { ChartColumn, CircleUser, ListChecks, Plus, Sun, type LucideIcon } from 'lucide-react'
 import { useEffect } from 'react'
 import { useJournal } from '../../app/journal'
+import { useLimitAlerts } from '../../app/limitAlerts'
 import { routeHref, useRoute, type Route } from '../../app/router'
 import { useSettings } from '../../app/settings'
 import { useSheets } from '../../app/sheets'
@@ -11,6 +12,8 @@ import { AccountsPage } from '../accounts/AccountsPage'
 import { AnalyticsPage } from '../analytics/AnalyticsPage'
 import { TradeEntrySheet } from '../entry/TradeEntrySheet'
 import { ProfilePage } from '../profile/ProfilePage'
+import { WeeklyReviewPage } from '../review/WeeklyReviewPage'
+import { RulesPage } from '../rules/RulesPage'
 import { TodayPage } from '../today/TodayPage'
 import { TradeDetailPage } from '../trades/TradeDetailPage'
 import { TradesPage } from '../trades/TradesPage'
@@ -27,7 +30,7 @@ const TABS: Tab[] = [
   { route: 'today', label: 'tab.today', icon: Sun, matches: ['today'] },
   { route: 'trades', label: 'tab.trades', icon: ListChecks, matches: ['trades', 'trade'] },
   { route: 'analytics', label: 'tab.analytics', icon: ChartColumn, matches: ['analytics'] },
-  { route: 'profile', label: 'tab.profile', icon: CircleUser, matches: ['profile', 'accounts'] },
+  { route: 'profile', label: 'tab.profile', icon: CircleUser, matches: ['profile', 'accounts', 'rules', 'review'] },
 ]
 
 /**
@@ -40,6 +43,7 @@ export function AppShell() {
   const { status } = useJournal()
   const { newTrade } = useSheets()
   useThemeAttribute()
+  useLimitAlerts()
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -110,6 +114,10 @@ function Page({ route }: { route: Route }) {
       return <ProfilePage />
     case 'accounts':
       return <AccountsPage />
+    case 'rules':
+      return <RulesPage />
+    case 'review':
+      return <WeeklyReviewPage key={route.week ?? 'current'} week={route.week} />
   }
 }
 

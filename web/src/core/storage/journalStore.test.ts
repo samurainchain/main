@@ -1,4 +1,5 @@
 import 'fake-indexeddb/auto'
+import { openDB } from 'idb'
 import { describe, expect, it } from 'vitest'
 import { newId, SYSTEM_MISTAKES, type Account, type Trade } from '../models'
 import { IndexedDbBackend } from './indexedDbBackend'
@@ -36,6 +37,7 @@ function trade(accountId: string): Trade {
     closedAt: now,
     mistakeIds: [],
     setupIds: [],
+    brokenRuleIds: [],
     note: '',
     source: 'manual',
     createdAt: now,
@@ -120,5 +122,49 @@ describe('JournalStore', () => {
     expect(data.accounts).toEqual([])
     expect(data.trades).toEqual([])
     expect(data.mistakes).toHaveLength(SYSTEM_MISTAKES.length)
+  })
+
+  it('upgrades a version 1 database without losing trades', async () => {
+    const db = newId()
+    const acc = account()
+    const { brokenRuleIds: _omitted, ...oldTrade } = trade(acc.id)
+    const v1 = await openDB(db, 1, {
+      upgrade(database) {
+        for (const store of ['accounts', 'trades', 'mistakes', 'setups']) database.createObjectStore(store, { keyPath: 'id' })
+      },
+    })
+    await v1.put('accounts', acc)
+    await v1.put('trades', oldTrade)
+    v1.close()
+
+    const store = await openStore(db)
+    const data = store.getSnapshot()
+    expect(data.trades).toHaveLength(1)
+    expect(data.trades[0]?.brokenRuleIds).toEqual([])
+    expect(data.rules).toEqual([])
+    expect(data.profile.limitAlerts).toBe(true)
+  })
+
+  it('keeps rules, limits and reviews after a reload', async () => {
+    const db = newId()
+    const store = await openStore(db)
+    const first = await store.addRule('No trades in the first 30 minutes after news')
+    await store.addRule('Max 3 trades before lunch')
+    await store.reorderRules([store.getSnapshot().rules[1]!.id, first.id])
+    await store.updateProfile({ dailyLossLimit: '300', dailyTradeLimit: 6 })
+    await store.saveReview({
+      id: newId(),
+      weekStart: '2026-10-26',
+      whatWorked: 'Waiting for the retest',
+      whatRepeated: 'FOMO entries',
+      nextRule: 'No entries without a stop',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    })
+
+    const reopened = (await openStore(db)).getSnapshot()
+    expect(reopened.rules.map((rule) => rule.text)).toEqual(['Max 3 trades before lunch', 'No trades in the first 30 minutes after news'])
+    expect(reopened.profile).toMatchObject({ dailyLossLimit: '300', dailyTradeLimit: 6 })
+    expect(reopened.reviews[0]?.nextRule).toBe('No entries without a stop')
   })
 })

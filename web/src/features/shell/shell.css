@@ -552,3 +552,141 @@
 .more__content {
   margin-top: var(--space-m);
 }
+
+/* Today: streak, review reminder, limits */
+
+.streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--space-xs);
+  color: var(--color-warning);
+  font-size: var(--text-caption);
+  font-weight: 600;
+}
+
+.review-reminder {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  margin-top: var(--space-s);
+  border: 1px solid var(--color-accent);
+  color: inherit;
+  text-decoration: none;
+}
+
+.review-reminder > svg {
+  flex-shrink: 0;
+  color: var(--color-accent);
+}
+
+.review-reminder span {
+  display: flex;
+  flex-direction: column;
+}
+
+.limits-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+  margin-top: var(--space-s);
+}
+
+.limit-reached {
+  padding: var(--space-s) var(--space-m);
+  border-radius: var(--radius-field);
+  background: color-mix(in srgb, var(--color-loss) 18%, transparent);
+  color: var(--color-loss);
+  font-weight: 600;
+}
+
+/* Rules */
+
+.toggle-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-s);
+  cursor: pointer;
+}
+
+.toggle-row input,
+.rule-row input[type='checkbox'] {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: var(--color-accent);
+}
+
+.toggle-row > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rule-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rule-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.rule-row--inactive .rule-row__text {
+  color: var(--color-text-secondary);
+  text-decoration: line-through;
+}
+
+.rule-row__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.rule-row__actions {
+  display: flex;
+  gap: 2px;
+}
+
+.rule-row__actions .icon-button {
+  width: 32px;
+  height: 32px;
+}
+
+.rule-add {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.broken-rules {
+  margin: 0;
+  padding-left: var(--space-l);
+  color: var(--color-loss);
+}
+
+/* Weekly review */
+
+.week-nav {
+  display: flex;
+  justify-content: space-between;
+  margin: calc(var(--space-xs) * -1) 0 var(--space-s);
+}
+
+.share-preview {
+  display: block;
+  width: min(100%, 280px);
+  margin: 0 auto;
+  border-radius: var(--radius-field);
+  aspect-ratio: 9 / 16;
+}
+
+.share-note {
+  margin-top: var(--space-s);
+  text-align: center;
+}

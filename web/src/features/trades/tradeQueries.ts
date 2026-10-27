@@ -25,6 +25,11 @@ function tradeTime(trade: Trade): number {
   return Date.parse(trade.closedAt ?? trade.openedAt)
 }
 
+/** Newest first by exit (or entry) time; trades from the same minute by when they were logged. */
+export function newestFirst(a: Trade, b: Trade): number {
+  return tradeTime(b) - tradeTime(a) || Date.parse(b.createdAt) - Date.parse(a.createdAt)
+}
+
 export interface TradeDay {
   key: string
   date: Date
@@ -35,7 +40,7 @@ export interface TradeDay {
 /** Groups trades by local day, newest day first and newest trade first within a day. */
 export function groupByDay(trades: readonly Trade[]): TradeDay[] {
   const groups = new Map<string, Trade[]>()
-  for (const trade of [...trades].sort((a, b) => tradeTime(b) - tradeTime(a))) {
+  for (const trade of [...trades].sort(newestFirst)) {
     const key = tradeDayKey(trade)
     groups.set(key, [...(groups.get(key) ?? []), trade])
   }

@@ -349,3 +349,49 @@ textarea.input {
   flex-direction: column;
   gap: var(--space-m);
 }
+
+/* Limit bar */
+
+.limit-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.limit-bar__text {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-s);
+  font-size: var(--text-caption);
+}
+
+.limit-bar__track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-surface-elevated);
+}
+
+.limit-bar__fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-text-secondary);
+  transition: width 0.3s ease;
+}
+
+.limit-bar--warning .limit-bar__fill {
+  background: var(--color-warning);
+}
+
+.limit-bar--warning .limit-bar__text .numeric {
+  color: var(--color-warning);
+}
+
+.limit-bar--reached .limit-bar__fill {
+  background: var(--color-loss);
+}
+
+.limit-bar--reached .limit-bar__text .numeric {
+  color: var(--color-loss);
+}

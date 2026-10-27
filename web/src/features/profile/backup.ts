@@ -1,7 +1,9 @@
 import type { JournalData } from '../../core/models'
+import { normalizeJournal } from '../../core/storage/backend'
 
 const FORMAT = 'mirror-backup'
-const VERSION = 1
+/** 1: accounts, trades, mistakes, setups. 2: adds rules, reviews and the profile. */
+const VERSION = 2
 
 interface BackupFile {
   format: typeof FORMAT
@@ -25,7 +27,7 @@ export function parseBackup(text: string): JournalData {
   if (![accounts, trades, mistakes, setups].every(Array.isArray)) throw new Error('Backup is incomplete')
   const accountIds = new Set(accounts.map((account) => account.id))
   if (!trades.every((trade) => accountIds.has(trade.accountId))) throw new Error('Backup has trades without an account')
-  return { accounts, trades, mistakes, setups }
+  return normalizeJournal(file.data)
 }
 
 export function downloadBackup(json: string, now = new Date()): void {

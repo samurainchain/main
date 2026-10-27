@@ -14,7 +14,7 @@ import { EMOTION_ICONS } from './TradeRow'
 /** Every field of a trade with its computed values (SPEC section 4.6). */
 export function TradeDetailPage({ id }: { id: string }) {
   const { t, locale } = useI18n()
-  const { trades, accounts, mistakes, setups } = useJournal()
+  const { trades, accounts, mistakes, setups, rules } = useJournal()
   const store = useStore()
   const { editTrade } = useSheets()
   const mistakeName = useMistakeName()
@@ -44,6 +44,7 @@ export function TradeDetailPage({ id }: { id: string }) {
   const percent = pnl ? percentOfDeposit(pnl, account?.depositAmount) : undefined
   const tradeMistakes = mistakes.filter((tag) => trade.mistakeIds.includes(tag.id))
   const tradeSetups = setups.filter((tag) => trade.setupIds.includes(tag.id))
+  const brokenRules = rules.filter((rule) => trade.brokenRuleIds.includes(rule.id))
   const EmotionIcon = trade.emotion ? EMOTION_ICONS[trade.emotion] : undefined
   const price = (value: string | undefined) => (value === undefined ? undefined : formatDecimal(value, locale))
 
@@ -125,6 +126,19 @@ export function TradeDetailPage({ id }: { id: string }) {
                 ))}
               </div>
             )}
+          </Card>
+        </>
+      )}
+
+      {brokenRules.length > 0 && (
+        <>
+          <SectionHeader title={t('entry.brokenRules')} />
+          <Card>
+            <ul className="broken-rules">
+              {brokenRules.map((rule) => (
+                <li key={rule.id}>{rule.text}</li>
+              ))}
+            </ul>
           </Card>
         </>
       )}

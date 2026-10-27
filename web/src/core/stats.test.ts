@@ -41,6 +41,7 @@ function trade(pnl: string, closedAt: Date, overrides: Partial<Trade> = {}): Tra
     closedAt: iso,
     mistakeIds: [],
     setupIds: [],
+    brokenRuleIds: [],
     note: '',
     source: 'manual',
     createdAt: iso,

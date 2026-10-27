@@ -36,7 +36,7 @@ export function TradeEntrySheet() {
 function EntrySheetContent({ existing, onClose }: { existing: Trade | undefined; onClose: () => void }) {
   const { t, locale } = useI18n()
   const store = useStore()
-  const { accounts, trades, mistakes, setups } = useJournal()
+  const { accounts, trades, mistakes, setups, rules } = useJournal()
   const { newAccount } = useSheets()
   const selected = useSelectedAccount()
   const mistakeName = useMistakeName()
@@ -326,6 +326,25 @@ function EntrySheetContent({ existing, onClose }: { existing: Trade | undefined;
             />
           </div>
         </fieldset>
+
+        {rules.some((rule) => rule.isActive || form.brokenRuleIds.includes(rule.id)) && (
+          <fieldset className="fieldset">
+            <legend className="field__label">{t('entry.brokenRules')}</legend>
+            <div className="chip-row">
+              {rules
+                .filter((rule) => rule.isActive || form.brokenRuleIds.includes(rule.id))
+                .map((rule) => (
+                  <Chip
+                    key={rule.id}
+                    label={rule.text}
+                    colorHex="var(--color-loss)"
+                    selected={form.brokenRuleIds.includes(rule.id)}
+                    onToggle={() => update({ brokenRuleIds: toggle(form.brokenRuleIds, rule.id) })}
+                  />
+                ))}
+            </div>
+          </fieldset>
+        )}
 
         <details className="more" open={showMore} onToggle={(event) => setShowMore(event.currentTarget.open)}>
           <summary>{t('entry.more')}</summary>

@@ -1,4 +1,4 @@
-import { ChevronRight, Download, Trash2, Upload, Wallet } from 'lucide-react'
+import { CalendarCheck, ChevronRight, Download, ShieldCheck, Trash2, Upload, Wallet } from 'lucide-react'
 import { useId, useRef, useState, type ChangeEvent } from 'react'
 import { useJournal, useStore } from '../../app/journal'
 import { routeHref } from '../../app/router'
@@ -12,7 +12,7 @@ import { downloadBackup, parseBackup, serializeBackup } from './backup'
 export function ProfilePage() {
   const { t, tp } = useI18n()
   const store = useStore()
-  const { accounts, trades } = useJournal()
+  const { accounts, trades, rules } = useJournal()
   const settings = useSettings()
   const fileInput = useRef<HTMLInputElement>(null)
   const [message, setMessage] = useState<string>()
@@ -45,12 +45,25 @@ export function ProfilePage() {
       <PageHeader title={t('tab.profile')} />
 
       <SectionHeader title={t('profile.journalSection')} />
-      <a className="list-card nav-row" href={routeHref({ name: 'accounts' })}>
-        <Wallet size={20} aria-hidden="true" />
-        <span className="nav-row__label">{t('accounts.title')}</span>
-        <span className="caption">{tp('profile.accountCount', accounts.length)}</span>
-        <ChevronRight size={18} aria-hidden="true" className="secondary-text" />
-      </a>
+      <div className="list-card">
+        <a className="nav-row" href={routeHref({ name: 'accounts' })}>
+          <Wallet size={20} aria-hidden="true" />
+          <span className="nav-row__label">{t('accounts.title')}</span>
+          <span className="caption">{tp('profile.accountCount', accounts.length)}</span>
+          <ChevronRight size={18} aria-hidden="true" className="secondary-text" />
+        </a>
+        <a className="nav-row" href={routeHref({ name: 'rules' })}>
+          <ShieldCheck size={20} aria-hidden="true" />
+          <span className="nav-row__label">{t('limits.title')}</span>
+          <span className="caption">{tp('profile.ruleCount', rules.length)}</span>
+          <ChevronRight size={18} aria-hidden="true" className="secondary-text" />
+        </a>
+        <a className="nav-row" href={routeHref({ name: 'review' })}>
+          <CalendarCheck size={20} aria-hidden="true" />
+          <span className="nav-row__label">{t('review.title')}</span>
+          <ChevronRight size={18} aria-hidden="true" className="secondary-text" />
+        </a>
+      </div>
 
       <SectionHeader title={t('profile.appearanceSection')} />
       <Card className="form-stack">

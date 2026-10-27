@@ -4,11 +4,14 @@ import {
   TAG_COLORS,
   type Account,
   type JournalData,
+  type JournalProfile,
   type MistakeTag,
+  type Rule,
   type SetupTag,
   type Trade,
+  type WeeklyReview,
 } from '../models'
-import { emptyJournal, type JournalBackend } from './backend'
+import { emptyJournal, normalizeJournal, type Collection, type JournalBackend } from './backend'
 
 export type StoreStatus = 'loading' | 'ready' | 'error'
 
@@ -138,14 +141,53 @@ export class JournalStore {
     return tag
   }
 
+  // Rules, limits and reviews
+
+  async saveRule(rule: Rule): Promise<void> {
+    this.set(withRecord(this.snapshot, 'rules', rule))
+    await this.backend.put('rules', [rule])
+  }
+
+  async addRule(text: string): Promise<Rule> {
+    const rule: Rule = { id: newId(), text: text.trim(), isActive: true, sortOrder: this.snapshot.rules.length }
+    await this.saveRule(rule)
+    return rule
+  }
+
+  /** Deletes a rule. Trades keep the id; screens skip rules that no longer exist. */
+  async deleteRule(id: string): Promise<void> {
+    this.set({ ...this.snapshot, rules: this.snapshot.rules.filter((rule) => rule.id !== id) })
+    await this.backend.delete('rules', [id])
+  }
+
+  async reorderRules(ids: string[]): Promise<void> {
+    const order = new Map(ids.map((id, index) => [id, index]))
+    const rules = this.snapshot.rules.map((rule) => ({ ...rule, sortOrder: order.get(rule.id) ?? rule.sortOrder }))
+    this.set(sorted({ ...this.snapshot, rules }))
+    await this.backend.put('rules', rules)
+  }
+
+  async updateProfile(patch: Partial<Omit<JournalProfile, 'id'>>): Promise<void> {
+    const profile = { ...this.snapshot.profile, ...patch }
+    this.set({ ...this.snapshot, profile })
+    await this.backend.saveProfile(profile)
+  }
+
+  async saveReview(review: WeeklyReview): Promise<void> {
+    const saved = { ...review, updatedAt: new Date().toISOString() }
+    this.set(withRecord(this.snapshot, 'reviews', saved))
+    await this.backend.put('reviews', [saved])
+  }
+
   // Whole journal
 
   exportData(): JournalData {
-    const { accounts, trades, mistakes, setups } = this.snapshot
-    return { accounts, trades, mistakes, setups }
+    const { status: _status, ...data } = this.snapshot
+    return data
   }
 
-  async importData(data: JournalData): Promise<void> {
+  async importData(imported: JournalData): Promise<void> {
+    const data = normalizeJournal(imported)
     const complete = { ...data, mistakes: [...data.mistakes, ...missingSystemMistakes(data.mistakes)] }
     await this.backend.replaceAll(complete)
     this.set({ ...sorted(complete), status: 'ready' })
@@ -171,7 +213,7 @@ function missingSystemMistakes(existing: MistakeTag[]): MistakeTag[] {
   )
 }
 
-function withRecord<C extends 'accounts' | 'trades' | 'mistakes' | 'setups'>(
+function withRecord<C extends Collection>(
   snapshot: JournalSnapshot,
   collection: C,
   record: JournalData[C][number],
@@ -188,5 +230,6 @@ function sorted<T extends JournalData>(data: T): T {
     accounts: [...data.accounts].sort((a, b) => a.sortOrder - b.sortOrder),
     mistakes: [...data.mistakes].sort((a, b) => a.sortOrder - b.sortOrder),
     setups: [...data.setups].sort((a, b) => a.sortOrder - b.sortOrder),
+    rules: [...data.rules].sort((a, b) => a.sortOrder - b.sortOrder),
   }
 }
