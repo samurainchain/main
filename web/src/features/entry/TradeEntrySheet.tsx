@@ -1,14 +1,16 @@
 import Big from 'big.js'
-import { ImageUp, Plus, Wallet } from 'lucide-react'
-import { useId, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from 'react'
+import { ImagePlus, ImageUp, Plus, Wallet, X } from 'lucide-react'
+import { useEffect, useId, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from 'react'
 import { activeAccounts, useJournal, useMistakeName, useSelectedAccount, useStore } from '../../app/journal'
 import { useSheets } from '../../app/sheets'
-import { EMOTIONS, type Account, type Trade } from '../../core/models'
+import { EMOTIONS, MAX_IMAGES_PER_TRADE, type Account, type Trade } from '../../core/models'
 import { FUTURES_PRESETS, SYMBOL_SUGGESTIONS } from '../../core/presets'
 import { Button, Chip, EmptyState, Field, PnLText, Segmented, Sheet } from '../../design/components'
 import { formatMoney, formatR } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
 import type { MessageKey } from '../../i18n/messages/en'
+import { compressImage, type CompressedImage } from '../images/compress'
+import { StoredImage } from '../images/TradeImages'
 import { EMOTION_ICONS } from '../trades/TradeRow'
 import { recognizeScreenshot } from './recognize'
 import {
@@ -49,7 +51,33 @@ function EntrySheetContent({ existing, onClose }: { existing: Trade | undefined;
   const defaultAccount = selected ?? active[0]
   const [form, setForm] = useState<EntryForm>(() => (existing ? editEntryForm(existing) : newEntryForm(defaultAccount, trades)))
   const [errors, setErrors] = useState<EntryErrors>({})
-  const [showMore, setShowMore] = useState(Boolean(existing && (existing.fees !== '0' || existing.note)))
+  const [showMore, setShowMore] = useState(Boolean(existing && (existing.fees !== '0' || existing.note || store.imagesOf(existing.id).length > 0)))
+  const [newImages, setNewImages] = useState<(CompressedImage & { url: string })[]>([])
+  const [removedImageIds, setRemovedImageIds] = useState<string[]>([])
+  const imageInput = useRef<HTMLInputElement>(null)
+  const keptImages = existing ? store.imagesOf(existing.id).filter((image) => !removedImageIds.includes(image.id)) : []
+  const imageRoom = MAX_IMAGES_PER_TRADE - keptImages.length - newImages.length
+
+  // Release the previews' object URLs when the sheet closes.
+  const previewUrls = useRef<string[]>([])
+  useEffect(() => () => previewUrls.current.forEach((url) => URL.revokeObjectURL(url)), [])
+
+  const attachImages = async (files: readonly File[]) => {
+    const room = MAX_IMAGES_PER_TRADE - keptImages.length - newImages.length
+    const compressed = await Promise.all(files.slice(0, Math.max(0, room)).map(compressImage))
+    const withUrls = compressed.map((image) => {
+      const url = URL.createObjectURL(image.blob)
+      previewUrls.current.push(url)
+      return { ...image, url }
+    })
+    setNewImages((current) => [...current, ...withUrls].slice(0, MAX_IMAGES_PER_TRADE))
+  }
+
+  const pickImages = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = [...(event.target.files ?? [])]
+    event.target.value = ''
+    await attachImages(files).catch((error: unknown) => console.error('Could not attach screenshots', error))
+  }
   const [saving, setSaving] = useState(false)
   const [recognized, setRecognized] = useState<RecognizedFields>({})
   const [ocr, setOcr] = useState<{ state: 'idle' | 'running' | 'done' | 'empty' | 'error'; progress: number }>({ state: 'idle', progress: 0 })
@@ -81,6 +109,8 @@ function EntrySheetContent({ existing, onClose }: { existing: Trade | undefined;
     event.target.value = ''
     if (!file) return
     setOcr({ state: 'running', progress: 0 })
+    // The screenshot a trade was read from is worth keeping with it.
+    void attachImages([file]).then(() => setShowMore(true), () => undefined)
     try {
       const parsed = await recognizeScreenshot(file, (progress) => setOcr({ state: 'running', progress }))
       const applied = applyScreenshot(form, parsed, market)
@@ -118,6 +148,8 @@ function EntrySheetContent({ existing, onClose }: { existing: Trade | undefined;
     setSaving(true)
     try {
       await store.saveTrade(result.trade)
+      await store.removeImages(removedImageIds)
+      await store.addImages(result.trade.id, newImages)
       onClose()
     } finally {
       setSaving(false)
@@ -416,6 +448,39 @@ function EntrySheetContent({ existing, onClose }: { existing: Trade | undefined;
             <Field label={t('entry.note')} htmlFor={ids.note}>
               <textarea id={ids.note} className="input" value={form.note} onChange={(event) => update({ note: event.target.value })} />
             </Field>
+            <fieldset className="fieldset">
+              <legend className="field__label">{t('images.field', { max: MAX_IMAGES_PER_TRADE })}</legend>
+              <div className="image-picker">
+                {keptImages.map((image, index) => (
+                  <div key={image.id} className="image-picker__item">
+                    <StoredImage image={image} className="image-picker__thumb" alt={t('images.alt', { index: index + 1 })} />
+                    <button type="button" className="icon-button image-picker__remove" aria-label={t('images.remove', { index: index + 1 })} onClick={() => setRemovedImageIds((ids) => [...ids, image.id])}>
+                      <X size={14} aria-hidden="true" />
+                    </button>
+                  </div>
+                ))}
+                {newImages.map((image, index) => (
+                  <div key={image.url} className="image-picker__item">
+                    <img className="image-picker__thumb" src={image.url} alt={t('images.alt', { index: keptImages.length + index + 1 })} />
+                    <button
+                      type="button"
+                      className="icon-button image-picker__remove"
+                      aria-label={t('images.remove', { index: keptImages.length + index + 1 })}
+                      onClick={() => setNewImages((current) => current.filter((item) => item.url !== image.url))}
+                    >
+                      <X size={14} aria-hidden="true" />
+                    </button>
+                  </div>
+                ))}
+                {imageRoom > 0 && (
+                  <button type="button" className="image-picker__add" onClick={() => imageInput.current?.click()}>
+                    <ImagePlus size={22} aria-hidden="true" />
+                    <span className="caption">{t('images.add')}</span>
+                  </button>
+                )}
+              </div>
+              <input ref={imageInput} type="file" accept="image/*" multiple hidden onChange={pickImages} />
+            </fieldset>
           </div>
         </details>
       </form>

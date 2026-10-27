@@ -47,7 +47,8 @@ function trade(accountId: string): Trade {
 }
 
 async function openStore(dbName: string): Promise<JournalStore> {
-  const store = new JournalStore(new IndexedDbBackend(dbName))
+  const local = new IndexedDbBackend(dbName)
+  const store = new JournalStore(local, local.imageBlobs())
   await store.load()
   return store
 }
@@ -228,5 +229,30 @@ describe('JournalStore', () => {
     expect(reopened.setups[1]?.colorHex).toBe('#3DDC97')
     expect(reopened.mistakes.some((tag) => tag.id === custom.id)).toBe(false)
     expect(reopened.mistakes.find((tag) => tag.systemKey === 'fomo')?.isArchived).toBe(true)
+  })
+
+  it('attaches up to three screenshots and removes them with the trade', async () => {
+    const db = newId()
+    const store = await openStore(db)
+    const acc = account()
+    await store.saveAccount(acc)
+    const kept = trade(acc.id)
+    const removed = trade(acc.id)
+    await store.saveTrade(kept)
+    await store.saveTrade(removed)
+    const file = () => ({ blob: new Blob(['jpeg'], { type: 'image/jpeg' }), width: 1600, height: 900 })
+    const added = await store.addImages(kept.id, [file(), file(), file(), file()])
+    await store.addImages(removed.id, [file()])
+    expect(added).toHaveLength(3)
+    expect(await store.addImages(kept.id, [file()])).toEqual([])
+
+    await store.deleteTrade(removed.id)
+    await store.removeImages([added[0]!.id])
+
+    const reopened = await openStore(db)
+    expect(reopened.imagesOf(kept.id).map((image) => image.id)).toEqual([added[1]!.id, added[2]!.id])
+    expect(reopened.getSnapshot().images).toHaveLength(2)
+    expect((await reopened.blobs!.ids()).sort()).toEqual([added[1]!.id, added[2]!.id].sort())
+    expect(await reopened.blobs!.getBlob(added[1]!.id)).toBeDefined()
   })
 })

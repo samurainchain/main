@@ -33,12 +33,18 @@ const data: JournalData = {
   setups: [],
   rules: [{ id: 'r1', text: 'No trades in the first 30 minutes after news', isActive: true, sortOrder: 0 }],
   reviews: [],
+  images: [],
   profile: { ...defaultProfile(), dailyLossLimit: '300', dailyTradeLimit: 6 },
 }
 
 describe('backup', () => {
   it('round-trips the journal without losing decimal precision', () => {
     expect(parseBackup(serializeBackup(data))).toEqual(data)
+  })
+
+  it('leaves screenshots out of the file', () => {
+    const withImages = { ...data, images: [{ id: 'i1', tradeId: 't1', width: 10, height: 10, createdAt: '2026-10-27T11:00:00.000Z' }] }
+    expect(parseBackup(serializeBackup(withImages)).images).toEqual([])
   })
 
   it('rejects files that are not Mirror backups', () => {

@@ -10,10 +10,12 @@ import {
   type SetupTag,
   type SystemMistakeKey,
   type Trade,
+  type TradeImage,
   type WeeklyReview,
+  MAX_IMAGES_PER_TRADE,
 } from '../models'
 import type { OnboardingAnswers } from '../onboarding'
-import { emptyJournal, normalizeJournal, type Collection, type JournalBackend } from './backend'
+import { emptyJournal, normalizeJournal, type Collection, type ImageBlobStore, type JournalBackend } from './backend'
 
 export type StoreStatus = 'loading' | 'ready' | 'error'
 
@@ -40,7 +42,14 @@ export class JournalStore {
   private snapshot: JournalSnapshot = { ...emptyJournal(), status: 'loading' }
   private readonly listeners = new Set<() => void>()
 
-  constructor(private readonly backend: JournalBackend) {}
+  /** Called with the ids of screenshots removed here, so the cloud copies can go too. */
+  onImagesRemoved?: (ids: string[]) => void
+
+  constructor(
+    private readonly backend: JournalBackend,
+    /** Screenshot files; without it, trades can't hold screenshots (tests, old callers). */
+    readonly blobs?: ImageBlobStore,
+  ) {}
 
   subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener)
@@ -58,6 +67,7 @@ export class JournalStore {
       if (writes.trades.length > 0) await this.backend.put('trades', writes.trades)
       if (writes.removedMistakeIds.length > 0) await this.backend.delete('mistakes', writes.removedMistakeIds)
       this.set({ ...sorted(data), status: 'ready' })
+      await this.dropOrphanBlobs(data.images)
     } catch (error) {
       console.error('Could not load the journal', error)
       this.set({ ...this.snapshot, status: 'error' })
@@ -71,9 +81,10 @@ export class JournalStore {
     await this.backend.put('accounts', [account])
   }
 
-  /** Deletes the account together with all of its trades. */
+  /** Deletes the account together with all of its trades and their screenshots. */
   async deleteAccount(id: string): Promise<void> {
     const tradeIds = this.snapshot.trades.filter((trade) => trade.accountId === id).map((trade) => trade.id)
+    await this.removeImages(this.snapshot.images.filter((image) => tradeIds.includes(image.tradeId)).map((image) => image.id))
     this.set({
       ...this.snapshot,
       accounts: this.snapshot.accounts.filter((account) => account.id !== id),
@@ -100,6 +111,7 @@ export class JournalStore {
   }
 
   async deleteTrade(id: string): Promise<void> {
+    await this.removeImages(this.imagesOf(id).map((image) => image.id))
     this.set({ ...this.snapshot, trades: this.snapshot.trades.filter((trade) => trade.id !== id) })
     await this.backend.delete('trades', [id])
   }
@@ -112,6 +124,44 @@ export class JournalStore {
     const copy: Trade = { ...original, id: newId(), source: 'manual', createdAt: now, updatedAt: now }
     await this.saveTrade(copy)
     return copy
+  }
+
+  // Screenshots
+
+  imagesOf(tradeId: string): TradeImage[] {
+    return this.snapshot.images.filter((image) => image.tradeId === tradeId).sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+  }
+
+  /** Attaches compressed screenshots to a trade, up to the limit; extra ones are ignored. */
+  async addImages(tradeId: string, files: { blob: Blob; width: number; height: number }[]): Promise<TradeImage[]> {
+    if (!this.blobs) return []
+    const room = MAX_IMAGES_PER_TRADE - this.imagesOf(tradeId).length
+    const images = files.slice(0, Math.max(0, room)).map((file, index) => ({
+      record: { id: newId(), tradeId, width: file.width, height: file.height, createdAt: new Date(Date.now() + index).toISOString() } satisfies TradeImage,
+      blob: file.blob,
+    }))
+    for (const { record, blob } of images) await this.blobs.putBlob(record.id, blob)
+    await this.blobs.markForUpload(images.map(({ record }) => record.id))
+    const records = images.map(({ record }) => record)
+    this.set({ ...this.snapshot, images: [...this.snapshot.images, ...records] })
+    await this.backend.put('images', records)
+    return records
+  }
+
+  async removeImages(ids: string[]): Promise<void> {
+    if (ids.length === 0) return
+    this.set({ ...this.snapshot, images: this.snapshot.images.filter((image) => !ids.includes(image.id)) })
+    await this.backend.delete('images', ids)
+    await this.blobs?.deleteBlobs(ids)
+    this.onImagesRemoved?.(ids)
+  }
+
+  /** Removes files whose screenshot record is gone, e.g. deleted on another device. */
+  private async dropOrphanBlobs(images: readonly TradeImage[]): Promise<void> {
+    if (!this.blobs) return
+    const known = new Set(images.map((image) => image.id))
+    const orphans = (await this.blobs.ids()).filter((id) => !known.has(id))
+    if (orphans.length > 0) await this.blobs.deleteBlobs(orphans)
   }
 
   // Tags

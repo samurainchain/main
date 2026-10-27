@@ -103,6 +103,20 @@ export const SYSTEM_MISTAKES = [
 ] as const
 export type SystemMistakeKey = (typeof SYSTEM_MISTAKES)[number]
 
+/**
+ * A screenshot attached to a trade (up to 3). The record holds what syncs as data; the JPEG
+ * itself lives in the browser and in cloud file storage, keyed by the same id.
+ */
+export interface TradeImage {
+  id: string
+  tradeId: string
+  width: number
+  height: number
+  createdAt: Timestamp
+}
+
+export const MAX_IMAGES_PER_TRADE = 3
+
 /** A personal trading rule (SPEC section 4.8). */
 export interface Rule {
   id: string
@@ -153,6 +167,7 @@ export interface JournalData {
   setups: SetupTag[]
   rules: Rule[]
   reviews: WeeklyReview[]
+  images: TradeImage[]
   profile: JournalProfile
 }
 

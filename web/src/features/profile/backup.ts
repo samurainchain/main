@@ -12,8 +12,9 @@ interface BackupFile {
   data: JournalData
 }
 
+/** Backups are JSON text, so trade screenshots stay out of them; cloud sync carries those. */
 export function serializeBackup(data: JournalData, now = new Date()): string {
-  const file: BackupFile = { format: FORMAT, version: VERSION, exportedAt: now.toISOString(), data }
+  const file: BackupFile = { format: FORMAT, version: VERSION, exportedAt: now.toISOString(), data: { ...data, images: [] } }
   return JSON.stringify(file, null, 2)
 }
 

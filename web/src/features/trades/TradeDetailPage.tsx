@@ -9,6 +9,7 @@ import { Button, Card, Chip, EmptyState, PnLText, SectionHeader } from '../../de
 import { formatDateTime, formatDecimal, formatDuration, formatMoney, formatPercent, formatR } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
 import { PageHeader } from '../shell/PageHeader'
+import { TradeGallery } from '../images/TradeImages'
 import { EMOTION_ICONS } from './TradeRow'
 
 /** Every field of a trade with its computed values (SPEC section 4.6). */
@@ -45,6 +46,7 @@ export function TradeDetailPage({ id }: { id: string }) {
   const tradeMistakes = mistakes.filter((tag) => trade.mistakeIds.includes(tag.id))
   const tradeSetups = setups.filter((tag) => trade.setupIds.includes(tag.id))
   const brokenRules = rules.filter((rule) => trade.brokenRuleIds.includes(rule.id))
+  const images = store.imagesOf(trade.id)
   const EmotionIcon = trade.emotion ? EMOTION_ICONS[trade.emotion] : undefined
   const price = (value: string | undefined) => (value === undefined ? undefined : formatDecimal(value, locale))
 
@@ -76,6 +78,8 @@ export function TradeDetailPage({ id }: { id: string }) {
           {percent && <Stat label={t('trade.percentOfDeposit')} value={formatPercent(percent, locale)} />}
         </dl>
       </Card>
+
+      {images.length > 0 && <TradeGallery images={images} />}
 
       <SectionHeader title={t('trade.detailsSection')} />
       <Card>

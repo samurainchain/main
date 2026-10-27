@@ -17,7 +17,7 @@ import { I18nProvider } from './i18n/i18n'
 
 const local = new IndexedDbBackend()
 const backend = new SyncingBackend(local, local.syncState())
-const store = new JournalStore(backend)
+const store = new JournalStore(backend, local.imageBlobs())
 const cloud = new CloudController(backend, store)
 void store.load().then(() => cloud.start())
 

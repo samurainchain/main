@@ -1,9 +1,10 @@
 -- Mirror cloud sync: one row per journal record, private to its owner.
--- Run once in the Supabase dashboard: SQL Editor → New query → paste → Run.
+-- Run in the Supabase dashboard: SQL Editor → New query → paste → Run. Safe to run again
+-- after updates: every statement either creates what's missing or replaces it.
 
 create table if not exists public.journal_records (
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
-  collection text not null check (collection in ('accounts', 'trades', 'mistakes', 'setups', 'rules', 'reviews', 'profile')),
+  collection text not null,
   id text not null,
   data jsonb,
   deleted boolean not null default false,
@@ -13,6 +14,11 @@ create table if not exists public.journal_records (
   server_updated_at timestamptz not null default now(),
   primary key (user_id, collection, id)
 );
+
+-- Kinds of records the app syncs. Re-created on every run, so it also updates older setups.
+alter table public.journal_records drop constraint if exists journal_records_collection_check;
+alter table public.journal_records add constraint journal_records_collection_check
+  check (collection in ('accounts', 'trades', 'mistakes', 'setups', 'rules', 'reviews', 'images', 'profile'));
 
 create index if not exists journal_records_pull on public.journal_records (user_id, server_updated_at);
 
@@ -45,3 +51,14 @@ $$;
 
 revoke all on function public.push_journal_records(jsonb) from public, anon;
 grant execute on function public.push_journal_records(jsonb) to authenticated;
+
+-- Trade screenshots: a private bucket, files under "<user id>/<image id>.jpg".
+insert into storage.buckets (id, name, public)
+values ('trade-images', 'trade-images', false)
+on conflict (id) do nothing;
+
+drop policy if exists "Users manage their own screenshots" on storage.objects;
+create policy "Users manage their own screenshots" on storage.objects
+  for all to authenticated
+  using (bucket_id = 'trade-images' and (storage.foldername(name))[1] = (select auth.uid())::text)
+  with check (bucket_id = 'trade-images' and (storage.foldername(name))[1] = (select auth.uid())::text);

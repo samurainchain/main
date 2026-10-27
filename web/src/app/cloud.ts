@@ -15,6 +15,8 @@ export interface CloudState {
 /** Sync after local edits settle, and regularly while the site is open. */
 const EDIT_DEBOUNCE_MS = 1_500
 const INTERVAL_MS = 60_000
+/** Supabase Storage bucket for trade screenshots; files live under `<user id>/<image id>.jpg`. */
+const IMAGE_BUCKET = 'trade-images'
 
 /**
  * Sign-in and sync with Supabase. Sign-in is a link sent by email (no password). While signed
@@ -52,6 +54,7 @@ export class CloudController {
     this.engine = new CloudSync(this.backend, new SupabaseRemote(this.client), () => this.store.load())
 
     this.backend.onLocalChange = () => this.scheduleSync()
+    this.store.onImagesRemoved = (ids) => void this.removeRemoteImages(ids)
     this.client.auth.onAuthStateChange((_event, session) => {
       // Run outside the auth callback: Supabase holds a lock while it executes.
       setTimeout(() => void this.onSession(session?.user ? { id: session.user.id, email: session.user.email ?? '' } : undefined), 0)
@@ -82,6 +85,35 @@ export class CloudController {
     this.scheduleSync(0)
   }
 
+  /** A screenshot this device doesn't have yet, from cloud storage. */
+  async downloadImage(id: string): Promise<Blob | undefined> {
+    if (!this.client || !this.userId) return undefined
+    const { data, error } = await this.client.storage.from(IMAGE_BUCKET).download(imagePath(this.userId, id))
+    if (error) return undefined
+    return data
+  }
+
+  /** Uploads screenshots added on this device that the cloud doesn't have yet. */
+  private async uploadPendingImages(): Promise<void> {
+    const blobs = this.store.blobs
+    if (!this.client || !this.userId || !blobs) return
+    for (const id of await blobs.pendingUploads()) {
+      const blob = await blobs.getBlob(id)
+      if (!blob) {
+        await blobs.markUploaded([id])
+        continue
+      }
+      const { error } = await this.client.storage.from(IMAGE_BUCKET).upload(imagePath(this.userId, id), blob, { contentType: 'image/jpeg', upsert: true })
+      if (error) throw error
+      await blobs.markUploaded([id])
+    }
+  }
+
+  private async removeRemoteImages(ids: string[]): Promise<void> {
+    if (!this.client || !this.userId) return
+    await this.client.storage.from(IMAGE_BUCKET).remove(ids.map((id) => imagePath(this.userId!, id)))
+  }
+
   private async onSession(user: { id: string; email: string } | undefined): Promise<void> {
     if (user?.id === this.userId) return
     this.userId = user?.id
@@ -110,6 +142,7 @@ export class CloudController {
     this.set({ status: 'syncing' })
     try {
       await this.engine.sync()
+      await this.uploadPendingImages()
       this.set({ status: 'synced', lastSyncedAt: new Date() })
     } catch (error) {
       console.error('Sync failed', error)
@@ -121,6 +154,10 @@ export class CloudController {
     this.state = { ...this.state, ...patch }
     for (const listener of this.listeners) listener()
   }
+}
+
+function imagePath(userId: string, imageId: string): string {
+  return `${userId}/${imageId}.jpg`
 }
 
 /** Drops ?code=… (or an error) from the address once Supabase has read it. */

@@ -1,9 +1,9 @@
 import { defaultProfile, type JournalData, type Trade } from '../models'
 
 /** Collections stored as lists of records; the profile is a single record. */
-export type Collection = 'accounts' | 'trades' | 'mistakes' | 'setups' | 'rules' | 'reviews'
+export type Collection = 'accounts' | 'trades' | 'mistakes' | 'setups' | 'rules' | 'reviews' | 'images'
 export type RecordOf<C extends Collection> = JournalData[C][number]
-export const COLLECTIONS: readonly Collection[] = ['accounts', 'trades', 'mistakes', 'setups', 'rules', 'reviews']
+export const COLLECTIONS: readonly Collection[] = ['accounts', 'trades', 'mistakes', 'setups', 'rules', 'reviews', 'images']
 
 /**
  * Where the journal is persisted. The browser (IndexedDB) is the only backend today;
@@ -20,7 +20,7 @@ export interface JournalBackend {
 }
 
 export function emptyJournal(): JournalData {
-  return { accounts: [], trades: [], mistakes: [], setups: [], rules: [], reviews: [], profile: defaultProfile() }
+  return { accounts: [], trades: [], mistakes: [], setups: [], rules: [], reviews: [], images: [], profile: defaultProfile() }
 }
 
 type StoredTrade = Omit<Trade, 'brokenRuleIds'> & Partial<Pick<Trade, 'brokenRuleIds'>>
@@ -37,6 +37,19 @@ export function normalizeJournal(data: Partial<Omit<JournalData, 'trades'>> & { 
     setups: data.setups ?? [],
     rules: data.rules ?? [],
     reviews: data.reviews ?? [],
+    images: data.images ?? [],
     profile: { ...defaultProfile(), ...data.profile },
   }
+}
+
+/** The screenshots' image files, kept apart from the journal records. */
+export interface ImageBlobStore {
+  ids(): Promise<string[]>
+  getBlob(id: string): Promise<Blob | undefined>
+  putBlob(id: string, blob: Blob): Promise<void>
+  deleteBlobs(ids: string[]): Promise<void>
+  /** Images waiting to be uploaded to the cloud. */
+  pendingUploads(): Promise<string[]>
+  markForUpload(ids: string[]): Promise<void>
+  markUploaded(ids: string[]): Promise<void>
 }
