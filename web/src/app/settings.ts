@@ -1,7 +1,9 @@
 import { useSyncExternalStore } from 'react'
+import type { WeekStart } from '../core/stats'
 
 export type LanguageSetting = 'system' | 'en' | 'ru' | 'es'
 export type ThemeSetting = 'system' | 'dark' | 'light'
+export type WeekStartSetting = 'auto' | 'monday' | 'sunday'
 /** `all` or an account id. */
 export type AccountSelection = string
 
@@ -9,10 +11,11 @@ export interface Settings {
   language: LanguageSetting
   theme: ThemeSetting
   selectedAccount: AccountSelection
+  weekStart: WeekStartSetting
 }
 
 const STORAGE_KEY = 'mirror.settings'
-const DEFAULTS: Settings = { language: 'system', theme: 'system', selectedAccount: 'all' }
+const DEFAULTS: Settings = { language: 'system', theme: 'system', selectedAccount: 'all', weekStart: 'auto' }
 
 // Per-browser preferences. They live in localStorage, apart from the journal data, and are
 // read defensively: storage can be unavailable (private mode) or hold stale shapes.
@@ -46,4 +49,27 @@ function subscribe(listener: () => void): () => void {
 
 export function useSettings(): Settings {
   return useSyncExternalStore(subscribe, () => current)
+}
+
+/** First day of the week as `Date.getDay()`: the setting, or the browser locale's convention. */
+export function useWeekStart(): WeekStart {
+  const { weekStart } = useSettings()
+  if (weekStart === 'monday') return 1
+  if (weekStart === 'sunday') return 0
+  return localeWeekStart()
+}
+
+function localeWeekStart(): WeekStart {
+  try {
+    const locale = new Intl.Locale(navigator.language) as Intl.Locale & {
+      getWeekInfo?: () => { firstDay: number }
+      weekInfo?: { firstDay: number }
+    }
+    const firstDay = locale.getWeekInfo?.().firstDay ?? locale.weekInfo?.firstDay
+    // Intl numbers days 1 (Monday) to 7 (Sunday).
+    if (firstDay !== undefined) return firstDay === 7 ? 0 : 1
+  } catch {
+    // Fall through to Monday.
+  }
+  return 1
 }

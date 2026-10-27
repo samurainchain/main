@@ -70,3 +70,36 @@ export function formatDuration(ms: number, locale: Locale): string {
     .map(([value, unit]) => new Intl.NumberFormat(locale, { style: 'unit', unit, unitDisplay: 'short' }).format(value))
     .join(' ')
 }
+
+/** A 0–1 ratio as a whole percentage, e.g. win rate. */
+export function formatShare(ratio: Big, locale: Locale): string {
+  return new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }).format(ratio.toFixed(4) as `${number}`)
+}
+
+/** A plain ratio with 2 decimals, e.g. profit factor. */
+export function formatRatio(value: Big, locale: Locale): string {
+  return new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value.toFixed(2) as `${number}`)
+}
+
+/** Compact money for chart labels: "+$1.2K". */
+export function formatMoneyCompact(amount: Big, currency: Currency, locale: Locale): string {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: isoCurrency(currency),
+    notation: 'compact',
+    maximumFractionDigits: 1,
+    signDisplay: 'exceptZero',
+  }).format(amount.toFixed(2) as `${number}`)
+}
+
+export function formatMonth(date: Date, locale: Locale): string {
+  return new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(date)
+}
+
+/** Short weekday names indexed like `Date.getDay()` (0 = Sunday). */
+export function weekdayNames(locale: Locale, width: 'short' | 'narrow' = 'short'): string[] {
+  const sunday = new Date(2026, 0, 4)
+  return Array.from({ length: 7 }, (_, index) =>
+    new Intl.DateTimeFormat(locale, { weekday: width }).format(new Date(sunday.getFullYear(), 0, 4 + index)),
+  )
+}

@@ -2,7 +2,7 @@ import { ChevronRight, Download, Trash2, Upload, Wallet } from 'lucide-react'
 import { useId, useRef, useState, type ChangeEvent } from 'react'
 import { useJournal, useStore } from '../../app/journal'
 import { routeHref } from '../../app/router'
-import { updateSettings, useSettings, type LanguageSetting, type ThemeSetting } from '../../app/settings'
+import { updateSettings, useSettings, type LanguageSetting, type ThemeSetting, type WeekStartSetting } from '../../app/settings'
 import { Button, Card, Field, SectionHeader } from '../../design/components'
 import { useI18n } from '../../i18n/i18n'
 import { PageHeader } from '../shell/PageHeader'
@@ -16,7 +16,7 @@ export function ProfilePage() {
   const settings = useSettings()
   const fileInput = useRef<HTMLInputElement>(null)
   const [message, setMessage] = useState<string>()
-  const ids = { language: useId(), theme: useId() }
+  const ids = { language: useId(), theme: useId(), weekStart: useId() }
 
   const importBackup = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -67,6 +67,13 @@ export function ProfilePage() {
             <option value="system">{t('profile.system')}</option>
             <option value="dark">{t('profile.themeDark')}</option>
             <option value="light">{t('profile.themeLight')}</option>
+          </select>
+        </Field>
+        <Field label={t('profile.weekStart')} htmlFor={ids.weekStart}>
+          <select id={ids.weekStart} className="input" value={settings.weekStart} onChange={(event) => updateSettings({ weekStart: event.target.value as WeekStartSetting })}>
+            <option value="auto">{t('profile.system')}</option>
+            <option value="monday">{t('profile.monday')}</option>
+            <option value="sunday">{t('profile.sunday')}</option>
           </select>
         </Field>
       </Card>

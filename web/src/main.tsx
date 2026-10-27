@@ -8,6 +8,7 @@ import './design/tokens.css'
 import './design/base.css'
 import './design/components.css'
 import './features/shell/shell.css'
+import './features/analytics/analytics.css'
 import { AppShell } from './features/shell/AppShell'
 import { I18nProvider } from './i18n/i18n'
 
