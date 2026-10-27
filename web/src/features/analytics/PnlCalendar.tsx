@@ -8,6 +8,14 @@ import { formatDay, formatMoney, formatMoneyCompact, formatMonth, weekdayNames }
 import { useI18n } from '../../i18n/i18n'
 import { TradeRow } from '../trades/TradeRow'
 
+// The legend ramp: strongest loss to strongest profit, with the empty-day color in the middle.
+const LEGEND_STEPS = [-45, -28, -12, 0, 12, 28, 45]
+
+function legendFill(step: number): string {
+  const tone = step < 0 ? 'var(--color-chart-loss)' : 'var(--color-chart-profit)'
+  return `color-mix(in srgb, ${tone} ${Math.abs(step)}%, var(--color-surface-elevated))`
+}
+
 /**
  * A month as a grid of days colored by that day's PnL (SPEC section 4.7, block 3).
  * Tapping a day lists its trades below the grid.
@@ -30,12 +38,13 @@ export function PnlCalendar({ trades, currency }: { trades: readonly ClosedTrade
   const names = weekdayNames(locale, 'short')
   const orderedNames = [...names.slice(weekStart), ...names.slice(0, weekStart)]
 
-  // Color strength scales with the month's largest absolute day.
+  // Color strength scales with the month's largest absolute day, capped at 45% so the date
+  // and amount on the strongest fill keep AA contrast in both themes.
   const maxAbs = monthDays.reduce((top, date) => {
     const pnl = days.get(localDayKey(date))?.pnl
     return pnl && Number(pnl.abs().toFixed(2)) > top ? Number(pnl.abs().toFixed(2)) : top
   }, 0)
-  const intensity = (pnl: Big) => (maxAbs ? 18 + Math.round((Number(pnl.abs().toFixed(2)) / maxAbs) * 52) : 0)
+  const intensity = (pnl: Big) => (maxAbs ? 12 + Math.round((Number(pnl.abs().toFixed(2)) / maxAbs) * 33) : 0)
 
   const shiftMonth = (offset: number) => {
     setMonth(new Date(month.getFullYear(), month.getMonth() + offset, 1))
@@ -91,6 +100,18 @@ export function PnlCalendar({ trades, currency }: { trades: readonly ClosedTrade
           )
         })}
       </div>
+
+      {maxAbs > 0 && (
+        <div className="calendar__legend caption" aria-hidden="true">
+          <span>{t('analytics.legendLoss')}</span>
+          <span className="calendar__ramp">
+            {LEGEND_STEPS.map((step) => (
+              <span key={step} style={{ background: legendFill(step) }} />
+            ))}
+          </span>
+          <span>{t('analytics.legendProfit')}</span>
+        </div>
+      )}
 
       {selected && selectedTrades.length > 0 && (
         <div className="calendar__trades">

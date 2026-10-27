@@ -1,21 +1,27 @@
 import SwiftUI
 import UIKit
 
-/// Color tokens from SPEC section 9. Each token resolves to its dark or light
-/// value from the current trait collection, so the app follows the system theme.
-/// Light profit, loss and warning are darker than the SPEC values to reach WCAG AA
-/// as text (checked in web/src/design/contrast.test.ts, same palette).
+/// Color tokens, shared with the web app (web/src/design/tokens.css): the Supabase-like
+/// look from CLAUDE.md. Each token resolves to its dark or light value from the current
+/// trait collection, so the app follows the system theme. Every text pair meets WCAG AA
+/// (checked in web/src/design/contrast.test.ts).
 enum DSColor {
-    static let background = dynamic(dark: 0x0B0B0F, light: 0xF6F6F8)
-    static let surface = dynamic(dark: 0x16161C, light: 0xFFFFFF)
-    static let surfaceElevated = dynamic(dark: 0x1F1F27, light: 0xF0F0F4)
-    static let textPrimary = dynamic(dark: 0xF5F5F7, light: 0x0B0B0F)
-    static let textSecondary = dynamic(dark: 0x8E8E99, light: 0x6B6B76)
-    static let accent = dynamic(dark: 0x7C6CFF, light: 0x5B4BE8)
-    static let profit = dynamic(dark: 0x3DDC97, light: 0x0A7D4F)
-    static let loss = dynamic(dark: 0xFF5C6C, light: 0xC92C40)
-    static let warning = dynamic(dark: 0xFFB547, light: 0x8F5F00)
-    static let separator = dynamic(dark: 0x2A2A33, light: 0xE3E3E8)
+    static let background = dynamic(dark: 0x121212, light: 0xFCFCFC)
+    static let surface = dynamic(dark: 0x171717, light: 0xFFFFFF)
+    static let surfaceElevated = dynamic(dark: 0x1F1F1F, light: 0xF4F4F4)
+    static let border = dynamic(dark: 0x2E2E2E, light: 0xE4E4E4)
+    static let borderStrong = dynamic(dark: 0x3E3E3E, light: 0xCFCFCF)
+    static let textPrimary = dynamic(dark: 0xEDEDED, light: 0x171717)
+    static let textSecondary = dynamic(dark: 0xA0A0A0, light: 0x666666)
+    /// Links, icons, the selected tab.
+    static let accent = dynamic(dark: 0x3ECF8E, light: 0x00744A)
+    /// Filled primary buttons, with `accentFillBorder` around and white text.
+    static let accentFill = dynamic(dark: 0x006239, light: 0x006239)
+    static let accentFillBorder = dynamic(dark: 0x1F8A5C, light: 0x00744A)
+    static let profit = dynamic(dark: 0x3ECF8E, light: 0x0A7D4F)
+    static let loss = dynamic(dark: 0xF87171, light: 0xC92C40)
+    static let warning = dynamic(dark: 0xF5A623, light: 0x8F5F00)
+    static let separator = dynamic(dark: 0x2E2E2E, light: 0xE4E4E4)
 
     private static func dynamic(dark: UInt32, light: UInt32) -> Color {
         Color(uiColor: UIColor { traits in

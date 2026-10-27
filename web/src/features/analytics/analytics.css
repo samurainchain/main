@@ -9,7 +9,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 6px;
+  gap: var(--space-xs);
   padding-top: var(--space-s);
   border-top: 1px solid var(--color-separator);
 }
@@ -21,9 +21,10 @@
   gap: var(--space-xs);
 }
 
+/* Wider screens: the six metrics as two even rows of three, no orphan tile. */
 @media (min-width: 560px) {
   .metric-grid {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -38,11 +39,12 @@
 
 .metric__value {
   font-size: var(--text-title);
-  font-weight: 600;
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 .metric__value .pnl {
-  font-weight: 600;
+  font-weight: 500;
 }
 
 /* Bars */
@@ -77,7 +79,8 @@
 
 .bar-list__value {
   min-width: 76px;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
   text-align: right;
 }
 
@@ -88,7 +91,7 @@
 .signed-bar {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  height: 14px;
+  height: 10px;
 }
 
 .signed-bar__half {
@@ -103,22 +106,29 @@
 
 .cost-bar {
   display: flex;
-  height: 14px;
+  height: 10px;
 }
 
 .bar {
   display: block;
   height: 100%;
   min-width: 2px;
-  border-radius: 4px;
 }
 
+/* Rounded only at the value end, square where the bar leaves the axis. */
 .bar--profit {
-  background: var(--color-profit);
+  border-radius: 0 var(--radius-small) var(--radius-small) 0;
+  background: var(--color-chart-profit);
 }
 
 .bar--loss {
-  background: var(--color-loss);
+  border-radius: var(--radius-small) 0 0 var(--radius-small);
+  background: var(--color-chart-loss);
+}
+
+/* Cost bars are losses that grow rightwards from the start. */
+.bar--cost {
+  border-radius: 0 var(--radius-small) var(--radius-small) 0;
 }
 
 @media (max-width: 420px) {
@@ -140,15 +150,21 @@
 }
 
 .column-chart__plot {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(24, 1fr);
-  gap: 2px;
+  gap: var(--space-hair);
   height: 140px;
 }
 
 .column-chart__column {
   display: grid;
   grid-template-rows: 1fr 1fr;
+  border-radius: var(--radius-tiny);
+}
+
+.column-chart__column--active {
+  background: color-mix(in srgb, var(--color-text-primary) 7%, transparent);
 }
 
 .column-chart__half {
@@ -159,22 +175,88 @@
 
 .column-chart__half--negative {
   align-items: flex-start;
-  border-top: 1px solid var(--color-separator);
+}
+
+/* One continuous zero line across all columns, under the marks. */
+.column-chart__plot::before {
+  content: '';
+  position: absolute;
+  inset: 50% 0 auto;
+  border-top: 1px solid var(--color-border-strong);
 }
 
 .column {
   display: block;
   width: 100%;
+  max-width: 24px;
   min-height: 2px;
-  border-radius: 3px;
 }
 
 .column--profit {
-  background: var(--color-profit);
+  border-radius: var(--radius-small) var(--radius-small) 0 0;
+  background: var(--color-chart-profit);
 }
 
 .column--loss {
-  background: var(--color-loss);
+  border-radius: 0 0 var(--radius-small) var(--radius-small);
+  background: var(--color-chart-loss);
+}
+
+/* Hover and keyboard readout shared by the column chart and the equity curve. */
+.chart-tooltip {
+  position: absolute;
+  top: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: var(--space-xs);
+  padding: var(--space-xxs) var(--space-xs);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-button);
+  background: var(--color-surface-elevated);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.chart-tooltip--start {
+  transform: translateX(-8px);
+}
+
+.chart-tooltip--center {
+  transform: translateX(-50%);
+}
+
+.chart-tooltip--end {
+  transform: translateX(calc(-100% + 8px));
+}
+
+.chart-tooltip__key {
+  width: 12px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.chart-tooltip__key--profit,
+.chart-tooltip__key--neutral {
+  background: var(--color-chart-profit);
+}
+
+.chart-tooltip__key--loss {
+  background: var(--color-chart-loss);
+}
+
+.chart-tooltip__value {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.chart-tooltip__label {
+  grid-column: 2;
+  font-size: var(--text-label);
+  color: var(--color-text-secondary);
 }
 
 .column-chart__axis {
@@ -182,8 +264,8 @@
   grid-template-columns: repeat(24, 1fr);
   margin-top: var(--space-xxs);
   color: var(--color-text-secondary);
-  font-size: 0.6875rem;
-  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+  font-size: var(--text-tick);
 }
 
 /* Calendar */
@@ -197,7 +279,7 @@
 
 .calendar__title {
   font-size: var(--text-headline);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .calendar__title::first-letter {
@@ -226,28 +308,33 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: var(--space-hair);
   min-height: 52px;
-  padding: var(--space-xxs) 2px;
-  border: 1px solid transparent;
-  border-radius: 10px;
+  padding: var(--space-xxs) var(--space-hair);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
   background: var(--color-surface-elevated);
   color: var(--color-text-primary);
   cursor: pointer;
 }
 
+.calendar__day:not(:disabled):hover {
+  border-color: var(--color-border-strong);
+}
+
 .calendar__day:disabled {
+  border-color: transparent;
   background: transparent;
   color: var(--color-text-secondary);
   cursor: default;
 }
 
 .calendar__day--profit {
-  background: color-mix(in srgb, var(--color-profit) var(--day-strength), var(--color-surface-elevated));
+  background: color-mix(in srgb, var(--color-chart-profit) var(--day-strength), var(--color-surface-elevated));
 }
 
 .calendar__day--loss {
-  background: color-mix(in srgb, var(--color-loss) var(--day-strength), var(--color-surface-elevated));
+  background: color-mix(in srgb, var(--color-chart-loss) var(--day-strength), var(--color-surface-elevated));
 }
 
 .calendar__day--today {
@@ -260,14 +347,34 @@
 }
 
 .calendar__date {
-  font-size: var(--text-caption);
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
 }
 
 .calendar__pnl {
-  font-size: 0.625rem;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
   white-space: nowrap;
+}
+
+.calendar__legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-xs);
+  margin-top: var(--space-s);
+}
+
+.calendar__ramp {
+  display: flex;
+  gap: var(--space-hair);
+}
+
+.calendar__ramp span {
+  width: 14px;
+  height: 10px;
+  border-radius: var(--radius-tiny);
 }
 
 .calendar__trades {
@@ -287,7 +394,7 @@
   overflow-x: auto;
   border-radius: var(--radius-card);
   background: var(--color-surface);
-  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
 }
 
 .breakdown-table {
@@ -309,22 +416,37 @@
 
 .breakdown-table thead th {
   color: var(--color-text-secondary);
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .breakdown-table tbody tr {
-  border-top: 1px solid var(--color-separator);
+  border-top: 1px solid var(--color-border);
 }
 
 .breakdown-table tbody th {
-  font-weight: 600;
+  font-weight: 500;
 }
 
 /* Equity curve */
 
 .equity-curve {
-  position: relative;
   margin: 0;
+}
+
+.equity-curve__body {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.equity-curve__plot {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  border-radius: var(--radius-button);
 }
 
 .equity-curve svg {
@@ -334,8 +456,6 @@
 }
 
 .equity-curve__scale {
-  position: absolute;
-  inset: 0 0 0 auto;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -343,36 +463,73 @@
 }
 
 .equity-curve__zero {
-  stroke: var(--color-separator);
-  stroke-dasharray: 4 4;
+  stroke: var(--color-border-strong);
+  stroke-width: 1;
 }
 
 .equity-curve__line {
   fill: none;
-  stroke-width: 2.5;
+  stroke-width: 2;
+  stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .equity-curve__line--profit,
 .equity-curve__line--neutral {
-  stroke: var(--color-profit);
+  stroke: var(--color-chart-profit);
 }
 
 .equity-curve__line--loss {
-  stroke: var(--color-loss);
+  stroke: var(--color-chart-loss);
 }
 
 .equity-curve__area {
-  opacity: 0.12;
+  opacity: 0.1;
 }
 
 .equity-curve__area--profit,
 .equity-curve__area--neutral {
-  fill: var(--color-profit);
+  fill: var(--color-chart-profit);
 }
 
 .equity-curve__area--loss {
-  fill: var(--color-loss);
+  fill: var(--color-chart-loss);
+}
+
+.equity-curve__crosshair {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-border-strong);
+  pointer-events: none;
+}
+
+/* End and cursor dots: 10px, with a ring in the card color where they cross the line. */
+.equity-curve__dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--color-surface);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.equity-curve__dot--profit,
+.equity-curve__dot--neutral {
+  background: var(--color-chart-profit);
+}
+
+.equity-curve__dot--loss {
+  background: var(--color-chart-loss);
+}
+
+.equity-curve__end {
+  margin-top: var(--space-xs);
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  text-align: right;
 }
 
 /* Today: mistake of the week */
@@ -380,7 +537,7 @@
 .week-mistake {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-hair);
   margin-top: var(--space-s);
 }
 
@@ -390,5 +547,5 @@
   justify-content: space-between;
   gap: var(--space-s);
   font-size: var(--text-headline);
-  font-weight: 600;
+  font-weight: 500;
 }

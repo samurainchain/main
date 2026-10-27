@@ -15,7 +15,8 @@ body {
   color: var(--color-text-primary);
   font-family: var(--font-body);
   font-size: var(--text-body);
-  line-height: 1.4;
+  line-height: 1.5;
+  font-feature-settings: 'cv11', 'ss01';
   -webkit-font-smoothing: antialiased;
 }
 
@@ -80,4 +81,23 @@ a {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Small uppercase monospace labels, as on the Supabase dashboard ("RECENT BRANCH"). */
+.label,
+.section-header h2,
+.page-header__subtitle,
+.metric > .caption,
+.stat dt,
+.calendar__weekday,
+.today-summary > .caption:first-child,
+.week-mistake > .caption:first-child,
+.trade-summary > .caption:first-child,
+.side-badge {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
 }

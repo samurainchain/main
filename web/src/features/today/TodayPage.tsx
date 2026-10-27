@@ -119,8 +119,8 @@ export function TodayPage() {
       {todayTrades.length === 0 ? (
         <EmptyState
           icon={<Sun size={28} />}
-          title={t('today.emptyTitle')}
-          message={t('today.emptyMessage')}
+          title={t(trades.length > 0 ? 'today.noTradesTitle' : 'today.emptyTitle')}
+          message={t(trades.length > 0 ? 'today.noTradesMessage' : 'today.emptyMessage')}
           action={
             <Button variant="primary" block icon={<Plus size={20} aria-hidden="true" />} onClick={newTrade}>
               {t('action.newTrade')}

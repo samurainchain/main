@@ -20,7 +20,8 @@ async function main() {
   const page = await (await browser.newContext({ viewport: { width: 430, height: 900 }, locale: 'en-US' })).newPage()
   await page.goto(URL)
 
-  // One crypto perpetuals account to log against.
+  // Skip onboarding, then one crypto perpetuals account to log against.
+  await page.getByRole('button', { name: 'Skip' }).click()
   await page.getByRole('button', { name: 'Create account' }).click()
   await page.getByLabel('Name').fill('OCR test')
   await page.getByRole('button', { name: 'Save' }).click()
@@ -32,7 +33,7 @@ async function main() {
   for (const item of expected) {
     await page.locator('.tabbar .nav-add').click()
     const sheet = page.locator('.sheet')
-    await sheet.locator('input[type=file]').setInputFiles(join(DIR, item.file))
+    await sheet.locator('.screenshot-start input[type=file]').setInputFiles(join(DIR, item.file))
     await sheet.locator('.screenshot-start [role=status]').filter({ hasNotText: /Reading/ }).waitFor({ timeout: 120_000 })
     const status = await sheet.locator('.screenshot-start [role=status]').innerText()
 

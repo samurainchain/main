@@ -13,8 +13,10 @@ enum DSSpacing {
     static let screen: CGFloat = m
 }
 
-/// Corner radii from SPEC section 9. Chips use `Capsule` instead of a radius.
+/// Corner radii, shared with the web app: tight, with 1 pt borders instead of shadows.
 enum DSRadius {
-    static let card: CGFloat = 20
-    static let button: CGFloat = 14
+    static let card: CGFloat = 8
+    static let button: CGFloat = 6
+    /// Badges, calendar days and the value end of chart bars.
+    static let small: CGFloat = 4
 }

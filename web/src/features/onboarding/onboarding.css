@@ -17,16 +17,16 @@
 
 .onboarding__progress {
   flex: 1;
-  height: 6px;
+  height: 4px;
   overflow: hidden;
-  border-radius: 999px;
+  border-radius: var(--radius-tiny);
   background: var(--color-surface-elevated);
 }
 
 .onboarding__progress span {
   display: block;
   height: 100%;
-  border-radius: 999px;
+  border-radius: var(--radius-tiny);
   background: var(--color-accent);
   transition: width 0.3s ease;
 }
@@ -48,13 +48,13 @@
 .onboarding__welcome h1,
 .onboarding__question h1 {
   font-size: var(--text-large-title);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.01em;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .onboarding__welcome img {
-  border-radius: 16px;
+  border-radius: var(--radius-card);
 }
 
 .onboarding__icon {
@@ -62,7 +62,8 @@
   place-items: center;
   width: 72px;
   height: 72px;
-  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
   background: var(--color-surface);
   color: var(--color-accent);
 }
@@ -75,8 +76,12 @@
 
 .onboarding__subtitle {
   margin-top: var(--space-m);
-  font-size: var(--text-headline);
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
 }
 
 .onboarding__options {
@@ -86,26 +91,26 @@
 }
 
 .onboarding__option {
-  min-height: 56px;
+  min-height: 52px;
   padding: var(--space-s) var(--space-m);
-  border: 1px solid var(--color-separator);
-  border-radius: var(--radius-button);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
   background: var(--color-surface);
-  font-size: var(--text-headline);
+  font-size: var(--text-body);
   text-align: left;
   cursor: pointer;
 }
 
 .onboarding__option[aria-pressed='true'] {
   border-color: var(--color-accent);
-  background: color-mix(in srgb, var(--color-accent) 16%, var(--color-surface));
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
 }
 
 .onboarding__weaknesses {
   margin: 0;
   padding-left: var(--space-l);
   font-size: var(--text-title);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--color-loss);
 }
 
@@ -125,13 +130,13 @@
 
 .onboarding__example-bar {
   display: block;
-  height: 12px;
+  height: 10px;
 }
 
 .onboarding__example-bar span {
   display: block;
   height: 100%;
-  border-radius: 4px;
+  border-radius: var(--radius-tiny);
   background: var(--color-loss);
   transform-origin: left;
   animation: grow-bar 0.7s cubic-bezier(0.2, 0.9, 0.3, 1) both;

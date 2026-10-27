@@ -175,6 +175,7 @@ export function AnalyticsPage() {
               values={byHour(inRange)}
               labels={Array.from({ length: 24 }, (_, hour) => String(hour).padStart(2, '0'))}
               tickEvery={3}
+              formatLabel={(hour) => `${hour}:00`}
             />
           </Card>
 

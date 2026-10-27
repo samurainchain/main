@@ -83,7 +83,7 @@ async function main() {
 
     await report('onboarding')
     await page.locator('.onboarding input[type=file]').setInputFiles(BACKUP)
-    await page.getByRole('heading', { name: 'Today' }).waitFor()
+    await page.getByRole('heading', { name: 'Today', exact: true }).waitFor()
 
     const routes = ['today', 'trades', 'analytics', 'profile', 'accounts', 'rules', 'review', 'tags']
     for (const route of routes) {

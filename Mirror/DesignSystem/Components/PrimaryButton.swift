@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The main call to action on a screen: full width, accent fill, 14 pt corners.
+/// The main call to action on a screen: full width, deep green fill with a brighter edge.
 struct PrimaryButton: View {
     let title: LocalizedStringKey
     var systemImage: String?
@@ -21,7 +21,11 @@ struct PrimaryButton: View {
         }
         .buttonStyle(.borderedProminent)
         .buttonBorderShape(.roundedRectangle(radius: DSRadius.button))
-        .tint(DSColor.accent)
+        .tint(DSColor.accentFill)
+        .overlay(
+            RoundedRectangle(cornerRadius: DSRadius.button)
+                .strokeBorder(DSColor.accentFillBorder, lineWidth: 1)
+        )
     }
 }
 

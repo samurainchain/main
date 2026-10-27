@@ -5,14 +5,18 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-xs);
-  min-height: 44px;
-  padding: var(--space-s) var(--space-m);
-  border: none;
+  min-height: 40px;
+  padding: var(--space-xs) var(--space-m);
+  border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-button);
-  font-size: var(--text-headline);
-  font-weight: 600;
+  font-size: var(--text-body);
+  font-weight: 500;
   cursor: pointer;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--color-text-secondary);
 }
 
 .button:active {
@@ -29,8 +33,13 @@
 }
 
 .button--primary {
-  background: var(--color-accent);
+  border-color: var(--color-accent-fill-border);
+  background: var(--color-accent-fill);
   color: var(--color-accent-contrast);
+}
+
+.button--primary:hover:not(:disabled) {
+  border-color: var(--color-accent);
 }
 
 .button--secondary {
@@ -44,6 +53,7 @@
 }
 
 .button--plain {
+  border-color: transparent;
   background: transparent;
   color: var(--color-accent);
   padding-inline: var(--space-xs);
@@ -53,28 +63,32 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border: none;
-  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-button);
   background: var(--color-surface-elevated);
   color: var(--color-text-secondary);
   cursor: pointer;
 }
 
+.icon-button:hover:not(:disabled) {
+  color: var(--color-text-primary);
+}
+
 /* PnL */
 
 .pnl {
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .pnl--hero {
   font-family: var(--font-rounded);
   /* Never wider than the screen, even with the largest text setting. */
   font-size: min(var(--text-hero), 15vw);
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1.1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
 }
 
 /* Cards and sections */
@@ -83,7 +97,7 @@
   background: var(--color-surface);
   border-radius: var(--radius-card);
   padding: var(--space-m);
-  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
 }
 
 .section-header {
@@ -92,14 +106,6 @@
   justify-content: space-between;
   gap: var(--space-s);
   margin: var(--space-l) 0 var(--space-xs);
-}
-
-.section-header h2 {
-  font-size: var(--text-caption);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-text-secondary);
 }
 
 /* Empty state */
@@ -117,17 +123,18 @@
 .empty-state__icon {
   display: grid;
   place-items: center;
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   margin-bottom: var(--space-xs);
-  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
   background: var(--color-surface);
   color: var(--color-text-secondary);
 }
 
 .empty-state__title {
   font-size: var(--text-title);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .empty-state__message {
@@ -147,7 +154,7 @@
   max-height: 100dvh;
   margin: auto auto 0;
   padding: 0;
-  border: none;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-card) var(--radius-card) 0 0;
   background: var(--color-surface);
   color: var(--color-text-primary);
@@ -184,7 +191,7 @@
 
 .sheet__header h2 {
   font-size: var(--text-headline);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .sheet__body {
@@ -215,21 +222,22 @@
 .segmented {
   display: grid;
   /* One row of equal options, wrapping onto more rows when large text needs the room. */
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 5.5rem), 1fr));
-  gap: var(--space-xxs);
-  padding: var(--space-xxs);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 4.5rem), 1fr));
+  gap: var(--space-hair);
+  padding: var(--space-hair);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-button);
-  background: var(--color-surface-elevated);
+  background: var(--color-background);
 }
 
 .segmented__option {
-  min-height: 36px;
-  padding: var(--space-xs) var(--space-s);
-  border: none;
-  border-radius: 10px;
+  min-height: 34px;
+  padding: var(--space-xxs) var(--space-xs);
+  border: 1px solid transparent;
+  border-radius: var(--radius-small);
   background: transparent;
   color: var(--color-text-secondary);
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
 }
 
@@ -239,19 +247,23 @@
 }
 
 .segmented__option[aria-checked='true'] {
-  background: var(--color-surface);
+  border-color: var(--color-border-control);
+  background: var(--color-surface-elevated);
   color: var(--color-text-primary);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
 }
 
+/* Long/short: outlined and lightly tinted, like the side badges in the trade list, so the
+   choice reads clearly without competing with the filled Save button. */
 .segmented__option--profit[aria-checked='true'] {
-  background: var(--color-profit);
-  color: var(--color-on-profit);
+  border-color: var(--color-profit);
+  background: color-mix(in srgb, var(--color-profit) 8%, var(--color-surface));
+  color: var(--color-profit);
 }
 
 .segmented__option--loss[aria-checked='true'] {
-  background: var(--color-loss);
-  color: var(--color-on-loss);
+  border-color: var(--color-loss);
+  background: color-mix(in srgb, var(--color-loss) 8%, var(--color-surface));
+  color: var(--color-loss);
 }
 
 /* Chips */
@@ -260,26 +272,26 @@
   --chip-color: var(--color-accent);
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-height: 36px;
-  padding: 6px var(--space-s);
-  border: 1px solid var(--color-separator);
-  border-radius: 999px;
+  gap: var(--space-xs);
+  min-height: 32px;
+  padding: var(--space-xxs) var(--space-s);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-button);
   background: transparent;
   color: var(--color-text-primary);
   font-size: var(--text-caption);
-  font-weight: 500;
+  font-weight: 400;
   cursor: pointer;
 }
 
 .chip--selected {
   border-color: var(--chip-color);
-  background: color-mix(in srgb, var(--chip-color) 20%, transparent);
+  background: color-mix(in srgb, var(--chip-color) 16%, transparent);
 }
 
 .chip--static {
   min-height: 0;
-  padding: 2px var(--space-xs);
+  padding: var(--space-hair) var(--space-xs);
   border-color: color-mix(in srgb, var(--chip-color) 50%, transparent);
   cursor: default;
 }
@@ -295,13 +307,13 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-xs);
   min-width: 0;
 }
 
 .field__label {
   font-size: var(--text-caption);
-  font-weight: 600;
+  font-weight: 400;
   color: var(--color-text-secondary);
 }
 
@@ -317,17 +329,19 @@
 
 .input {
   width: 100%;
-  min-height: 44px;
-  padding: 10px var(--space-s);
-  border: 1px solid transparent;
+  min-height: 40px;
+  padding: var(--space-xs) var(--space-s);
+  border: 1px solid var(--color-border-control);
   border-radius: var(--radius-field);
   background: var(--color-surface-elevated);
   font-size: var(--text-body);
 }
 
+/* A 2px accent ring: the border alone is too thin a focus cue. */
 .input:focus {
-  outline: none;
   border-color: var(--color-accent);
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
 }
 
 .field--invalid .input {
@@ -356,7 +370,7 @@ textarea.input {
 .limit-bar {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-xs);
 }
 
 .limit-bar__text {
@@ -369,14 +383,14 @@ textarea.input {
 .limit-bar__track {
   height: 8px;
   overflow: hidden;
-  border-radius: 999px;
+  border-radius: var(--radius-tiny);
   background: var(--color-surface-elevated);
 }
 
 .limit-bar__fill {
   display: block;
   height: 100%;
-  border-radius: 999px;
+  border-radius: var(--radius-tiny);
   background: var(--color-text-secondary);
   transition: width 0.3s ease;
 }
