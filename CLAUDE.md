@@ -54,3 +54,8 @@ Full product spec: docs/SPEC.md. Read the relevant section before every task.
 ## Design direction (final redesign, after features)
 - The owner likes the Supabase dashboard look: near-black background, thin 1px borders instead of shadows, green accent, small uppercase monospace labels (e.g. "WARNINGS", "RECENT BRANCH"), dense dashboard cards with small bar charts
 - Apply it to the web app (and the iOS DesignSystem) in one pass once the feature stages are done; until then keep UI changes functional
+
+## Instagram marketing
+- Skills /ig-reel, /ig-viral, /ig-caption, /ig-carousel, /ig-story, /ig-profile, /ig-plan, /ig-human, /ig-comment, /ig-reply, /ig-dm, /ig-repurpose, /ig-audit live in .claude/skills/ig-* (third-party, MIT, copied unchanged; see .claude/skills/LICENSE-instagram-agent-skill)
+- Their files live in the repo, not in ~/.claude/instagram (the cloud container is temporary): read and write marketing/instagram/voice.md, swipe.md, plan.md and log.md wherever a skill says ~/.claude/instagram/
+- Nothing is posted without the owner's yes; no profit or income claims (Meta ad policy, SPEC)
