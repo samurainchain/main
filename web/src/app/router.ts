@@ -11,6 +11,7 @@ export type Route =
   | { name: 'profile' }
   | { name: 'accounts' }
   | { name: 'rules' }
+  | { name: 'tags' }
   | { name: 'review'; week?: string }
 
 export function parseRoute(hash: string): Route {
@@ -26,6 +27,8 @@ export function parseRoute(hash: string): Route {
       return { name: 'accounts' }
     case 'rules':
       return { name: 'rules' }
+    case 'tags':
+      return { name: 'tags' }
     case 'review':
       return second && /^\d{4}-\d{2}-\d{2}$/.test(second) ? { name: 'review', week: second } : { name: 'review' }
     default:

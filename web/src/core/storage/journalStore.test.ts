@@ -209,4 +209,24 @@ describe('JournalStore', () => {
     const { writes } = canonicalSystemMistakes(once)
     expect(writes).toEqual({ seeded: [], mistakes: [], trades: [], removedMistakeIds: [] })
   })
+
+  it('edits, reorders and deletes tags; system mistakes are only hidden', async () => {
+    const db = newId()
+    const store = await openStore(db)
+    const setup = await store.addSetup('Breakout')
+    const retest = await store.addSetup('Retest')
+    await store.saveSetup({ ...setup, name: 'Range breakout', colorHex: '#3DDC97' })
+    await store.reorderTags('setups', [retest.id, setup.id])
+    const custom = await store.addMistake('Chased the news')
+    await store.deleteTag('mistakes', custom.id)
+    const fomo = store.getSnapshot().mistakes.find((tag) => tag.systemKey === 'fomo')!
+    await store.deleteTag('mistakes', fomo.id)
+    await store.saveMistake({ ...fomo, isArchived: true })
+
+    const reopened = (await openStore(db)).getSnapshot()
+    expect(reopened.setups.map((tag) => tag.name)).toEqual(['Retest', 'Range breakout'])
+    expect(reopened.setups[1]?.colorHex).toBe('#3DDC97')
+    expect(reopened.mistakes.some((tag) => tag.id === custom.id)).toBe(false)
+    expect(reopened.mistakes.find((tag) => tag.systemKey === 'fomo')?.isArchived).toBe(true)
+  })
 })

@@ -1,4 +1,4 @@
-import { CalendarCheck, ChevronRight, Download, ShieldCheck, Trash2, Upload, Wallet } from 'lucide-react'
+import { CalendarCheck, ChevronRight, Download, ShieldCheck, Tags, Trash2, Upload, Wallet } from 'lucide-react'
 import { useId, useRef, useState, type ChangeEvent } from 'react'
 import { useJournal, useStore } from '../../app/journal'
 import { routeHref } from '../../app/router'
@@ -59,6 +59,11 @@ export function ProfilePage() {
           <ShieldCheck size={20} aria-hidden="true" />
           <span className="nav-row__label">{t('limits.title')}</span>
           <span className="caption">{tp('profile.ruleCount', rules.length)}</span>
+          <ChevronRight size={18} aria-hidden="true" className="secondary-text" />
+        </a>
+        <a className="nav-row" href={routeHref({ name: 'tags' })}>
+          <Tags size={20} aria-hidden="true" />
+          <span className="nav-row__label">{t('tags.title')}</span>
           <ChevronRight size={18} aria-hidden="true" className="secondary-text" />
         </a>
         <a className="nav-row" href={routeHref({ name: 'review' })}>

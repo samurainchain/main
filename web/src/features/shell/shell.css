@@ -756,3 +756,44 @@
 .active-filters {
   margin-bottom: var(--space-m);
 }
+
+/* Tags */
+
+.tag-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.tag-row--hidden .tag-row__name {
+  color: var(--color-text-secondary);
+}
+
+.tag-row__color {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border: 2px solid var(--color-surface-elevated);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.tag-row__name {
+  flex: 1;
+  min-width: 0;
+}
+
+.tag-row__colors {
+  flex-basis: 100%;
+  padding-left: 32px;
+}

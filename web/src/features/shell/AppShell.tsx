@@ -15,6 +15,7 @@ import { TradeEntrySheet } from '../entry/TradeEntrySheet'
 import { ProfilePage } from '../profile/ProfilePage'
 import { WeeklyReviewPage } from '../review/WeeklyReviewPage'
 import { RulesPage } from '../rules/RulesPage'
+import { TagsPage } from '../tags/TagsPage'
 import { TodayPage } from '../today/TodayPage'
 import { TradeDetailPage } from '../trades/TradeDetailPage'
 import { TradesPage } from '../trades/TradesPage'
@@ -31,7 +32,7 @@ const TABS: Tab[] = [
   { route: 'today', label: 'tab.today', icon: Sun, matches: ['today'] },
   { route: 'trades', label: 'tab.trades', icon: ListChecks, matches: ['trades', 'trade'] },
   { route: 'analytics', label: 'tab.analytics', icon: ChartColumn, matches: ['analytics'] },
-  { route: 'profile', label: 'tab.profile', icon: CircleUser, matches: ['profile', 'accounts', 'rules', 'review'] },
+  { route: 'profile', label: 'tab.profile', icon: CircleUser, matches: ['profile', 'accounts', 'rules', 'review', 'tags'] },
 ]
 
 /**
@@ -120,6 +121,8 @@ function Page({ route }: { route: Route }) {
       return <AccountsPage />
     case 'rules':
       return <RulesPage />
+    case 'tags':
+      return <TagsPage />
     case 'review':
       return <WeeklyReviewPage key={route.week ?? 'current'} week={route.week} />
   }

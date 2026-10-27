@@ -122,6 +122,30 @@ export class JournalStore {
     await this.backend.put('mistakes', [tag])
   }
 
+  async saveSetup(tag: SetupTag): Promise<void> {
+    this.set(withRecord(this.snapshot, 'setups', tag))
+    await this.backend.put('setups', [tag])
+  }
+
+  /**
+   * Deletes a tag the user created. Trades keep the id, and screens skip tags that no longer
+   * exist, so past trades are unaffected apart from the missing chip. System mistakes are only
+   * hidden, never deleted.
+   */
+  async deleteTag(kind: 'mistakes' | 'setups', id: string): Promise<void> {
+    if (kind === 'mistakes' && this.snapshot.mistakes.find((tag) => tag.id === id)?.isSystem) return
+    this.set({ ...this.snapshot, [kind]: (this.snapshot[kind] as { id: string }[]).filter((tag) => tag.id !== id) })
+    await this.backend.delete(kind, [id])
+  }
+
+  /** Stores the given order of tag ids as their sort order. */
+  async reorderTags(kind: 'mistakes' | 'setups', ids: string[]): Promise<void> {
+    const order = new Map(ids.map((id, index) => [id, index]))
+    const tags = (this.snapshot[kind] as (MistakeTag | SetupTag)[]).map((tag) => ({ ...tag, sortOrder: order.get(tag.id) ?? tag.sortOrder }))
+    this.set(sorted({ ...this.snapshot, [kind]: tags }))
+    await this.backend.put(kind, tags as never[])
+  }
+
   async addMistake(name: string): Promise<MistakeTag> {
     const tag: MistakeTag = {
       id: newId(),
