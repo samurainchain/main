@@ -1,6 +1,7 @@
 import 'fake-indexeddb/auto'
 import { openDB } from 'idb'
 import { describe, expect, it } from 'vitest'
+import { importCsv } from '../import/importTrades'
 import { newId, SYSTEM_MISTAKES, type Account, type Trade } from '../models'
 import { IndexedDbBackend } from './indexedDbBackend'
 import { canonicalSystemMistakes, JournalStore, systemMistakeId } from './journalStore'
@@ -69,6 +70,25 @@ describe('JournalStore', () => {
     expect(data.trades).toHaveLength(1)
     expect(data.trades[0]?.symbol).toBe('BTCUSDT')
     expect(data.setups.map((tag) => tag.name)).toEqual(['Breakout'])
+  })
+
+  it('imports exchange trades once, keeping them after a reload', async () => {
+    const db = newId()
+    const store = await openStore(db)
+    const acc = account()
+    await store.saveAccount(acc)
+    const { trades } = importCsv(`Contracts,Closing Direction,Qty,Entry Price,Exit Price,Closed P&L,Trade Time(UTC+0)
+BTCUSDT,Sell,0.010,60000.0,61234.0,12.27,2026-10-27 12:40:11
+ETHUSDT,Buy,1.5,3100.25,3130.33,-45.38,2026-10-27 13:02:45`)
+
+    expect(await store.importTrades(acc, trades)).toBe(2)
+    // The same file again adds nothing.
+    expect(await store.importTrades(acc, trades)).toBe(0)
+
+    const saved = (await openStore(db)).getSnapshot().trades
+    expect(saved).toHaveLength(2)
+    expect(saved[0]).toMatchObject({ accountId: acc.id, market: 'cryptoPerp', source: 'csvImport', symbol: 'BTCUSDT', side: 'long', fees: '0.07' })
+    expect(saved[0]!.importKey).toBe(trades[0]!.key)
   })
 
   it('seeds the system mistakes exactly once', async () => {

@@ -45,6 +45,8 @@ const MIN_HOUR_TRADES = 3
 const MINUTE = 60_000
 
 function noStop(trade: Trade): AutoFlag | undefined {
+  // Exchange exports don't include stops: for an imported trade a missing stop is unknown, not absent.
+  if (trade.source === 'csvImport') return undefined
   return trade.stopLoss || trade.initialStopLoss ? undefined : { key: 'noStop' }
 }
 

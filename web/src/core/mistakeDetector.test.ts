@@ -54,6 +54,11 @@ describe('no stop', () => {
     expect(flagsOf(item, [item])).toEqual([{ key: 'noStop' }])
   })
 
+  it('does not flag imported trades, whose stops the exchange file doesn’t include', () => {
+    const item = trade('5', { initialStopLoss: undefined, stopLoss: undefined, source: 'csvImport' })
+    expect(flagsOf(item, [item])).toEqual([])
+  })
+
   it('leaves a trade with a stop alone', () => {
     const item = trade('5')
     expect(flagsOf(item, [item])).toEqual([])

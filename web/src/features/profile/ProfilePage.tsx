@@ -1,4 +1,4 @@
-import { CalendarCheck, ChevronRight, Download, FileSpreadsheet, ShieldCheck, Smartphone, Tags, Trash2, Upload, Wallet } from 'lucide-react'
+import { CalendarCheck, ChevronRight, Download, FileSpreadsheet, FileUp, ShieldCheck, Smartphone, Tags, Trash2, Upload, Wallet } from 'lucide-react'
 import { useId, useRef, useState, type ChangeEvent } from 'react'
 import { useFlaggedTrades, useJournal, useMistakeName, useStore } from '../../app/journal'
 import { downloadCsv, tradesToCsv } from '../../core/export/csv'
@@ -9,6 +9,7 @@ import { useI18n } from '../../i18n/i18n'
 import { useCloud } from '../../app/cloud'
 import { useInstall } from '../../app/install'
 import { CloudSection } from '../cloud/CloudSection'
+import { ImportSheet } from '../import/ImportSheet'
 import { PageHeader } from '../shell/PageHeader'
 import { downloadBackup, parseBackup, serializeBackup } from './backup'
 
@@ -24,6 +25,7 @@ export function ProfilePage() {
   const install = useInstall()
   const fileInput = useRef<HTMLInputElement>(null)
   const [message, setMessage] = useState<string>()
+  const [importOpen, setImportOpen] = useState(false)
   const ids = { language: useId(), theme: useId(), weekStart: useId() }
 
   const importBackup = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -132,6 +134,9 @@ export function ProfilePage() {
       <Card className="form-stack">
         <p className="secondary-text">{t(cloudState.email ? 'profile.storageNoteSynced' : 'profile.storageNote')}</p>
         <div className="action-row action-row--wrap">
+          <Button icon={<FileUp size={18} aria-hidden="true" />} onClick={() => setImportOpen(true)}>
+            {t('import.button')}
+          </Button>
           <Button icon={<Download size={18} aria-hidden="true" />} disabled={trades.length === 0 && accounts.length === 0} onClick={() => downloadBackup(serializeBackup(store.exportData()))}>
             {t('profile.export')}
           </Button>
@@ -153,6 +158,7 @@ export function ProfilePage() {
             {t('profile.import')}
           </Button>
           <input ref={fileInput} type="file" accept="application/json,.json" hidden onChange={importBackup} />
+          <ImportSheet open={importOpen} onClose={() => setImportOpen(false)} onDone={setMessage} />
           <Button variant="danger" icon={<Trash2 size={18} aria-hidden="true" />} onClick={deleteAll}>
             {t('profile.deleteAll')}
           </Button>

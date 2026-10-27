@@ -14,6 +14,7 @@ import {
   type WeeklyReview,
   MAX_IMAGES_PER_TRADE,
 } from '../models'
+import type { ImportedTrade } from '../import/importTrades'
 import type { OnboardingAnswers } from '../onboarding'
 import { emptyJournal, normalizeJournal, type Collection, type ImageBlobStore, type JournalBackend } from './backend'
 
@@ -109,6 +110,43 @@ export class JournalStore {
     const saved = { ...trade, updatedAt: new Date().toISOString() }
     this.set(withRecord(this.snapshot, 'trades', saved))
     await this.backend.put('trades', [saved])
+  }
+
+  /**
+   * Adds trades read from an exchange file to an account. Trades already imported (same key)
+   * are left out, so a file can be imported again after new trades. Returns how many were added.
+   */
+  async importTrades(account: Account, items: readonly ImportedTrade[]): Promise<number> {
+    const known = new Set(this.snapshot.trades.flatMap((trade) => (trade.importKey ? [trade.importKey] : [])))
+    const now = new Date().toISOString()
+    const fresh = items.filter((item, index) => !known.has(item.key) && items.findIndex((other) => other.key === item.key) === index)
+    const trades: Trade[] = fresh.map((item) => ({
+      id: newId(),
+      accountId: account.id,
+      symbol: item.symbol,
+      side: item.side,
+      market: account.assetClass,
+      leverage: account.assetClass === 'cryptoPerp' ? item.leverage : undefined,
+      entryPrice: item.entryPrice,
+      exitPrice: item.exitPrice,
+      quantity: item.quantity,
+      contractMultiplier: '1',
+      fees: item.fees,
+      openedAt: item.openedAt,
+      closedAt: item.closedAt,
+      mistakeIds: [],
+      setupIds: [],
+      brokenRuleIds: [],
+      note: '',
+      source: 'csvImport',
+      importKey: item.key,
+      createdAt: now,
+      updatedAt: now,
+    }))
+    if (trades.length === 0) return 0
+    this.set(sorted({ ...this.snapshot, trades: [...this.snapshot.trades, ...trades] }))
+    await this.backend.put('trades', trades)
+    return trades.length
   }
 
   /** Removes an automatic mistake flag from a trade for good: the trader said it was wrong. */

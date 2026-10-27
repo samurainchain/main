@@ -65,6 +65,8 @@ export interface Trade {
   setupIds: string[]
   /** Personal rules the trader marked as broken on this trade. */
   brokenRuleIds: string[]
+  /** Identifies a trade imported from an exchange file, so importing it again adds nothing. */
+  importKey?: string
   /** Automatic mistake flags the trader said were wrong (SPEC section 13). */
   dismissedFlags?: SystemMistakeKey[]
   note: string

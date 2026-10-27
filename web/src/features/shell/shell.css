@@ -1029,3 +1029,47 @@
   gap: var(--space-xxs);
   min-width: 0;
 }
+
+/* Exchange CSV import */
+.import-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+}
+
+.import-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  padding: var(--space-s);
+  border: 1px solid color-mix(in srgb, var(--color-warning) 45%, var(--color-border));
+  border-radius: var(--radius-field);
+  background: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface));
+  color: var(--color-text-primary);
+  font-size: var(--text-caption);
+}
+
+.import-warning svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-warning);
+}
+
+.import-preview .side-badge {
+  margin-left: var(--space-xxs);
+}
+
+.import-columns {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+
+.import-columns summary {
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.import-columns[open] summary {
+  margin-bottom: var(--space-xs);
+}
