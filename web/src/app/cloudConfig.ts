@@ -4,4 +4,4 @@
 
 export const SUPABASE_URL = 'https://vmjyzwrrueoyxcuzpeil.supabase.co'
 /** Project Settings → API Keys → anon / publishable key. Empty turns cloud sync off. */
-export const SUPABASE_ANON_KEY = ''
+export const SUPABASE_ANON_KEY = 'sb_publishable_ZcBAXWYsQxUDhWMk_2mmkQ_DtuQzzJh'
