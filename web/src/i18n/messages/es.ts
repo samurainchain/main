@@ -739,6 +739,7 @@ export const es: Messages = {
   'proPage.freePlan': 'Ahora tienes el plan gratuito.',
   'proPage.signInForTrial': 'Inicia sesión y obtén {days} días de Pro gratis.',
   'proPage.signIn': 'Iniciar sesión en Perfil',
+  'proPage.launchOffer': 'Oferta de lanzamiento: regístrate antes del 30 de noviembre y obtén 30 días de Pro gratis.',
   'proPage.compare': 'Gratis y Pro',
   'proPage.freeTitle': 'Gratis',
   'proPage.proTitle': 'Pro',

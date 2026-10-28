@@ -145,8 +145,10 @@ create policy "Users read their own Pro access"
   on public.pro_access for select to authenticated
   using ((select auth.uid()) = user_id);
 
--- Pro trial (SPEC section 8): every new account gets 7 days of Pro from sign-up. A purchase
--- during the trial adds its month or year on top of the trial's end.
+-- Pro trial (SPEC section 8): every new account gets 7 days of Pro from sign-up; accounts made
+-- through November 30, 2026 (before noon UTC on December 1) get 30 days, the launch offer
+-- (LAUNCH_OFFER_ENDS in src/core/entitlements.ts). A purchase during the trial adds its month or
+-- year on top of the trial's end.
 create or replace function public.start_pro_trial()
 returns trigger
 language plpgsql
@@ -155,7 +157,7 @@ set search_path = public
 as $$
 begin
   insert into public.pro_access (user_id, pro_until, source)
-    values (new.id, now() + interval '7 days', 'trial')
+    values (new.id, now() + case when now() < timestamptz '2026-12-01 12:00:00+00' then interval '30 days' else interval '7 days' end, 'trial')
     on conflict (user_id) do nothing;
   return new;
 end;

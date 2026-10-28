@@ -2,7 +2,7 @@ import { Check, ChevronLeft, Minus } from 'lucide-react'
 import { PAYMENT_PROVIDER, PRO_ON_SALE, proPreview } from '../../app/billing'
 import { useAccess } from '../../app/entitlement'
 import { routeHref } from '../../app/router'
-import { PRO_FEATURES, TRIAL_DAYS } from '../../core/entitlements'
+import { launchOfferOn, PRO_FEATURES, trialDays } from '../../core/entitlements'
 import { Card, LegalLinks, SectionHeader } from '../../design/components'
 import { formatDate } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
@@ -20,6 +20,7 @@ export function ProPage() {
   const { t, locale } = useI18n()
   const access = useAccess()
   const onSale = PRO_ON_SALE || proPreview()
+  const now = new Date()
 
   const back = (
     <a className="back-link" href={routeHref({ name: 'profile' })}>
@@ -34,7 +35,7 @@ export function ProPage() {
       ? t(access.source === 'trial' ? 'pro.trialUntil' : access.source === 'gift' ? 'proPage.giftUntil' : 'proPage.activeUntil', { date: formatDate(access.until, locale) })
       : access.signedIn
         ? t('proPage.freePlan')
-        : t('proPage.signInForTrial', { days: String(TRIAL_DAYS) })
+        : t('proPage.signInForTrial', { days: String(trialDays(now)) })
 
   return (
     <>
@@ -46,6 +47,7 @@ export function ProPage() {
           {t('proPage.headline')}
         </h2>
         <p className="secondary-text">{t('proPage.pitch')}</p>
+        {onSale && launchOfferOn(now) && !access.signedIn && <p className="pro-offer">{t('proPage.launchOffer')}</p>}
         <p className={access.pro ? 'pro-hero__status pro-hero__status--active' : 'pro-hero__status'}>{status}</p>
         {onSale && !access.signedIn && (
           <a className="button button--primary" href={routeHref({ name: 'profile' })}>
@@ -92,7 +94,7 @@ export function ProPage() {
 
       {onSale && (PAYMENT_PROVIDER === 'crypto' ? <CryptoProSection /> : <ProSection />)}
 
-      <p className="caption pro-note">{t('proPage.trialNote', { days: String(TRIAL_DAYS) })}</p>
+      <p className="caption pro-note">{t('proPage.trialNote', { days: String(trialDays(now)) })}</p>
       <LegalLinks refund />
     </>
   )

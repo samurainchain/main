@@ -28,6 +28,22 @@ export const FREE_PERIODS: readonly Period[] = ['week', 'month']
 export const FREE_ACCOUNTS = 1
 /** Pro for a new account, from sign-up (written by the database, start_pro_trial). */
 export const TRIAL_DAYS = 7
+/**
+ * Launch offer: accounts created before this moment get 30 days instead of 7. Noon UTC on
+ * December 1 is still November 30 everywhere in the Americas, so "until November 30" holds for
+ * the whole audience. Keep in step with start_pro_trial in supabase/schema.sql.
+ */
+export const LAUNCH_TRIAL_DAYS = 30
+export const LAUNCH_OFFER_ENDS = new Date('2026-12-01T12:00:00Z')
+
+/** The trial a new account gets if it signs up at `now`. */
+export function trialDays(now: Date): number {
+  return now < LAUNCH_OFFER_ENDS ? LAUNCH_TRIAL_DAYS : TRIAL_DAYS
+}
+
+export function launchOfferOn(now: Date): boolean {
+  return now < LAUNCH_OFFER_ENDS
+}
 
 export interface Access {
   /** Whether Pro limits apply at all: only once Pro is on sale (or previewed). */

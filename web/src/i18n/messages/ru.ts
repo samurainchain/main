@@ -743,6 +743,7 @@ export const ru: Messages = {
   'proPage.freePlan': 'Сейчас у тебя бесплатная версия.',
   'proPage.signInForTrial': 'Войди — и получишь {days} дней Pro бесплатно.',
   'proPage.signIn': 'Войти в Профиле',
+  'proPage.launchOffer': 'Акция к запуску: зарегистрируйся до 30 ноября — и получишь 30 дней Pro бесплатно.',
   'proPage.compare': 'Бесплатно и Pro',
   'proPage.freeTitle': 'Бесплатно',
   'proPage.proTitle': 'Pro',

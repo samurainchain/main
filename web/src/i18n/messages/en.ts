@@ -740,6 +740,7 @@ export const en = {
   'proPage.freePlan': 'You’re on the free plan.',
   'proPage.signInForTrial': 'Sign in and get {days} days of Pro free.',
   'proPage.signIn': 'Sign in in Profile',
+  'proPage.launchOffer': 'Launch offer: sign up by November 30 and get 30 days of Pro free.',
   'proPage.compare': 'Free and Pro',
   'proPage.freeTitle': 'Free',
   'proPage.proTitle': 'Pro',
