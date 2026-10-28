@@ -1,6 +1,7 @@
 import type { Emotion, Trade } from '../../core/models'
 import { tradePnl } from '../../core/pnl'
 import { periodStart, type Period, type WeekStart } from '../../core/stats'
+import { validRating } from '../../core/tradeTable'
 
 /** Filters for the trade list (SPEC section 4.5). Unset fields don't filter. */
 export interface TradeFilter {
@@ -10,6 +11,8 @@ export interface TradeFilter {
   emotion?: Emotion
   mistakeId?: string
   setupId?: string
+  /** Stars 1–5, or trades not rated yet. */
+  rating?: number | 'none'
 }
 
 export function activeFilterCount(filter: TradeFilter): number {
@@ -24,6 +27,7 @@ export function filterTrades(trades: readonly Trade[], filter: TradeFilter, now:
     if (filter.emotion && trade.emotion !== filter.emotion) return false
     if (filter.mistakeId && !trade.mistakeIds.includes(filter.mistakeId)) return false
     if (filter.setupId && !trade.setupIds.includes(filter.setupId)) return false
+    if (filter.rating !== undefined && (validRating(trade.rating) ?? 'none') !== filter.rating) return false
     if (filter.result) {
       const pnl = tradePnl(trade)
       if (!pnl) return false

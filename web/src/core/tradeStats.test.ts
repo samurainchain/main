@@ -1,7 +1,7 @@
 import Big from 'big.js'
 import { describe, expect, it } from 'vitest'
 import type { ClosedTrade } from './stats'
-import { streak, streaks, tradesPerDay, tradeTotals } from './tradeStats'
+import { byHoldTime, byRating, holdBucket, streak, streaks, tradesPerDay, tradeTotals } from './tradeStats'
 
 const b = (values: number[]) => values.map((value) => new Big(value))
 const closed = (day: number, hour: number, pnl: string, minutes = 30, fees = '1'): ClosedTrade => {
@@ -57,6 +57,45 @@ describe('tradesPerDay', () => {
       { day: '2026-10-26', count: 2 },
       { day: '2026-10-27', count: 1 },
       { day: '2026-10-28', count: 1 },
+    ])
+  })
+})
+
+describe('byHoldTime', () => {
+  it('puts each limit in the next bucket up', () => {
+    expect([0, 4.99, 5, 59, 60, 239, 240, 1439, 1440, 5000].map((minutes) => holdBucket(minutes * 60_000))).toEqual([
+      'under5m',
+      'under5m',
+      'from5to15m',
+      'from15to60m',
+      'from1to4h',
+      'from1to4h',
+      'from4to24h',
+      'from4to24h',
+      'over1d',
+      'over1d',
+    ])
+  })
+
+  it('adds up results per bucket, shortest first, skipping empty ones', () => {
+    const rows = byHoldTime([...trades, closed(28, 12, '-20', 3)])
+    expect(rows.map((row) => [row.key, row.count, row.pnl.toString()])).toEqual([
+      ['under5m', 1, '-20'],
+      ['from5to15m', 1, '120'],
+      ['from15to60m', 2, '-250'],
+      ['from1to4h', 1, '80'],
+    ])
+  })
+})
+
+describe('byRating', () => {
+  it('groups by stars, best first, unrated and invalid ratings last', () => {
+    const rate = (item: ClosedTrade, rating: unknown) => ({ ...item, trade: { ...item.trade, rating } }) as ClosedTrade
+    const rows = byRating([rate(trades[0]!, 5), rate(trades[1]!, 2), rate(trades[2]!, 5), rate(trades[3]!, 7)])
+    expect(rows.map((row) => [row.key, row.count, row.pnl.toString()])).toEqual([
+      [5, 2, '200'],
+      [2, 1, '-300'],
+      ['none', 1, '50'],
     ])
   })
 })

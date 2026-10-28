@@ -17,7 +17,7 @@ import {
   type ClosedTrade,
   type Metrics,
 } from '../../core/stats'
-import { streaks, tradesPerDay, tradeTotals, type Streak } from '../../core/tradeStats'
+import { byHoldTime, byRating, streaks, tradesPerDay, tradeTotals, type Streak } from '../../core/tradeStats'
 import { PnLText } from '../../design/components'
 import { formatDuration, formatMoney, formatR, formatRatio, formatShare, weekdayNames } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
@@ -52,6 +52,8 @@ export const WIDGETS: Record<WidgetId, { title: MessageKey; needsTrades: boolean
   byHour: { title: 'analytics.byHour', needsTrades: true },
   bySetup: { title: 'analytics.bySetup', needsTrades: true },
   bySymbol: { title: 'analytics.bySymbol', needsTrades: true },
+  byHold: { title: 'dashboard.byHold', needsTrades: true },
+  byRating: { title: 'dashboard.byRating', needsTrades: true },
   metrics: { title: 'analytics.keyMetrics', needsTrades: true },
 }
 
@@ -86,6 +88,10 @@ export function WidgetBody({ id, data }: { id: WidgetId; data: WidgetData }) {
       return <BySetup trades={inRange} currency={currency} />
     case 'bySymbol':
       return <BySymbol trades={inRange} currency={currency} />
+    case 'byHold':
+      return <ByHold trades={inRange} currency={currency} />
+    case 'byRating':
+      return <ByRating trades={inRange} currency={currency} />
     case 'metrics':
       return <KeyMetrics data={data} />
   }
@@ -299,6 +305,50 @@ function BySetup({ trades, currency }: { trades: readonly ClosedTrade[]; currenc
 function BySymbol({ trades, currency }: { trades: readonly ClosedTrade[]; currency: Currency }) {
   const { t } = useI18n()
   return <BreakdownTable rows={bySymbol(trades as ClosedTrade[])} nameLabel={t('entry.symbol')} emptyText="" currency={currency} />
+}
+
+/** PnL by how long trades were held: are quick scalps or longer holds paying? */
+function ByHold({ trades, currency }: { trades: readonly ClosedTrade[]; currency: Currency }) {
+  const { t, tp, locale } = useI18n()
+  return (
+    <SignedBarList
+      currency={currency}
+      items={byHoldTime(trades as ClosedTrade[]).map((row) => ({
+        key: row.key,
+        label: t(`dashboard.hold.${row.key}`),
+        value: row.pnl,
+        caption: `${tp('analytics.tradeCount', row.count)} · ${t('analytics.winRateShort', { value: formatShare(row.winRate, locale) })}`,
+      }))}
+    />
+  )
+}
+
+/** PnL by the trader's star rating: do the trades graded as well executed earn more? */
+function ByRating({ trades, currency }: { trades: readonly ClosedTrade[]; currency: Currency }) {
+  const { t, tp, locale } = useI18n()
+  const rows = byRating(trades as ClosedTrade[])
+  return (
+    <div className="form-stack">
+      <SignedBarList
+        currency={currency}
+        items={rows.map((row) => ({
+          key: String(row.key),
+          label:
+            row.key === 'none' ? (
+              t('rating.none')
+            ) : (
+              <span className="rating-label">
+                <span aria-hidden="true">{'★'.repeat(row.key) + '☆'.repeat(5 - row.key)}</span>
+                <span className="visually-hidden">{t('rating.star', { value: String(row.key) })}</span>
+              </span>
+            ),
+          value: row.pnl,
+          caption: `${tp('analytics.tradeCount', row.count)} · ${t('analytics.winRateShort', { value: formatShare(row.winRate, locale) })}`,
+        }))}
+      />
+      {rows.every((row) => row.key === 'none') && <p className="caption">{t('dashboard.byRating.empty')}</p>}
+    </div>
+  )
 }
 
 /** The six key-metric tiles. */

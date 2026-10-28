@@ -1,8 +1,9 @@
 import Big from 'big.js'
 import { tradeDuration } from './pnl'
-import { dailyPnl, equityCurve, type ClosedTrade } from './stats'
+import { breakdown, dailyPnl, equityCurve, type Breakdown, type ClosedTrade } from './stats'
+import { validRating } from './tradeTable'
 
-// Numbers for the dashboard's trade blocks: streaks, averages and trades per day.
+// Numbers for the dashboard's trade blocks: streaks, averages, trades per day, hold time and rating.
 
 const ZERO = new Big(0)
 const sum = (values: readonly Big[]) => values.reduce((total, value) => total.plus(value), ZERO)
@@ -73,4 +74,36 @@ export function tradeTotals(trades: readonly ClosedTrade[]): TradeTotals {
 /** Closed trades per trading day, oldest day first. */
 export function tradesPerDay(trades: readonly ClosedTrade[]): { day: string; count: number }[] {
   return [...dailyPnl(trades).entries()].sort(([a], [b]) => a.localeCompare(b)).map(([day, { count }]) => ({ day, count }))
+}
+
+const MINUTE = 60_000
+
+/** Hold-time buckets, shortest first; each holds trades up to (not including) its limit. */
+export const HOLD_BUCKETS = [
+  { key: 'under5m', below: 5 * MINUTE },
+  { key: 'from5to15m', below: 15 * MINUTE },
+  { key: 'from15to60m', below: 60 * MINUTE },
+  { key: 'from1to4h', below: 240 * MINUTE },
+  { key: 'from4to24h', below: 1440 * MINUTE },
+  { key: 'over1d', below: Infinity },
+] as const
+export type HoldBucket = (typeof HOLD_BUCKETS)[number]['key']
+
+export function holdBucket(ms: number): HoldBucket {
+  return HOLD_BUCKETS.find((bucket) => ms < bucket.below)!.key
+}
+
+/** Results by how long trades were held, in bucket order, only buckets with trades. */
+export function byHoldTime(trades: readonly ClosedTrade[]): Breakdown<HoldBucket>[] {
+  const order = HOLD_BUCKETS.map((bucket) => bucket.key)
+  return breakdown<HoldBucket>(trades, (item) => {
+    const duration = tradeDuration(item.trade)
+    return duration === undefined ? [] : [holdBucket(duration)]
+  }).sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key))
+}
+
+/** Results by the trader's star rating, 5 stars first, unrated last. */
+export function byRating(trades: readonly ClosedTrade[]): Breakdown<number | 'none'>[] {
+  const rank = (key: number | 'none') => (key === 'none' ? 0 : key)
+  return breakdown<number | 'none'>(trades, (item) => [validRating(item.trade.rating) ?? 'none']).sort((a, b) => rank(b.key) - rank(a.key))
 }

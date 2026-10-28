@@ -27,7 +27,7 @@ export function FilterSheet({
   const { t } = useI18n()
   const { mistakes, setups } = useJournal()
   const mistakeName = useMistakeName()
-  const ids = { period: useId(), symbol: useId(), emotion: useId(), mistake: useId(), setup: useId() }
+  const ids = { period: useId(), symbol: useId(), emotion: useId(), mistake: useId(), setup: useId(), rating: useId() }
   const set = (patch: Partial<TradeFilter>) => onChange({ ...filter, ...patch })
   const value = (raw: string) => (raw === '' ? undefined : raw)
 
@@ -98,6 +98,22 @@ export function FilterSheet({
             ))}
           </select>
         </Field>
+        <Field label={t('rating.label')} htmlFor={ids.rating}>
+          <select
+            id={ids.rating}
+            className="input"
+            value={filter.rating ?? ''}
+            onChange={(event) => set({ rating: event.target.value === '' ? undefined : event.target.value === 'none' ? 'none' : Number(event.target.value) })}
+          >
+            <option value="">{t('filters.any')}</option>
+            {[5, 4, 3, 2, 1].map((stars) => (
+              <option key={stars} value={stars}>
+                {t('rating.star', { value: String(stars) })}
+              </option>
+            ))}
+            <option value="none">{t('rating.none')}</option>
+          </select>
+        </Field>
         {setups.length > 0 && (
           <Field label={t('entry.setups')} htmlFor={ids.setup}>
             <select id={ids.setup} className="input" value={filter.setupId ?? ''} onChange={(event) => set({ setupId: value(event.target.value) })}>
@@ -129,6 +145,7 @@ export function ActiveFilters({ filter, onChange }: { filter: TradeFilter; onCha
   if (mistake) labels.push({ key: 'mistakeId', label: mistakeName(mistake) })
   const setup = setups.find((tag) => tag.id === filter.setupId)
   if (setup) labels.push({ key: 'setupId', label: setup.name })
+  if (filter.rating !== undefined) labels.push({ key: 'rating', label: filter.rating === 'none' ? t('rating.none') : t('rating.value', { value: String(filter.rating) }) })
   if (labels.length === 0) return null
 
   return (

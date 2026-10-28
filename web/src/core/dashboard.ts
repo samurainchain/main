@@ -16,6 +16,8 @@ export const WIDGET_IDS = [
   'byHour',
   'bySetup',
   'bySymbol',
+  'byHold',
+  'byRating',
   'metrics',
 ] as const
 export type WidgetId = (typeof WIDGET_IDS)[number]
@@ -50,6 +52,8 @@ export const MIN_WIDTH: Record<WidgetId, WidgetWidth> = {
   byHour: 6,
   bySetup: 6,
   bySymbol: 6,
+  byHold: 4,
+  byRating: 4,
   metrics: 6,
 }
 
@@ -68,6 +72,8 @@ const DEFAULT_ITEMS: LayoutItem[] = [
   { id: 'byHour', width: 12 },
   { id: 'bySetup', width: 6 },
   { id: 'bySymbol', width: 6 },
+  { id: 'byHold', width: 6 },
+  { id: 'byRating', width: 6 },
 ]
 
 /** The key-metric tiles repeat the performance and trade stats blocks, so they start hidden. */

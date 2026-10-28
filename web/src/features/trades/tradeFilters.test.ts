@@ -57,3 +57,13 @@ describe('helpers', () => {
     expect(symbolsByUse(trades)).toEqual(['BTCUSDT', 'ETHUSDT'])
   })
 })
+
+describe('rating filter', () => {
+  const rated = [trade('10', NOW, { id: 'five', rating: 5 }), trade('-10', NOW, { id: 'two', rating: 2 }), trade('1', NOW, { id: 'none' })]
+
+  it('keeps trades with exactly that many stars, or the unrated ones', () => {
+    expect(ids(filterTrades(rated, { rating: 5 }, NOW, 1))).toEqual(['five'])
+    expect(ids(filterTrades(rated, { rating: 'none' }, NOW, 1))).toEqual(['none'])
+    expect(activeFilterCount({ rating: 'none' })).toBe(1)
+  })
+})

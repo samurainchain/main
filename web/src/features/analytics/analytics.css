@@ -852,3 +852,8 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
+
+.rating-label {
+  color: var(--color-warning);
+  letter-spacing: 0.1em;
+}
