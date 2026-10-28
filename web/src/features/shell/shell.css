@@ -1561,3 +1561,45 @@
 .notice--limitWarning svg {
   color: var(--color-warning);
 }
+
+.popover__groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+  min-width: 14rem;
+}
+
+.popover__heading {
+  padding: var(--space-xs) var(--space-s) 0;
+}
+
+.accent-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-s) var(--space-s);
+}
+
+/* Each swatch shows its accent's own dark-theme color; the check mark sits on it in white. */
+.accent-picker__swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  color: var(--color-accent-contrast);
+  cursor: pointer;
+}
+
+.accent-picker__swatch[aria-checked='true'] {
+  border-color: var(--color-text-primary);
+  box-shadow: 0 0 12px color-mix(in srgb, currentColor 30%, transparent);
+}
+
+.accent-picker__swatch--green { background: var(--swatch-green); }
+.accent-picker__swatch--amber { background: var(--swatch-amber); }
+.accent-picker__swatch--violet { background: var(--swatch-violet); }
+.accent-picker__swatch--blue { background: var(--swatch-blue); }
+.accent-picker__swatch--pink { background: var(--swatch-pink); }

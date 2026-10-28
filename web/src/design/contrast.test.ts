@@ -4,16 +4,34 @@ import { describe, expect, it } from 'vitest'
 // WCAG AA contrast for the design tokens (SPEC section 9, principle 6): 4.5:1 for text,
 // in both themes. Reads tokens.css itself, so a palette change is checked automatically.
 
+/** A rule's custom properties: hex colors, or `var(--name)` references kept as `@name`. */
 function block(selector: string): Record<string, string> {
   const start = css.indexOf(selector)
   const body = css.slice(css.indexOf('{', start) + 1, css.indexOf('}', start))
-  return Object.fromEntries([...body.matchAll(/--([\w-]+):\s*(#[0-9a-f]{6})/gi)].map((match) => [match[1]!, match[2]!.toLowerCase()]))
+  return Object.fromEntries(
+    [...body.matchAll(/--([\w-]+):\s*(#[0-9a-f]{6}|var\(--([\w-]+)\))/gi)].map((match) => [match[1]!, match[3] ? `@${match[3]}` : match[2]!.toLowerCase()]),
+  )
+}
+
+/** Follows `@name` references to their hex values. */
+function resolve(tokens: Record<string, string>): Record<string, string> {
+  const value = (name: string): string => {
+    const raw = tokens[name]!
+    return raw?.startsWith('@') ? value(raw.slice(1)) : raw
+  }
+  return Object.fromEntries(Object.keys(tokens).map((name) => [name, value(name)]))
 }
 
 const css = readFileSync(new URL('./tokens.css', import.meta.url), 'utf8')
 
-const dark = block(':root {')
-const light = { ...dark, ...block(":root[data-theme='light']") }
+const ACCENTS = ['default', 'amber', 'violet', 'blue', 'pink'] as const
+const accentBlock = (accent: (typeof ACCENTS)[number]) => (accent === 'default' ? {} : block(`:root[data-accent='${accent}']`))
+
+const theme = (name: 'dark' | 'light', accent: (typeof ACCENTS)[number] = 'default') =>
+  resolve({ ...block(':root {'), ...(name === 'light' ? block(":root[data-theme='light']") : {}), ...accentBlock(accent) })
+
+const dark = theme('dark')
+const light = theme('light')
 
 function luminance(hex: string): number {
   const channel = (offset: number) => {
@@ -43,10 +61,7 @@ it('defines the light theme the same way for the system setting and the manual s
   expect(block(":root:not([data-theme='dark'])")).toEqual(block(":root[data-theme='light']"))
 })
 
-describe.each([
-  ['dark', dark],
-  ['light', light],
-])('%s theme', (_name, tokens) => {
+describe.each(ACCENTS.flatMap((accent) => (['dark', 'light'] as const).map((name) => [`${name} ${accent}`, theme(name, accent)] as const)))('%s theme', (_name, tokens) => {
   it.each(TEXT_PAIRS.flatMap(([text, backgrounds]) => backgrounds.map((background) => [text, background] as const)))(
     '%s on %s is at least 4.5:1',
     (text, background) => {

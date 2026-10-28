@@ -4,12 +4,18 @@ import type { WeekStart } from '../core/stats'
 export type LanguageSetting = 'system' | 'en' | 'ru' | 'es'
 export type ThemeSetting = 'system' | 'dark' | 'light'
 export type WeekStartSetting = 'auto' | 'monday' | 'sunday'
+export type StyleSetting = 'glow' | 'flat'
+export const ACCENTS = ['green', 'amber', 'violet', 'blue', 'pink'] as const
+export type AccentSetting = (typeof ACCENTS)[number]
 /** `all` or an account id. */
 export type AccountSelection = string
 
 export interface Settings {
   language: LanguageSetting
   theme: ThemeSetting
+  /** Glow (the accent's light behind the page and on what's active) or flat. */
+  style: StyleSetting
+  accent: AccentSetting
   selectedAccount: AccountSelection
   weekStart: WeekStartSetting
   /** Width of the right column on wide screens, in CSS pixels. */
@@ -41,7 +47,7 @@ export function clampRailWidth(width: number): number {
 
 // Storage keys keep the app's first name, so saved settings survive the rename.
 const STORAGE_KEY = 'mirror.settings'
-const DEFAULTS: Settings = { language: 'system', theme: 'system', selectedAccount: 'all', weekStart: 'auto', railWidth: RAIL_DEFAULT_WIDTH, railHidden: false }
+const DEFAULTS: Settings = { language: 'system', theme: 'system', style: 'glow', accent: 'green', selectedAccount: 'all', weekStart: 'auto', railWidth: RAIL_DEFAULT_WIDTH, railHidden: false }
 
 // Per-browser preferences. They live in localStorage, apart from the journal data, and are
 // read defensively: storage can be unavailable (private mode) or hold stale shapes.
@@ -98,4 +104,19 @@ function localeWeekStart(): WeekStart {
     // Fall through to Monday.
   }
   return 1
+}
+
+/** Puts the theme, style and accent on <html>, where the tokens and glow.css read them. */
+export function applyAppearance({ theme, style, accent }: Pick<Settings, 'theme' | 'style' | 'accent'>): void {
+  const root = document.documentElement
+  if (theme === 'system') delete root.dataset.theme
+  else root.dataset.theme = theme
+  root.dataset.style = style
+  if (accent === 'green') delete root.dataset.accent
+  else root.dataset.accent = accent
+}
+
+/** The current settings outside React, e.g. to paint the right look before the first render. */
+export function currentSettings(): Settings {
+  return current
 }

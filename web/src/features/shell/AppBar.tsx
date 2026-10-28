@@ -2,7 +2,7 @@ import { Bell, CalendarCheck, Check, Flame, MessageSquare, Monitor, Moon, Sun, T
 import { useMemo } from 'react'
 import { useAutoFlags, useJournal } from '../../app/journal'
 import { routeHref, type Route } from '../../app/router'
-import { updateSettings, useSettings, useWeekStart, type LanguageSetting, type ThemeSetting } from '../../app/settings'
+import { ACCENTS, updateSettings, useSettings, useWeekStart, type LanguageSetting, type ThemeSetting } from '../../app/settings'
 import { useCloud } from '../../app/cloud'
 import { markSeen, notices, unseenCount, type Notice, type NoticeKind } from '../../core/notices'
 import { useI18n } from '../../i18n/i18n'
@@ -62,14 +62,27 @@ export function AppBar() {
           </div>
         )}
       </Popover>
-      <Popover label={t('profile.theme')} trigger={<ThemeIcon size={18} aria-hidden="true" />}>
-        {(close) => (
-          <div role="radiogroup" aria-label={t('profile.theme')} className="popover__options">
-            {option(settings.theme === 'system', t('profile.system'), () => updateSettings({ theme: 'system' }), close)}
-            {option(settings.theme === 'dark', t('profile.themeDark'), () => updateSettings({ theme: 'dark' }), close)}
-            {option(settings.theme === 'light', t('profile.themeLight'), () => updateSettings({ theme: 'light' }), close)}
-          </div>
-        )}
+      <Popover label={t('appearance.title')} trigger={<ThemeIcon size={18} aria-hidden="true" />}>
+        {() => {
+          const stay = () => {}
+          return (
+            <div className="popover__groups">
+              <p className="label popover__heading">{t('profile.theme')}</p>
+              <div role="radiogroup" aria-label={t('profile.theme')} className="popover__options">
+                {option(settings.theme === 'system', t('profile.system'), () => updateSettings({ theme: 'system' }), stay)}
+                {option(settings.theme === 'dark', t('profile.themeDark'), () => updateSettings({ theme: 'dark' }), stay)}
+                {option(settings.theme === 'light', t('profile.themeLight'), () => updateSettings({ theme: 'light' }), stay)}
+              </div>
+              <p className="label popover__heading">{t('appearance.style')}</p>
+              <div role="radiogroup" aria-label={t('appearance.style')} className="popover__options">
+                {option(settings.style === 'glow', t('appearance.style.glow'), () => updateSettings({ style: 'glow' }), stay)}
+                {option(settings.style === 'flat', t('appearance.style.flat'), () => updateSettings({ style: 'flat' }), stay)}
+              </div>
+              <p className="label popover__heading">{t('appearance.accent')}</p>
+              <AccentPicker />
+            </div>
+          )
+        }}
       </Popover>
       {state.status !== 'unavailable' && (
         <Popover label={t('feedback.section')} trigger={<MessageSquare size={18} aria-hidden="true" />} className="popover--wide">
@@ -150,5 +163,29 @@ function NoticeBell() {
         </div>
       )}
     </Popover>
+  )
+}
+
+/** The accent colors as swatches; each is a radio named after its color. */
+export function AccentPicker() {
+  const { t } = useI18n()
+  const { accent } = useSettings()
+  return (
+    <div role="radiogroup" aria-label={t('appearance.accent')} className="accent-picker">
+      {ACCENTS.map((value) => (
+        <button
+          key={value}
+          type="button"
+          role="radio"
+          aria-checked={accent === value}
+          aria-label={t(`appearance.accent.${value}`)}
+          title={t(`appearance.accent.${value}`)}
+          className={`accent-picker__swatch accent-picker__swatch--${value}`}
+          onClick={() => updateSettings({ accent: value })}
+        >
+          {accent === value && <Check size={16} aria-hidden="true" />}
+        </button>
+      ))}
+    </div>
   )
 }

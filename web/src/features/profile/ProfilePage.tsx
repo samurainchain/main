@@ -3,7 +3,7 @@ import { lazy, Suspense, useId, useRef, useState, type ChangeEvent } from 'react
 import { useFlaggedTrades, useJournal, useMistakeName, useStore } from '../../app/journal'
 import { downloadCsv, tradesToCsv } from '../../core/export/csv'
 import { routeHref } from '../../app/router'
-import { updateSettings, useSettings, type LanguageSetting, type ThemeSetting, type WeekStartSetting } from '../../app/settings'
+import { updateSettings, useSettings, type LanguageSetting, type StyleSetting, type ThemeSetting, type WeekStartSetting } from '../../app/settings'
 import { Button, Card, Field, LegalLinks, SectionHeader } from '../../design/components'
 import { useI18n } from '../../i18n/i18n'
 import { useCloud } from '../../app/cloud'
@@ -13,6 +13,7 @@ import { CryptoProSection } from '../billing/CryptoProSection'
 import { ProSection } from '../billing/ProSection'
 import { CloudSection } from '../cloud/CloudSection'
 import { FeedbackSection } from '../feedback/FeedbackSection'
+import { AccentPicker } from '../shell/AppBar'
 import { PageHeader } from '../shell/PageHeader'
 import { downloadBackup, parseBackup, serializeBackup } from './backup'
 
@@ -32,7 +33,7 @@ export function ProfilePage() {
   const fileInput = useRef<HTMLInputElement>(null)
   const [message, setMessage] = useState<string>()
   const [importOpen, setImportOpen] = useState(false)
-  const ids = { language: useId(), theme: useId(), weekStart: useId() }
+  const ids = { language: useId(), theme: useId(), style: useId(), weekStart: useId() }
 
   const importBackup = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -125,6 +126,16 @@ export function ProfilePage() {
             <option value="light">{t('profile.themeLight')}</option>
           </select>
         </Field>
+        <Field label={t('appearance.style')} htmlFor={ids.style}>
+          <select id={ids.style} className="input" value={settings.style} onChange={(event) => updateSettings({ style: event.target.value as StyleSetting })}>
+            <option value="glow">{t('appearance.style.glow')}</option>
+            <option value="flat">{t('appearance.style.flat')}</option>
+          </select>
+        </Field>
+        <div className="field">
+          <p className="field__label">{t('appearance.accent')}</p>
+          <AccentPicker />
+        </div>
         <Field label={t('profile.weekStart')} htmlFor={ids.weekStart}>
           <select id={ids.weekStart} className="input" value={settings.weekStart} onChange={(event) => updateSettings({ weekStart: event.target.value as WeekStartSetting })}>
             <option value="auto">{t('profile.system')}</option>

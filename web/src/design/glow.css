@@ -1,0 +1,118 @@
+/* The "glow" style (data-style='glow' on <html>, the default): the accent's light behind the
+   page, translucent glassy panels over it, and a soft glow on what is active or important.
+   Colors all come from the tokens, so it follows the theme and the picked accent. The "flat"
+   style leaves all of this off. */
+
+:root[data-style='glow'] {
+  --glow-soft: color-mix(in srgb, var(--color-accent) 22%, transparent);
+  --glow-strong: color-mix(in srgb, var(--color-accent) 45%, transparent);
+  --glass: color-mix(in srgb, var(--color-surface) 82%, transparent);
+  --glass-elevated: color-mix(in srgb, var(--color-surface-elevated) 86%, transparent);
+  --grid-line: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
+}
+
+/* Light from the top right and bottom left corners, over a faint grid. */
+:root[data-style='glow'] body {
+  background:
+    radial-gradient(60rem 40rem at 95% -5%, color-mix(in srgb, var(--color-accent) 26%, transparent), transparent 62%),
+    radial-gradient(45rem 35rem at 30% 0%, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 60%),
+    radial-gradient(50rem 40rem at -5% 105%, color-mix(in srgb, var(--color-accent) 16%, transparent), transparent 62%),
+    linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0 / 40px 40px,
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0 / 40px 40px,
+    var(--color-background);
+  background-attachment: fixed;
+}
+
+/* Panels let the light through, with a lit top edge; hovering one warms it up. */
+:root[data-style='glow'] .card,
+:root[data-style='glow'] .list-card {
+  border-top-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+  background: linear-gradient(180deg, var(--glass-elevated), var(--glass));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--color-accent) 18%, transparent),
+    0 -8px 24px -18px var(--glow-strong);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+:root[data-style='glow'] .card:hover {
+  border-color: color-mix(in srgb, var(--color-accent) 30%, var(--color-border));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--color-accent) 24%, transparent),
+    0 0 28px -10px var(--glow-soft);
+}
+
+/* Section labels take the accent, like the reference's lit captions. */
+:root[data-style='glow'] .dash-widget__title,
+:root[data-style='glow'] .section-header h2 {
+  color: color-mix(in srgb, var(--color-accent) 70%, var(--color-text-secondary));
+}
+
+@media (min-width: 900px) {
+  :root[data-style='glow'] .sidebar,
+  :root[data-style='glow'] .side-rail {
+    background: color-mix(in srgb, var(--color-background) 72%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  /* The current screen: a filled, glowing tab, like a lit button. */
+  :root[data-style='glow'] .sidebar .nav-link[aria-current='page'] {
+    border-color: var(--color-accent-fill-border);
+    background: var(--color-accent-fill);
+    color: var(--color-accent-contrast);
+    box-shadow: 0 0 22px var(--glow-strong);
+  }
+}
+
+:root[data-style='glow'] .tabbar .nav-link[aria-current='page'] svg {
+  filter: drop-shadow(0 0 6px var(--glow-strong));
+}
+
+/* Primary actions glow, a little more on hover. */
+:root[data-style='glow'] .button--primary,
+:root[data-style='glow'] .nav-add {
+  box-shadow: 0 0 18px var(--glow-soft);
+  transition: box-shadow 0.2s ease;
+}
+
+:root[data-style='glow'] .button--primary:hover:not(:disabled),
+:root[data-style='glow'] .nav-add:hover {
+  box-shadow: 0 0 26px var(--glow-strong);
+}
+
+/* Big numbers carry their own color's light. */
+:root[data-style='glow'] .pnl--hero.profit {
+  text-shadow: 0 0 28px color-mix(in srgb, var(--color-profit) 40%, transparent);
+}
+
+:root[data-style='glow'] .pnl--hero.loss {
+  text-shadow: 0 0 28px color-mix(in srgb, var(--color-loss) 40%, transparent);
+}
+
+:root[data-style='glow'] .partners-facts__value {
+  text-shadow: 0 0 20px var(--glow-soft);
+}
+
+/* Small labels and the focus ring pick up the accent. */
+:root[data-style='glow'] :focus-visible {
+  box-shadow: 0 0 0 1px var(--color-accent), 0 0 16px var(--glow-strong);
+}
+
+:root[data-style='glow'] .notice--fresh {
+  box-shadow: 0 0 14px var(--glow-soft);
+}
+
+:root[data-style='glow'] .dash-grid .dash-widget--dragging {
+  box-shadow: 0 0 30px var(--glow-strong);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root[data-style='glow'] .card,
+  :root[data-style='glow'] .list-card,
+  :root[data-style='glow'] .sidebar,
+  :root[data-style='glow'] .side-rail {
+    background: var(--color-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}

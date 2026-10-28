@@ -4,7 +4,7 @@ import { useJournal } from '../../app/journal'
 import { useLimitAlerts } from '../../app/limitAlerts'
 import { useReferralClaim } from '../../app/referral'
 import { routeHref, useRoute, type Route } from '../../app/router'
-import { clampRailWidth, useSettings } from '../../app/settings'
+import { applyAppearance, clampRailWidth, useSettings } from '../../app/settings'
 import { useSheets } from '../../app/sheets'
 import { useI18n } from '../../i18n/i18n'
 import type { MessageKey } from '../../i18n/messages/en'
@@ -156,10 +156,6 @@ function Page({ route }: { route: Route }) {
 
 /** Mirrors the theme setting onto <html data-theme>; "system" removes it so CSS follows the OS. */
 function useThemeAttribute() {
-  const { theme } = useSettings()
-  useEffect(() => {
-    const root = document.documentElement
-    if (theme === 'system') delete root.dataset.theme
-    else root.dataset.theme = theme
-  }, [theme])
+  const { theme, style, accent } = useSettings()
+  useEffect(() => applyAppearance({ theme, style, accent }), [theme, style, accent])
 }

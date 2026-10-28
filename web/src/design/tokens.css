@@ -1,8 +1,10 @@
-/* Design tokens. The look follows the Supabase dashboard (see CLAUDE.md, design direction):
-   near-black surfaces, 1px borders instead of shadows, a green accent, small uppercase
-   monospace labels, tight radii. Dark is the base; light applies when the system asks for it,
-   unless the user forced a theme in settings (data-theme on <html>). Every text pair meets
-   WCAG AA, checked by contrast.test.ts. */
+/* Design tokens. Near-black surfaces, 1px borders, small uppercase monospace labels, tight
+   radii (see CLAUDE.md, design direction); the "glow" style (style.css) adds the accent's light.
+   Dark is the base; light applies when the system asks for it, unless the user forced a theme
+   in settings (data-theme on <html>). The accent is the user's pick (data-accent): each one
+   gives a dark and a light variant, and the theme picks between them. Profit and loss keep
+   their colors whatever the accent. Every text pair meets WCAG AA, in every theme and accent,
+   checked by contrast.test.ts. */
 
 :root {
   --color-background: #121212;
@@ -14,12 +16,24 @@
   --color-border-control: #6b6b6b;
   --color-text-primary: #ededed;
   --color-text-secondary: #a0a0a0;
-  /* Green for links, icons and the current tab. */
-  --color-accent: #3ecf8e;
-  /* Filled primary buttons: deep green with a bright edge, light text. */
-  --color-accent-fill: #006239;
-  --color-accent-fill-border: #1f8a5c;
+  /* The accent for links, icons and the current tab, and the filled primary buttons (a deep
+     shade with a bright edge, light text). Emerald unless the user picked another. */
+  --accent-dark: #3ecf8e;
+  --accent-fill-dark: #006239;
+  --accent-fill-border-dark: #1f8a5c;
+  --accent-light: #00744a;
+  --accent-fill-light: #006239;
+  --accent-fill-border-light: #00744a;
+  --color-accent: var(--accent-dark);
+  --color-accent-fill: var(--accent-fill-dark);
+  --color-accent-fill-border: var(--accent-fill-border-dark);
   --color-accent-contrast: #ffffff;
+  /* The accent picker's swatches: each accent's filled shade, the same in every theme. */
+  --swatch-green: #006239;
+  --swatch-amber: #92400e;
+  --swatch-violet: #5b21b6;
+  --swatch-blue: #1e40af;
+  --swatch-pink: #9d174d;
   --color-profit: #3ecf8e;
   --color-loss: #f87171;
   --color-warning: #f5a623;
@@ -85,9 +99,9 @@
     --color-border-control: #8a8a8a;
     --color-text-primary: #171717;
     --color-text-secondary: #666666;
-    --color-accent: #00744a;
-    --color-accent-fill: #006239;
-    --color-accent-fill-border: #00744a;
+    --color-accent: var(--accent-light);
+    --color-accent-fill: var(--accent-fill-light);
+    --color-accent-fill-border: var(--accent-fill-border-light);
     --color-accent-contrast: #ffffff;
     --color-profit: #0a7d4f;
     --color-loss: #c92c40;
@@ -109,9 +123,9 @@
   --color-border-control: #8a8a8a;
   --color-text-primary: #171717;
   --color-text-secondary: #666666;
-  --color-accent: #00744a;
-  --color-accent-fill: #006239;
-  --color-accent-fill-border: #00744a;
+  --color-accent: var(--accent-light);
+  --color-accent-fill: var(--accent-fill-light);
+  --color-accent-fill-border: var(--accent-fill-border-light);
   --color-accent-contrast: #ffffff;
   --color-profit: #0a7d4f;
   --color-loss: #c92c40;
@@ -121,4 +135,41 @@
   --color-separator: #e4e4e4;
   --color-scrim: rgb(0 0 0 / 35%);
   color-scheme: light;
+}
+
+/* Accents the user can pick (Profile, or the theme menu in the top bar). */
+:root[data-accent='amber'] {
+  --accent-dark: #fbbf24;
+  --accent-fill-dark: #92400e;
+  --accent-fill-border-dark: #c2710c;
+  --accent-light: #92400e;
+  --accent-fill-light: #92400e;
+  --accent-fill-border-light: #b45309;
+}
+
+:root[data-accent='violet'] {
+  --accent-dark: #a78bfa;
+  --accent-fill-dark: #5b21b6;
+  --accent-fill-border-dark: #7c3aed;
+  --accent-light: #6d28d9;
+  --accent-fill-light: #5b21b6;
+  --accent-fill-border-light: #6d28d9;
+}
+
+:root[data-accent='blue'] {
+  --accent-dark: #60a5fa;
+  --accent-fill-dark: #1e40af;
+  --accent-fill-border-dark: #2563eb;
+  --accent-light: #1d4ed8;
+  --accent-fill-light: #1e40af;
+  --accent-fill-border-light: #1d4ed8;
+}
+
+:root[data-accent='pink'] {
+  --accent-dark: #f472b6;
+  --accent-fill-dark: #9d174d;
+  --accent-fill-border-dark: #db2777;
+  --accent-light: #be185d;
+  --accent-fill-light: #9d174d;
+  --accent-fill-border-light: #be185d;
 }
