@@ -82,7 +82,7 @@ export function TodayPage() {
         )}
       </Card>
 
-      <SessionClock className="today-sessions" />
+      <SessionClock />
 
       <DayCheckInCard />
 

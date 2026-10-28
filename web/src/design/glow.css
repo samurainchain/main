@@ -48,8 +48,7 @@
 }
 
 @media (min-width: 900px) {
-  :root[data-style='glow'] .sidebar,
-  :root[data-style='glow'] .side-rail {
+  :root[data-style='glow'] .sidebar {
     background: color-mix(in srgb, var(--color-background) 72%, transparent);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
@@ -109,8 +108,7 @@
 @media (prefers-reduced-transparency: reduce) {
   :root[data-style='glow'] .card,
   :root[data-style='glow'] .list-card,
-  :root[data-style='glow'] .sidebar,
-  :root[data-style='glow'] .side-rail {
+  :root[data-style='glow'] .sidebar {
     background: var(--color-surface);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;

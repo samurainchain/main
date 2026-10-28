@@ -1150,147 +1150,11 @@
   color: var(--color-profit);
 }
 
-/* Right column on wide screens: this week at a glance and the feedback form at the bottom.
-   Its width comes from the person's setting (--rail-width on .shell); collapsed, it is a strip. */
-.side-rail {
-  display: none;
-}
-
+/* Very wide screens: dashboards and the trade table get more room. */
 @media (min-width: 1400px) {
-  .content {
-    padding-right: calc(var(--rail-width) + var(--space-xl));
-  }
-
-  .shell--rail-hidden .content {
-    padding-right: calc(var(--rail-collapsed-width) + var(--space-xl));
-  }
-
-  /* With the rail beside it, the content takes the width between the two columns. */
   :where(.content > *) {
     max-width: 1360px;
   }
-
-  .side-rail {
-    position: fixed;
-    inset: 0 0 0 auto;
-    display: block;
-    width: var(--rail-width);
-    border-left: 1px solid var(--color-border);
-    background: var(--color-background);
-  }
-
-  .side-rail__scroll {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-m);
-    height: 100%;
-    padding: var(--space-s) var(--space-m) var(--space-xl);
-    overflow-y: auto;
-  }
-
-  .side-rail__bar {
-    display: flex;
-    justify-content: flex-end;
-    margin-right: calc(var(--space-xs) * -1);
-  }
-
-  .side-rail--collapsed {
-    display: flex;
-    justify-content: center;
-    width: var(--rail-collapsed-width);
-    padding-top: var(--space-s);
-  }
-
-}
-
-/* The left edge of the rail: a wide grab area with a thin accent line on hover, focus and drag. */
-.side-rail__resize {
-  position: absolute;
-  inset: 0 auto 0 -4px;
-  z-index: 1;
-  width: 9px;
-  cursor: col-resize;
-  touch-action: none;
-}
-
-.side-rail__resize::after {
-  content: '';
-  position: absolute;
-  inset: 0 auto 0 4px;
-  width: 1px;
-  background: transparent;
-  transition: background-color 0.15s;
-}
-
-.side-rail__resize:hover::after,
-.side-rail__resize:focus-visible::after,
-.is-resizing .side-rail__resize::after {
-  width: 2px;
-  background: var(--color-accent);
-}
-
-.side-rail__resize:focus-visible {
-  outline: none;
-}
-
-.is-resizing,
-.is-resizing * {
-  cursor: col-resize !important;
-  user-select: none;
-}
-
-.week-glance .insight {
-  margin: 0;
-}
-
-.week-bars {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: var(--space-xs);
-  height: 96px;
-}
-
-.week-bars__day {
-  display: grid;
-  grid-template-rows: 1fr 1fr auto;
-  min-width: 0;
-}
-
-.week-bars__half {
-  position: relative;
-  display: flex;
-  justify-content: center;
-}
-
-.week-bars__half--up {
-  align-items: flex-end;
-  border-bottom: 1px solid var(--color-border-strong);
-}
-
-.week-bars__half--down {
-  align-items: flex-start;
-}
-
-.week-bars__bar {
-  width: min(100%, 14px);
-}
-
-.week-bars__bar--profit {
-  border-radius: var(--radius-tiny) var(--radius-tiny) 0 0;
-  background: var(--color-chart-profit);
-}
-
-.week-bars__bar--loss {
-  border-radius: 0 0 var(--radius-tiny) var(--radius-tiny);
-  background: var(--color-chart-loss);
-}
-
-.week-bars__label {
-  padding-top: var(--space-xxs);
-  color: var(--color-text-secondary);
-  font-family: var(--font-mono);
-  font-size: var(--text-tick);
-  text-align: center;
 }
 
 /* Privacy Policy · Terms of Use, under the disclaimers. */
@@ -1413,13 +1277,6 @@
   width: 2px;
   margin-left: -1px;
   background: var(--color-text-primary);
-}
-
-/* On wide screens the right column has the clock, so Today doesn't repeat it. */
-@media (min-width: 1400px) {
-  .shell:not(.shell--rail-hidden) .today-sessions {
-    display: none;
-  }
 }
 
 /* Top bar: language, theme, feedback and notifications (SPEC section 3) */

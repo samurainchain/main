@@ -1,10 +1,10 @@
 import { ChartColumn, CircleUser, ListChecks, Plus, Sun, type LucideIcon } from 'lucide-react'
-import { lazy, Suspense, useEffect, type CSSProperties } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { useJournal } from '../../app/journal'
 import { useLimitAlerts } from '../../app/limitAlerts'
 import { useReferralClaim } from '../../app/referral'
 import { routeHref, useRoute, type Route } from '../../app/router'
-import { applyAppearance, clampRailWidth, useSettings } from '../../app/settings'
+import { applyAppearance, useSettings } from '../../app/settings'
 import { useSheets } from '../../app/sheets'
 import { useI18n } from '../../i18n/i18n'
 import type { MessageKey } from '../../i18n/messages/en'
@@ -20,7 +20,6 @@ import { TodayPage } from '../today/TodayPage'
 import { TradeDetailPage } from '../trades/TradeDetailPage'
 import { TradesPage } from '../trades/TradesPage'
 import { AppBar } from './AppBar'
-import { SideRail } from './SideRail'
 
 // Heavier screens load when first opened, keeping the first download small; the service worker
 // still caches them for offline use.
@@ -52,7 +51,6 @@ export function AppShell() {
   const route = useRoute()
   const { status } = useJournal()
   const { newTrade } = useSheets()
-  const { railWidth, railHidden } = useSettings()
   useThemeAttribute()
   useLimitAlerts()
   useReferralClaim()
@@ -89,7 +87,7 @@ export function AppShell() {
   )
 
   return (
-    <div className={`shell${railHidden ? ' shell--rail-hidden' : ''}`} style={{ '--rail-width': `${clampRailWidth(railWidth)}px` } as CSSProperties}>
+    <div className="shell">
       <nav className="sidebar" aria-label={t('nav.label')}>
         <div className="sidebar__brand">
           <img src="./favicon.svg" alt="" width={28} height={28} />
@@ -113,8 +111,6 @@ export function AppShell() {
           </Suspense>
         )}
       </main>
-
-      {status === 'ready' && <SideRail />}
 
       <nav className="tabbar" aria-label={t('nav.label')}>
         {TABS.slice(0, 2).map(tabLink)}

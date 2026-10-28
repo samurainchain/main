@@ -18,9 +18,6 @@ export interface Settings {
   accent: AccentSetting
   selectedAccount: AccountSelection
   weekStart: WeekStartSetting
-  /** Width of the right column on wide screens, in CSS pixels. */
-  railWidth: number
-  railHidden: boolean
   /** The analytics dashboard's blocks; read through normalizeLayout (core/dashboard). */
   dashboard?: unknown
   /** Trades screen: grouped by day, or the table; unset picks by screen width. */
@@ -35,19 +32,9 @@ export interface Settings {
   seenNotices?: string[]
 }
 
-export const RAIL_MIN_WIDTH = 280
-export const RAIL_MAX_WIDTH = 560
-export const RAIL_DEFAULT_WIDTH = 340
-
-/** A right-column width kept within the range the layout supports. */
-export function clampRailWidth(width: number): number {
-  if (!Number.isFinite(width)) return RAIL_DEFAULT_WIDTH
-  return Math.round(Math.min(RAIL_MAX_WIDTH, Math.max(RAIL_MIN_WIDTH, width)))
-}
-
 // Storage keys keep the app's first name, so saved settings survive the rename.
 const STORAGE_KEY = 'mirror.settings'
-const DEFAULTS: Settings = { language: 'system', theme: 'system', style: 'glow', accent: 'green', selectedAccount: 'all', weekStart: 'auto', railWidth: RAIL_DEFAULT_WIDTH, railHidden: false }
+const DEFAULTS: Settings = { language: 'system', theme: 'system', style: 'glow', accent: 'green', selectedAccount: 'all', weekStart: 'auto' }
 
 // Per-browser preferences. They live in localStorage, apart from the journal data, and are
 // read defensively: storage can be unavailable (private mode) or hold stale shapes.
