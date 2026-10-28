@@ -8,7 +8,7 @@ lines marked TODO are for the owner to fill in.
 ## Who I am
 
 - **Name:** Tiltless (brand account, not a personal one)
-- **Handle:** @tiltless.xyz (https://www.instagram.com/tiltless.xyz/), contact tiltless.xyz@gmail.com
+- **Handle:** @tiltless.xyz on Instagram (https://www.instagram.com/tiltless.xyz/) and TikTok (https://www.tiktok.com/@tiltless.xyz), contact tiltless.xyz@gmail.com
 - **What I do, in one sentence:** Tiltless is a trading journal that catches tilt:
   it flags revenge trades, trades without a stop and your worst hours, and shows
   what each mistake costs you.
