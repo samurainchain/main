@@ -4,6 +4,7 @@ import { useCloud } from '../../app/cloud'
 import { useJournal, useStore } from '../../app/journal'
 import { requestNotificationPermission } from '../../app/limitAlerts'
 import { navigate } from '../../app/router'
+import { updateSettings } from '../../app/settings'
 import { ASSET_CLASSES, CURRENCIES, type AssetClass } from '../../core/models'
 import {
   accountsFromAnswers,
@@ -16,7 +17,7 @@ import {
   type OnboardingAnswers,
 } from '../../core/onboarding'
 import { Button, Segmented } from '../../design/components'
-import { useI18n, type Translator } from '../../i18n/i18n'
+import { useI18n, type Locale, type Translator } from '../../i18n/i18n'
 import { SignInForm } from '../cloud/CloudSection'
 import { parseBackup } from '../profile/backup'
 
@@ -110,6 +111,7 @@ export function OnboardingFlow() {
       <main className="onboarding__body">
         {step === 'welcome' && (
           <section className="onboarding__welcome">
+            <LanguagePicker />
             <img src="./favicon.svg" alt="" width={64} height={64} />
             <h1>{t('onboarding.welcome.title')}</h1>
             <p className="secondary-text">{t('onboarding.welcome.text')}</p>
@@ -249,6 +251,23 @@ export function OnboardingFlow() {
           </>
         )}
       </footer>
+    </div>
+  )
+}
+
+/** Each language named in itself, so a visitor finds theirs whatever the page shows now. */
+const LANGUAGES: readonly { value: Locale; label: string }[] = [
+  { value: 'en', label: 'English' },
+  { value: 'ru', label: 'Русский' },
+  { value: 'es', label: 'Español' },
+]
+
+/** The language, chosen before the questions; it starts as the browser's and is kept in settings. */
+function LanguagePicker() {
+  const { t, locale } = useI18n()
+  return (
+    <div className="onboarding__language">
+      <Segmented label={t('profile.language')} value={locale} options={LANGUAGES} onChange={(language) => updateSettings({ language })} />
     </div>
   )
 }

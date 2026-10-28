@@ -172,3 +172,10 @@
 .onboarding__disclaimer {
   text-align: center;
 }
+
+/* Language first: above the welcome, so the questions come in the visitor's language. */
+.onboarding__language {
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: var(--space-l);
+}
