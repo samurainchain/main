@@ -89,3 +89,32 @@ export function trialDays(): number {
 
 /** Statuses that give Pro: paid, in the trial, or a renewal payment being retried. */
 export const PRO_STATUSES = ['active', 'trialing', 'past_due']
+
+// Crypto payments through NOWPayments. Secrets: NOWPAYMENTS_API_KEY, NOWPAYMENTS_IPN_SECRET;
+// optional CRYPTO_PRICE_MONTHLY (8.99), CRYPTO_PRICE_ANNUAL (44.99) in USD and
+// NOWPAYMENTS_SANDBOX=true to use NOWPayments' sandbox.
+
+/** Calls the NOWPayments API with our key. */
+export async function nowPayments<T = Record<string, unknown>>(path: string, body?: Record<string, unknown>): Promise<T> {
+  const base = Deno.env.get('NOWPAYMENTS_SANDBOX') === 'true' ? 'https://api-sandbox.nowpayments.io/v1' : 'https://api.nowpayments.io/v1'
+  const response = await fetch(`${base}${path}`, {
+    method: body ? 'POST' : 'GET',
+    headers: { 'x-api-key': env('NOWPAYMENTS_API_KEY'), 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined,
+  })
+  const answer = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(`NOWPayments ${path}: ${answer?.message ?? response.status}`)
+  return answer as T
+}
+
+/** A request to the database's REST API with the service role. */
+export async function rest<T = unknown>(path: string, init: { method?: string; body?: unknown; prefer?: string } = {}): Promise<T> {
+  const response = await fetch(`${env('SUPABASE_URL')}/rest/v1/${path}`, {
+    method: init.method ?? 'GET',
+    headers: { ...serviceHeaders(), 'Content-Type': 'application/json', ...(init.prefer ? { Prefer: init.prefer } : {}) },
+    body: init.body === undefined ? undefined : JSON.stringify(init.body),
+  })
+  if (!response.ok) throw new Error(`Database ${path}: ${response.status} ${await response.text()}`)
+  const text = await response.text()
+  return (text ? JSON.parse(text) : undefined) as T
+}

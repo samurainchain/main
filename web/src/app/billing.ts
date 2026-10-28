@@ -13,6 +13,27 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL } from './cloudConfig'
  */
 export const PRO_ON_SALE = false
 
+/**
+ * Shows Pro before it is on sale, for the owner to test payments on the live site: open the site
+ * with ?pro=preview once, and this browser tab keeps showing it.
+ */
+export function proPreview(): boolean {
+  try {
+    if (new URL(window.location.href).searchParams.get('pro') === 'preview') sessionStorage.setItem('mirror.proPreview', '1')
+    return sessionStorage.getItem('mirror.proPreview') === '1'
+  } catch {
+    return false
+  }
+}
+
+/**
+ * How Pro is sold when it is on sale: Stripe subscriptions, or one-time crypto payments through
+ * NOWPayments (a month or a year of Pro; crypto can't renew on its own). Stripe waits for a seller
+ * status it supports (CLAUDE.md, "Monetization").
+ */
+export type PaymentProvider = 'stripe' | 'crypto'
+export const PAYMENT_PROVIDER: PaymentProvider = 'crypto'
+
 export type Plan = 'monthly' | 'annual'
 
 export interface PlanPrice {
@@ -83,7 +104,7 @@ function returnUrl(): string {
 }
 
 /** Asks a billing function for a Stripe page (checkout or customer portal) and goes there. */
-async function redirect(client: SupabaseClient, name: 'billing-checkout' | 'billing-portal', body: Record<string, unknown>): Promise<void> {
+async function redirect(client: SupabaseClient, name: 'billing-checkout' | 'billing-portal' | 'crypto-invoice', body: Record<string, unknown>): Promise<void> {
   const { data, error } = await client.functions.invoke<{ url?: string }>(name, { body: { ...body, returnUrl: returnUrl() } })
   if (error || !data?.url) throw error ?? new Error('No payment page returned')
   window.location.assign(data.url)
@@ -97,11 +118,38 @@ export function openPortal(client: SupabaseClient): Promise<void> {
   return redirect(client, 'billing-portal', {})
 }
 
-/** Whether the page was opened by Stripe after a successful payment; removes the marker. */
-export function takeCheckoutResult(): boolean {
+/** Whether the page was opened by the payment page after a payment ('success' for Stripe, 'crypto' for NOWPayments); removes the marker. */
+export function takeCheckoutResult(marker: 'success' | 'crypto' = 'success'): boolean {
   const url = new URL(window.location.href)
-  if (url.searchParams.get('billing') !== 'success') return false
+  if (url.searchParams.get('billing') !== marker) return false
   url.searchParams.delete('billing')
   window.history.replaceState(null, '', url.toString())
   return true
+}
+
+export interface CryptoPrices {
+  currency: string
+  /** USD amounts as decimal strings, e.g. "8.99". */
+  monthly: string
+  annual: string
+  /** NOWPayments' sandbox: no real coins. */
+  sandbox: boolean
+}
+
+export async function fetchCryptoPrices(): Promise<CryptoPrices> {
+  const response = await fetch(`${FUNCTIONS}/crypto-invoice`, { headers: { apikey: SUPABASE_ANON_KEY } })
+  if (!response.ok) throw new Error(`Prices unavailable: ${response.status}`)
+  return (await response.json()) as CryptoPrices
+}
+
+/** Until when the signed-in user's Pro pass lasts, or undefined when they never bought one. */
+export async function fetchProUntil(client: SupabaseClient): Promise<Date | undefined> {
+  const { data, error } = await client.from('pro_access').select('pro_until').maybeSingle<{ pro_until: string }>()
+  if (error) throw error
+  return data ? new Date(data.pro_until) : undefined
+}
+
+/** Opens a NOWPayments invoice for a month or a year of Pro. */
+export function startCryptoCheckout(client: SupabaseClient, plan: Plan): Promise<void> {
+  return redirect(client, 'crypto-invoice', { plan })
 }

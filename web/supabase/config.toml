@@ -1,6 +1,7 @@
 # Supabase CLI settings used when GitHub Actions deploys the functions
 # (.github/workflows/supabase-functions.yml). Every function checks the caller itself: the
-# billing functions read the user from the access token, the webhook checks Stripe's signature.
+# billing and crypto-invoice functions read the user from the access token, the Stripe webhook
+# checks its signature and the crypto webhook reads each payment back from NOWPayments.
 project_id = "tiltless"
 
 [functions.billing-prices]
@@ -13,4 +14,10 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.billing-webhook]
+verify_jwt = false
+
+[functions.crypto-invoice]
+verify_jwt = false
+
+[functions.crypto-webhook]
 verify_jwt = false
