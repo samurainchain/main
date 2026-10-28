@@ -637,10 +637,17 @@
   user-select: none;
 }
 
-.dash-widget--dragging {
-  opacity: 0.6;
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
+.dash-grid .dash-widget--dragging {
+  z-index: 3;
+  border-color: var(--color-accent);
+  border-style: solid;
+  opacity: 0.95;
+  cursor: grabbing;
+  will-change: transform;
+}
+
+.dash-widget--dragging .dash-widget__handle {
+  cursor: grabbing;
 }
 
 .dash-widget__resize {
