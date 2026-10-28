@@ -23,10 +23,14 @@ const WIDGET_BASE = {
   timeZone: '8',
 }
 
-/** The widget's colors, from the design tokens of each theme (it can't read CSS variables). */
+/**
+ * The widget's colors, from the design tokens (it can't read CSS variables). Its body is always
+ * white: "background" only paints the date rows, so the text stays dark in both themes and the
+ * date rows take the theme's surface.
+ */
 const WIDGET_COLORS = {
-  dark: { ecoDayBackground: '#171717', defaultFont: '#ededed', innerBorderColor: '#2e2e2e', borderColor: '#2e2e2e', ecoDayFontColor: '#a1a1a1' },
-  light: { ecoDayBackground: '#ffffff', defaultFont: '#171717', innerBorderColor: '#e4e4e4', borderColor: '#e4e4e4', ecoDayFontColor: '#666666' },
+  dark: { ecoDayBackground: '#171717', defaultFont: '#171717', innerBorderColor: '#e4e4e4', borderColor: '#2e2e2e', ecoDayFontColor: '#ededed' },
+  light: { ecoDayBackground: '#f4f4f4', defaultFont: '#171717', innerBorderColor: '#e4e4e4', borderColor: '#e4e4e4', ecoDayFontColor: '#171717' },
 }
 
 /** Investing.com's language ids; languages without a known id fall back to English. */

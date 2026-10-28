@@ -377,6 +377,8 @@
 .econ-calendar__frame {
   display: block;
   width: 100%;
+  /* The widget's table doesn't grow past about 880px; a wider frame is only white space. */
+  max-width: 900px;
   height: 560px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-field);
