@@ -11,6 +11,7 @@ import { Button, Card, EmptyState, LimitBar, PnLText, SectionHeader } from '../.
 import { formatDay, formatMoney } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
 import { DayCheckInCard } from '../checkin/DayCheckInCard'
+import { EconomicCalendar } from '../calendar/EconomicCalendar'
 import { SessionClock } from '../sessions/SessionClock'
 import { PageHeader } from '../shell/PageHeader'
 import { dayKey, newestFirst, tradeDayKey, useVisibleTrades } from '../trades/tradeQueries'
@@ -154,6 +155,8 @@ export function TodayPage() {
           </div>
         </>
       )}
+
+      <EconomicCalendar />
     </>
   )
 }

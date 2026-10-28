@@ -23,6 +23,8 @@ export interface Settings {
   hiddenTradeColumns?: unknown
   /** The position size calculator's last risk, e.g. 1 percent. */
   calculatorRisk?: { mode: 'percent' | 'amount'; value: string }
+  /** The trader turned on Investing.com's calendar on Today (it loads a third-party frame). */
+  economicCalendar?: boolean
 }
 
 export const RAIL_MIN_WIDTH = 280
