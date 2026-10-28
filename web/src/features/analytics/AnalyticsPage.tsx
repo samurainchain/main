@@ -25,6 +25,7 @@ import { Button, Card, EmptyState, PnLText, SectionHeader, Segmented } from '../
 import { formatMoney, formatR, formatRatio, formatShare, weekdayNames } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
 import { CheckInResults } from '../checkin/CheckInResults'
+import { SessionResults } from '../sessions/SessionResults'
 import { PageHeader } from '../shell/PageHeader'
 import { useVisibleTrades } from '../trades/tradeQueries'
 import { EMOTION_ICONS } from '../trades/TradeRow'
@@ -161,6 +162,8 @@ export function AnalyticsPage() {
           </Card>
 
           <CheckInResults trades={inRange} currency={currency} />
+
+          <SessionResults trades={inRange} currency={currency} />
 
           <SectionHeader title={t('analytics.byWeekday')} />
           <Card>

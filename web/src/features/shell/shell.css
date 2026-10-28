@@ -1342,3 +1342,95 @@
   margin-bottom: var(--space-xs);
   font-weight: 500;
 }
+
+/* Trading sessions: UTC clock, one row per market with a 24-hour UTC track. */
+.session-clock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+  margin-top: var(--space-s);
+}
+
+.session-clock__utc {
+  font-family: var(--font-mono);
+  font-size: var(--text-title);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.session-clock__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  margin: var(--space-s) 0 var(--space-xs);
+  padding: 0;
+  list-style: none;
+}
+
+.session-row__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-xxs) var(--space-xs);
+}
+
+.session-row__name {
+  font-weight: 500;
+}
+
+.session-row__time {
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+}
+
+.session-row__status {
+  margin-left: auto;
+}
+
+.session-live {
+  padding: 1px var(--space-xxs);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-small);
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.session-row__track {
+  position: relative;
+  height: 6px;
+  margin-top: var(--space-xxs);
+  border-radius: var(--radius-tiny);
+  background: var(--color-surface-elevated);
+}
+
+.session-row__window {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: var(--radius-tiny);
+  background: var(--color-border-strong);
+}
+
+.session-row--live .session-row__window {
+  background: var(--color-chart-profit);
+}
+
+.session-row__now {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--color-text-primary);
+}
+
+/* On wide screens the right column has the clock, so Today doesn't repeat it. */
+@media (min-width: 1400px) {
+  .shell:not(.shell--rail-hidden) .today-sessions {
+    display: none;
+  }
+}

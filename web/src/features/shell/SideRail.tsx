@@ -12,6 +12,7 @@ import { formatMoney, formatShare, weekdayNames } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
 import { FeedbackSection } from '../feedback/FeedbackSection'
 import { useInsightText } from '../review/WeekBreakdown'
+import { SessionClock } from '../sessions/SessionClock'
 import { dayFromKey, useVisibleTrades } from '../trades/tradeQueries'
 
 /** Released this far below the minimum width, a drag hides the column instead. */
@@ -48,6 +49,7 @@ export function SideRail() {
             <PanelRightClose size={20} aria-hidden="true" />
           </button>
         </div>
+        <SessionClock />
         {activeAccounts(accounts).length > 0 && <WeekGlance />}
         <FeedbackSection className="side-rail__feedback" />
       </div>
