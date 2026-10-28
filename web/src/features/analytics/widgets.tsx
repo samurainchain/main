@@ -23,6 +23,7 @@ import { formatDuration, formatMoney, formatR, formatRatio, formatShare, weekday
 import { useI18n } from '../../i18n/i18n'
 import type { MessageKey } from '../../i18n/messages/en'
 import { CheckInResults } from '../checkin/CheckInResults'
+import { EconomicCalendar } from '../calendar/EconomicCalendar'
 import { SessionResults } from '../sessions/SessionResults'
 import { EMOTION_ICONS } from '../trades/TradeRow'
 import { ColumnChart, CostBarList, EquityCurve, SignedBarList } from './charts'
@@ -46,6 +47,7 @@ export const WIDGETS: Record<WidgetId, { title: MessageKey; needsTrades: boolean
   mistakeCost: { title: 'analytics.mistakeCost', needsTrades: true },
   byEmotion: { title: 'analytics.byEmotion', needsTrades: true },
   calendar: { title: 'analytics.calendar', needsTrades: false },
+  econCalendar: { title: 'calendar.title', needsTrades: false },
   sessions: { title: 'analytics.bySession', needsTrades: true },
   checkins: { title: 'analytics.checkins', needsTrades: true },
   byWeekday: { title: 'analytics.byWeekday', needsTrades: true },
@@ -76,6 +78,8 @@ export function WidgetBody({ id, data }: { id: WidgetId; data: WidgetData }) {
       return <ByEmotion trades={inRange} currency={currency} />
     case 'calendar':
       return <PnlCalendar trades={closed as ClosedTrade[]} currency={currency} />
+    case 'econCalendar':
+      return <EconomicCalendar />
     case 'sessions':
       return <SessionResults trades={inRange} currency={currency} />
     case 'checkins':

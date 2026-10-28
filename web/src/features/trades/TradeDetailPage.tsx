@@ -1,6 +1,6 @@
 import Big from 'big.js'
-import { ChevronLeft, Copy, Pencil, SearchX, Trash2, X } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { ChevronLeft, Copy, Pencil, SearchX, Share2, Trash2, X } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
 import { useAutoFlags, useJournal, useMistakeName, useStore } from '../../app/journal'
 import { navigate, routeHref } from '../../app/router'
 import { useSheets } from '../../app/sheets'
@@ -15,6 +15,7 @@ import { PageHeader } from '../shell/PageHeader'
 import { TradeGallery } from '../images/TradeImages'
 import { EMOTION_ICONS } from './TradeRow'
 import { StarRating } from './StarRating'
+import { ShareTradeSheet } from '../share/ShareTradeSheet'
 
 /** Why the detector raised a flag, in the trader's words. */
 function flagReason(flag: AutoFlag, t: Translator['t'], locale: Translator['locale']): string {
@@ -84,6 +85,7 @@ export function TradeDetail({ trade, onDeleted, onDuplicated }: { trade: Trade; 
   const { editTrade } = useSheets()
   const mistakeName = useMistakeName()
   const autoFlags = useAutoFlags()
+  const [sharing, setSharing] = useState(false)
 
   const account = accounts.find((item) => item.id === trade.accountId)
   const currency = account?.currency ?? 'USD'
@@ -246,6 +248,9 @@ export function TradeDetail({ trade, onDeleted, onDuplicated }: { trade: Trade; 
         <Button variant="primary" icon={<Pencil size={18} aria-hidden="true" />} onClick={() => editTrade(trade.id)}>
           {t('action.edit')}
         </Button>
+        <Button icon={<Share2 size={18} aria-hidden="true" />} onClick={() => setSharing(true)}>
+          {t('share.button')}
+        </Button>
         <Button icon={<Copy size={18} aria-hidden="true" />} onClick={duplicate}>
           {t('action.duplicate')}
         </Button>
@@ -253,6 +258,7 @@ export function TradeDetail({ trade, onDeleted, onDuplicated }: { trade: Trade; 
           {t('action.delete')}
         </Button>
       </div>
+      <ShareTradeSheet trade={trade} open={sharing} onClose={() => setSharing(false)} />
     </>
   )
 }
