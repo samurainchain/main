@@ -13,6 +13,7 @@ export type Route =
   | { name: 'rules' }
   | { name: 'tags' }
   | { name: 'review'; week?: string }
+  | { name: 'partners' }
 
 export function parseRoute(hash: string): Route {
   // A query after the route (#/profile?pro=preview) isn't part of it.
@@ -30,6 +31,8 @@ export function parseRoute(hash: string): Route {
       return { name: 'rules' }
     case 'tags':
       return { name: 'tags' }
+    case 'partners':
+      return { name: 'partners' }
     case 'review':
       return second && /^\d{4}-\d{2}-\d{2}$/.test(second) ? { name: 'review', week: second } : { name: 'review' }
     default:

@@ -407,3 +407,112 @@
   height: 20px;
   accent-color: var(--color-accent);
 }
+
+/* Partner program */
+.partners-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-s);
+  padding: var(--space-l);
+  background:
+    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--color-accent) 14%, transparent), transparent 60%),
+    var(--color-surface);
+}
+
+.partners-hero__tag {
+  padding: var(--space-xxs) var(--space-xs);
+  border: 1px solid var(--color-accent-fill-border);
+  border-radius: var(--radius-small);
+  color: var(--color-accent);
+}
+
+.partners-hero__title {
+  max-width: 22ch;
+  font-size: var(--text-large-title);
+  line-height: 1.15;
+}
+
+.partners-hero > p {
+  max-width: 60ch;
+}
+
+.partners-facts,
+.partners-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: var(--space-s);
+  margin: var(--space-m) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.partners-facts .card,
+.partners-grid__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+}
+
+.partners-facts__value {
+  color: var(--color-accent);
+  font-size: var(--text-large-title);
+  font-weight: 600;
+}
+
+.partners-grid__item {
+  border-top: 2px solid var(--color-accent-fill-border);
+}
+
+.partners-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.partners-steps li,
+.partners-steps li > span:last-child {
+  display: flex;
+  gap: var(--space-s);
+}
+
+.partners-steps li > span:last-child {
+  flex-direction: column;
+  gap: var(--space-hair);
+}
+
+.partners-steps__number {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--color-accent-fill-border);
+  border-radius: var(--radius-small);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.partners-totals {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-field);
+  overflow: hidden;
+}
+
+/* Four audiences read better as two by two than three and one. */
+.partners-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+}
+
+/* Long Russian words at 200% text must wrap rather than push the page sideways. */
+.partners-hero > *,
+.partners-facts__value,
+.partners-grid__item,
+.partners-steps {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}

@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { CloudController, CloudProvider } from './app/cloud'
 import { registerServiceWorker } from './app/install'
+import { captureReferral } from './app/referral'
 import { JournalProvider } from './app/journal'
 import { SheetProvider } from './app/sheets'
 import { IndexedDbBackend } from './core/storage/indexedDbBackend'
@@ -17,6 +18,7 @@ import './features/onboarding/onboarding.css'
 import { AppShell } from './features/shell/AppShell'
 import { I18nProvider } from './i18n/i18n'
 
+captureReferral()
 const local = new IndexedDbBackend()
 const backend = new SyncingBackend(local, local.syncState())
 const store = new JournalStore(backend, local.imageBlobs())

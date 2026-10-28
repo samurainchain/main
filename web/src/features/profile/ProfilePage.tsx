@@ -1,4 +1,4 @@
-import { CalendarCheck, ChevronRight, Download, FileSpreadsheet, FileUp, ShieldCheck, Smartphone, Tags, Trash2, Upload, Wallet } from 'lucide-react'
+import { CalendarCheck, ChevronRight, HandCoins, Download, FileSpreadsheet, FileUp, ShieldCheck, Smartphone, Tags, Trash2, Upload, Wallet } from 'lucide-react'
 import { lazy, Suspense, useId, useRef, useState, type ChangeEvent } from 'react'
 import { useFlaggedTrades, useJournal, useMistakeName, useStore } from '../../app/journal'
 import { downloadCsv, tradesToCsv } from '../../core/export/csv'
@@ -82,6 +82,11 @@ export function ProfilePage() {
         <a className="nav-row" href={routeHref({ name: 'review' })}>
           <CalendarCheck size={20} aria-hidden="true" />
           <span className="nav-row__label">{t('review.title')}</span>
+          <ChevronRight size={18} aria-hidden="true" className="secondary-text" />
+        </a>
+        <a className="nav-row" href={routeHref({ name: 'partners' })}>
+          <HandCoins size={20} aria-hidden="true" />
+          <span className="nav-row__label">{t('partners.title')}</span>
           <ChevronRight size={18} aria-hidden="true" className="secondary-text" />
         </a>
       </div>

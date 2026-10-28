@@ -2,6 +2,7 @@ import { ChartColumn, CircleUser, ListChecks, Plus, Sun, type LucideIcon } from 
 import { lazy, Suspense, useEffect, type CSSProperties } from 'react'
 import { useJournal } from '../../app/journal'
 import { useLimitAlerts } from '../../app/limitAlerts'
+import { useReferralClaim } from '../../app/referral'
 import { routeHref, useRoute, type Route } from '../../app/router'
 import { clampRailWidth, useSettings } from '../../app/settings'
 import { useSheets } from '../../app/sheets'
@@ -24,6 +25,7 @@ import { SideRail } from './SideRail'
 // Heavier screens load when first opened, keeping the first download small; the service worker
 // still caches them for offline use.
 const AnalyticsPage = lazy(() => import('../analytics/AnalyticsPage').then((module) => ({ default: module.AnalyticsPage })))
+const PartnersPage = lazy(() => import('../partners/PartnersPage').then((module) => ({ default: module.PartnersPage })))
 const WeeklyReviewPage = lazy(() => import('../review/WeeklyReviewPage').then((module) => ({ default: module.WeeklyReviewPage })))
 
 interface Tab {
@@ -38,7 +40,7 @@ const TABS: Tab[] = [
   { route: 'today', label: 'tab.today', icon: Sun, matches: ['today'] },
   { route: 'trades', label: 'tab.trades', icon: ListChecks, matches: ['trades', 'trade'] },
   { route: 'analytics', label: 'tab.analytics', icon: ChartColumn, matches: ['analytics'] },
-  { route: 'profile', label: 'tab.profile', icon: CircleUser, matches: ['profile', 'accounts', 'rules', 'review', 'tags'] },
+  { route: 'profile', label: 'tab.profile', icon: CircleUser, matches: ['profile', 'accounts', 'rules', 'review', 'tags', 'partners'] },
 ]
 
 /**
@@ -53,6 +55,7 @@ export function AppShell() {
   const { railWidth, railHidden } = useSettings()
   useThemeAttribute()
   useLimitAlerts()
+  useReferralClaim()
   const needsOnboarding = useNeedsOnboarding()
 
   useEffect(() => {
@@ -140,6 +143,8 @@ function Page({ route }: { route: Route }) {
       return <ProfilePage />
     case 'accounts':
       return <AccountsPage />
+    case 'partners':
+      return <PartnersPage />
     case 'rules':
       return <RulesPage />
     case 'tags':
