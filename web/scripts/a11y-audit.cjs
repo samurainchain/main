@@ -114,6 +114,13 @@ async function main() {
         await page.goto(`${URL}#/trades`)
         await page.locator('.trade-table__open').first().click()
       }],
+      ['position size calculator', async () => {
+        await page.goto(`${URL}#/today`)
+        await page.getByRole('button', { name: 'Calculator' }).click()
+        await page.getByLabel('Account balance').fill('10000')
+        await page.getByLabel('Entry price').fill('67000')
+        await page.getByLabel('Stop loss').fill('66000')
+      }],
       ['account sheet', async () => {
         await page.goto(`${URL}#/accounts`)
         await page.getByRole('button', { name: 'Add' }).click()

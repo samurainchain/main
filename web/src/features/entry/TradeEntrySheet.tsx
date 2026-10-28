@@ -2,7 +2,7 @@ import Big from 'big.js'
 import { ImagePlus, ImageUp, Plus, Wallet, X } from 'lucide-react'
 import { useEffect, useId, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from 'react'
 import { activeAccounts, useJournal, useMistakeName, useSelectedAccount, useStore } from '../../app/journal'
-import { useSheets } from '../../app/sheets'
+import { useSheets, type TradePrefill } from '../../app/sheets'
 import { EMOTIONS, MAX_IMAGES_PER_TRADE, type Account, type Trade } from '../../core/models'
 import { FUTURES_PRESETS, SYMBOL_SUGGESTIONS } from '../../core/presets'
 import { Button, Chip, EmptyState, Field, PnLText, Segmented, Sheet } from '../../design/components'
@@ -27,6 +27,11 @@ import {
   type RecognizedFields,
 } from './entryForm'
 
+/** The prefill's fields that are set, so missing ones keep the form's defaults. */
+function definedFields(prefill: TradePrefill | undefined): Partial<EntryForm> {
+  return Object.fromEntries(Object.entries(prefill ?? {}).filter(([, value]) => value !== undefined)) as Partial<EntryForm>
+}
+
 /** Quick trade entry (SPEC section 4.4): one sheet for new and edited trades. */
 export function TradeEntrySheet() {
   const { sheet, close } = useSheets()
@@ -35,10 +40,10 @@ export function TradeEntrySheet() {
   const existing = open && sheet.tradeId ? trades.find((trade) => trade.id === sheet.tradeId) : undefined
   // Remount the form for every opening so it starts from fresh state.
   const formKey = open ? (sheet.tradeId ?? `new-${trades.length}`) : 'closed'
-  return open ? <EntrySheetContent key={formKey} existing={existing} onClose={close} /> : null
+  return open ? <EntrySheetContent key={formKey} existing={existing} prefill={sheet.prefill} onClose={close} /> : null
 }
 
-function EntrySheetContent({ existing, onClose }: { existing: Trade | undefined; onClose: () => void }) {
+function EntrySheetContent({ existing, prefill, onClose }: { existing: Trade | undefined; prefill?: TradePrefill; onClose: () => void }) {
   const { t, locale } = useI18n()
   const store = useStore()
   const { accounts, trades, mistakes, setups, rules } = useJournal()
@@ -48,8 +53,8 @@ function EntrySheetContent({ existing, onClose }: { existing: Trade | undefined;
   const ids = { symbol: useId(), symbols: useId(), entry: useId(), exit: useId(), size: useId(), stop: useId(), fees: useId(), opened: useId(), closed: useId(), note: useId(), account: useId(), contract: useId(), multiplier: useId(), leverage: useId() }
 
   const active = activeAccounts(accounts)
-  const defaultAccount = selected ?? active[0]
-  const [form, setForm] = useState<EntryForm>(() => (existing ? editEntryForm(existing) : newEntryForm(defaultAccount, trades)))
+  const defaultAccount = active.find((account) => account.id === prefill?.accountId) ?? selected ?? active[0]
+  const [form, setForm] = useState<EntryForm>(() => (existing ? editEntryForm(existing) : { ...newEntryForm(defaultAccount, trades), ...definedFields(prefill) }))
   const [errors, setErrors] = useState<EntryErrors>({})
   const [showMore, setShowMore] = useState(Boolean(existing && (existing.fees !== '0' || existing.note || store.imagesOf(existing.id).length > 0)))
   const [newImages, setNewImages] = useState<(CompressedImage & { url: string })[]>([])
@@ -494,7 +499,7 @@ function sizeLabel(market: Account['assetClass'], unit: EntryForm['sizeUnit']): 
   return unit === 'quote' ? 'entry.notional' : 'entry.quantity'
 }
 
-function DecimalInput({ id, value, placeholder, onChange }: { id: string; value: string; placeholder?: string; onChange: (value: string) => void }) {
+export function DecimalInput({ id, value, placeholder, onChange }: { id: string; value: string; placeholder?: string; onChange: (value: string) => void }) {
   return (
     <input
       id={id}

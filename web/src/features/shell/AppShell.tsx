@@ -10,6 +10,7 @@ import type { MessageKey } from '../../i18n/messages/en'
 import { AccountSheet } from '../accounts/AccountSheet'
 import { AccountsPage } from '../accounts/AccountsPage'
 import { OnboardingFlow, useNeedsOnboarding } from '../onboarding/OnboardingFlow'
+import { PositionSizeSheet } from '../calculator/PositionSizeSheet'
 import { TradeEntrySheet } from '../entry/TradeEntrySheet'
 import { ProfilePage } from '../profile/ProfilePage'
 import { RulesPage } from '../rules/RulesPage'
@@ -118,6 +119,7 @@ export function AppShell() {
 
       <TradeEntrySheet />
       <AccountSheet />
+      <PositionSizeSheet />
     </div>
   )
 }

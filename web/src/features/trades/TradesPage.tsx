@@ -1,4 +1,4 @@
-import { ListChecks, Plus, SlidersHorizontal } from 'lucide-react'
+import { Calculator, ListChecks, Plus, SlidersHorizontal } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { useJournal } from '../../app/journal'
 import { updateSettings, useSettings, useWeekStart } from '../../app/settings'
@@ -30,7 +30,7 @@ function defaultView(): View {
 export function TradesPage() {
   const { t, locale } = useI18n()
   const { trades, currency } = useVisibleTrades()
-  const { newTrade } = useSheets()
+  const { newTrade, openCalculator } = useSheets()
   const weekStart = useWeekStart()
   const [filter, setFilter] = useState<TradeFilter>({})
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -66,7 +66,12 @@ export function TradesPage() {
               { value: 'table', label: t('trades.view.table') },
             ]}
           />
-          {view === 'table' && <ColumnsMenu />}
+          <span className="trades-toolbar__actions">
+            <Button icon={<Calculator size={18} aria-hidden="true" />} onClick={openCalculator}>
+              {t('calc.button')}
+            </Button>
+            {view === 'table' && <ColumnsMenu />}
+          </span>
         </div>
       )}
       {filtered.length > 0 && <TradeSummaryStrip trades={filtered} currency={currency} />}

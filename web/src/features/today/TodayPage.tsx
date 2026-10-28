@@ -1,4 +1,4 @@
-import { CalendarCheck, Flame, Plus, Sun, Wallet } from 'lucide-react'
+import { Calculator, CalendarCheck, Flame, Plus, Sun, Wallet } from 'lucide-react'
 import { activeAccounts, useJournal, useMistakeName } from '../../app/journal'
 import { routeHref } from '../../app/router'
 import { useWeekStart } from '../../app/settings'
@@ -23,7 +23,7 @@ export function TodayPage() {
   const weekStart = useWeekStart()
   const { trades, currency } = useVisibleTrades()
   const mistakeName = useMistakeName()
-  const { newTrade, newAccount } = useSheets()
+  const { newTrade, newAccount, openCalculator } = useSheets()
   const today = new Date()
   const todayTrades = trades
     .filter((trade) => tradeDayKey(trade) === dayKey(today))
@@ -36,7 +36,18 @@ export function TodayPage() {
   const reviewWeek = localDayKey(defaultReviewWeek(today, weekStart))
   const reviewDue = today.getDay() === profile.reviewWeekday && !reviews.some((review) => review.weekStart === reviewWeek)
 
-  const header = <PageHeader title={t('tab.today')} subtitle={formatDay(today, locale)} showAccountSwitcher />
+  const header = (
+    <PageHeader
+      title={t('tab.today')}
+      subtitle={formatDay(today, locale)}
+      showAccountSwitcher
+      trailing={
+        <Button icon={<Calculator size={18} aria-hidden="true" />} onClick={openCalculator}>
+          {t('calc.button')}
+        </Button>
+      }
+    />
+  )
 
   if (activeAccounts(accounts).length === 0) {
     return (

@@ -330,3 +330,26 @@
   margin-top: var(--space-m);
   text-align: center;
 }
+
+.trades-toolbar__actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+/* Position size calculator */
+.calc-result__size {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+  margin: var(--space-hair) 0 var(--space-xs);
+  font-size: var(--text-large-title);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.calc-result__size .side-badge {
+  font-size: var(--text-caption);
+  font-weight: 400;
+}

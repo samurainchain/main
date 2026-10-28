@@ -21,6 +21,8 @@ export interface Settings {
   tradesView?: 'days' | 'table'
   /** Columns hidden in the trade table; read through normalizeHiddenColumns (core/tradeTable). */
   hiddenTradeColumns?: unknown
+  /** The position size calculator's last risk, e.g. 1 percent. */
+  calculatorRisk?: { mode: 'percent' | 'amount'; value: string }
 }
 
 export const RAIL_MIN_WIDTH = 280
