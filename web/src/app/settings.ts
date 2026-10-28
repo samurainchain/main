@@ -15,6 +15,8 @@ export interface Settings {
   /** Width of the right column on wide screens, in CSS pixels. */
   railWidth: number
   railHidden: boolean
+  /** The analytics dashboard's blocks; read through normalizeLayout (core/dashboard). */
+  dashboard?: unknown
 }
 
 export const RAIL_MIN_WIDTH = 280

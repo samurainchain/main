@@ -549,3 +549,299 @@
   font-size: var(--text-headline);
   font-weight: 500;
 }
+
+/* Dashboard: blocks on a 12-column grid. Widths follow the space the grid actually has (container
+   queries), so the right column or a narrow window never squeezes a block below readable. */
+.dash {
+  container: dash / inline-size;
+  margin-top: var(--space-m);
+}
+
+/* One column until there's room; then 12, where each block takes its share. */
+.dash-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-s);
+}
+
+.dash-widget {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  min-width: 0;
+}
+
+@container dash (min-width: 560px) {
+  .dash-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+
+  .dash-widget {
+    grid-column: span var(--span-md);
+  }
+}
+
+@container dash (min-width: 900px) {
+  .dash-widget {
+    grid-column: span var(--span);
+  }
+}
+
+.dash-widget__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  min-height: 24px;
+}
+
+.dash-widget__title {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.dash-widget__body {
+  min-width: 0;
+}
+
+.dash-widget__tools {
+  display: flex;
+  align-items: center;
+  gap: var(--space-hair);
+}
+
+.dash-widget__tools .icon-button,
+.dash-widget__handle {
+  width: 32px;
+  height: 32px;
+}
+
+.dash-widget__handle {
+  cursor: grab;
+  touch-action: none;
+}
+
+.dash-widget__width {
+  min-width: 2.2em;
+  text-align: center;
+}
+
+.dash-grid--editing .dash-widget {
+  border-style: dashed;
+  user-select: none;
+}
+
+.dash-widget--dragging {
+  opacity: 0.6;
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.dash-widget__resize {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 18px;
+  height: 18px;
+  border-right: 2px solid var(--color-text-secondary);
+  border-bottom: 2px solid var(--color-text-secondary);
+  border-bottom-right-radius: var(--radius-small);
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.dash-hidden,
+.dash-edit-hint {
+  margin-top: var(--space-s);
+}
+
+.dash-hidden .caption {
+  margin-bottom: var(--space-xs);
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+/* New blocks */
+.dash-performance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+
+.dash-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.5rem), 1fr));
+  gap: var(--space-xs);
+  margin: 0;
+}
+
+.dash-stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-hair);
+  padding: var(--space-xs) var(--space-s);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-field);
+}
+
+.dash-stat dd {
+  margin: 0;
+  font-size: var(--text-headline);
+  font-weight: 500;
+}
+
+.breakeven__track {
+  position: relative;
+  height: 6px;
+  border-radius: var(--radius-tiny);
+  background: var(--color-surface-elevated);
+}
+
+.breakeven__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: var(--radius-tiny);
+}
+
+.breakeven__fill--profit {
+  background: var(--color-chart-profit);
+}
+
+.breakeven__fill--loss {
+  background: var(--color-chart-loss);
+}
+
+.breakeven__mark {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--color-text-primary);
+}
+
+.breakeven__text {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-xxs) var(--space-s);
+  margin-top: var(--space-xs);
+}
+
+.dash-count__total {
+  font-size: var(--text-large-title);
+  font-weight: 600;
+}
+
+.dash-count__bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 56px;
+  margin: var(--space-xs) 0;
+}
+
+.dash-count__bars span {
+  flex: 1;
+  min-width: 2px;
+  max-width: 14px;
+  border-radius: var(--radius-tiny) var(--radius-tiny) 0 0;
+  background: var(--color-accent);
+}
+
+.dash-streaks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
+  gap: var(--space-m);
+}
+
+.dash-streak {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-hair);
+}
+
+.dash-streak h3 {
+  font-weight: 500;
+}
+
+.dash-streak__now {
+  font-size: var(--text-large-title);
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.dash-streak__records {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
+}
+
+.dash-streak__record {
+  padding: 2px var(--space-xs);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  font-size: var(--text-caption);
+  color: var(--color-text-secondary);
+}
+
+.dash-list {
+  margin: 0;
+}
+
+.dash-list__row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-xxs) var(--space-m);
+  padding: var(--space-xs) 0;
+}
+
+.dash-list__row dt {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.dash-list__row + .dash-list__row {
+  border-top: 1px solid var(--color-separator);
+}
+
+.dash-list__row dt {
+  color: var(--color-text-secondary);
+}
+
+.dash-list__row dd {
+  margin: 0 0 0 auto;
+  text-align: right;
+}
+
+.dash-widget .metric {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-field);
+}
+
+/* The width only shows on the full grid, so the corner handle does too. */
+.dash-widget__resize {
+  display: none;
+}
+
+@container dash (min-width: 900px) {
+  .dash-widget__resize {
+    display: block;
+  }
+}
+
+/* At very large text the hero amount may not fit a narrow block: let it break, never overflow. */
+.dash-performance .pnl {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
