@@ -486,6 +486,8 @@ export const ru: Messages = {
   'rail.trades': { one: '{count} закрытая сделка', few: '{count} закрытые сделки', many: '{count} закрытых сделок', other: '{count} закрытой сделки' },
   'rail.winRate': 'винрейт {share}',
   'rail.openReview': 'Открыть итоги недели',
+  'legal.privacy': 'Политика конфиденциальности',
+  'legal.terms': 'Условия использования',
   'feedback.section': 'Обратная связь',
   'feedback.intro': 'Что добавить в следующих обновлениях? Идеи и проблемы приходят напрямую разработчику.',
   'feedback.kind': 'Тип сообщения',

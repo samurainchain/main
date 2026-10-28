@@ -257,3 +257,15 @@ export function LimitBar({
     </div>
   )
 }
+
+/** Privacy Policy and Terms of Use: static pages next to the app (public/privacy, public/terms). */
+export function LegalLinks() {
+  const { t } = useI18n()
+  return (
+    <p className="legal-links caption">
+      <a href="./privacy/">{t('legal.privacy')}</a>
+      <span aria-hidden="true"> · </span>
+      <a href="./terms/">{t('legal.terms')}</a>
+    </p>
+  )
+}

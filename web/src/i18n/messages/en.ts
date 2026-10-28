@@ -483,6 +483,8 @@ export const en = {
   'rail.trades': { one: '{count} closed trade', other: '{count} closed trades' },
   'rail.winRate': 'win rate {share}',
   'rail.openReview': 'Open weekly review',
+  'legal.privacy': 'Privacy Policy',
+  'legal.terms': 'Terms of Use',
   'feedback.section': 'Feedback',
   'feedback.intro': 'What should the next update bring? Ideas and problems go straight to the developer.',
   'feedback.kind': 'Type of feedback',

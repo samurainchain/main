@@ -16,7 +16,7 @@ import {
   WEAKNESSES,
   type OnboardingAnswers,
 } from '../../core/onboarding'
-import { Button, Segmented } from '../../design/components'
+import { Button, LegalLinks, Segmented } from '../../design/components'
 import { useI18n, type Locale, type Translator } from '../../i18n/i18n'
 import { SignInForm } from '../cloud/CloudSection'
 import { parseBackup } from '../profile/backup'
@@ -233,6 +233,7 @@ export function OnboardingFlow() {
               </p>
             )}
             <p className="caption onboarding__disclaimer">{t('profile.disclaimer')}</p>
+            <LegalLinks />
           </>
         )}
         {step !== 'welcome' && step !== 'notifications' && (

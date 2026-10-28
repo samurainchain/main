@@ -4,7 +4,7 @@ import { useFlaggedTrades, useJournal, useMistakeName, useStore } from '../../ap
 import { downloadCsv, tradesToCsv } from '../../core/export/csv'
 import { routeHref } from '../../app/router'
 import { updateSettings, useSettings, type LanguageSetting, type ThemeSetting, type WeekStartSetting } from '../../app/settings'
-import { Button, Card, Field, SectionHeader } from '../../design/components'
+import { Button, Card, Field, LegalLinks, SectionHeader } from '../../design/components'
 import { useI18n } from '../../i18n/i18n'
 import { useCloud } from '../../app/cloud'
 import { useInstall } from '../../app/install'
@@ -185,6 +185,7 @@ export function ProfilePage() {
       </Card>
 
       <p className="disclaimer caption">{t('profile.disclaimer')}</p>
+      <LegalLinks />
     </>
   )
 }

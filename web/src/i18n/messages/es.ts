@@ -482,6 +482,8 @@ export const es: Messages = {
   'rail.trades': { one: '{count} operación cerrada', other: '{count} operaciones cerradas' },
   'rail.winRate': 'tasa de acierto {share}',
   'rail.openReview': 'Abrir el resumen semanal',
+  'legal.privacy': 'Política de privacidad',
+  'legal.terms': 'Términos de uso',
   'feedback.section': 'Comentarios',
   'feedback.intro': '¿Qué debería traer la próxima actualización? Ideas y problemas llegan directo al desarrollador.',
   'feedback.kind': 'Tipo de comentario',

@@ -1305,3 +1305,9 @@
   font-size: var(--text-tick);
   text-align: center;
 }
+
+/* Privacy Policy · Terms of Use, under the disclaimers. */
+.legal-links {
+  margin-top: var(--space-xs);
+  text-align: center;
+}
