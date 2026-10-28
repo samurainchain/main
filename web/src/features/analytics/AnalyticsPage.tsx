@@ -24,6 +24,7 @@ import {
 import { Button, Card, EmptyState, PnLText, SectionHeader, Segmented } from '../../design/components'
 import { formatMoney, formatR, formatRatio, formatShare, weekdayNames } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
+import { CheckInResults } from '../checkin/CheckInResults'
 import { PageHeader } from '../shell/PageHeader'
 import { useVisibleTrades } from '../trades/tradeQueries'
 import { EMOTION_ICONS } from '../trades/TradeRow'
@@ -158,6 +159,8 @@ export function AnalyticsPage() {
               <p className="secondary-text">{t('analytics.noEmotions')}</p>
             )}
           </Card>
+
+          <CheckInResults trades={inRange} currency={currency} />
 
           <SectionHeader title={t('analytics.byWeekday')} />
           <Card>

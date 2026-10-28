@@ -18,7 +18,7 @@ create table if not exists public.journal_records (
 -- Kinds of records the app syncs. Re-created on every run, so it also updates older setups.
 alter table public.journal_records drop constraint if exists journal_records_collection_check;
 alter table public.journal_records add constraint journal_records_collection_check
-  check (collection in ('accounts', 'trades', 'mistakes', 'setups', 'rules', 'reviews', 'images', 'profile'));
+  check (collection in ('accounts', 'trades', 'mistakes', 'setups', 'rules', 'reviews', 'checkins', 'images', 'profile'));
 
 create index if not exists journal_records_pull on public.journal_records (user_id, server_updated_at);
 

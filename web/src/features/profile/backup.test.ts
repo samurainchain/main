@@ -33,6 +33,7 @@ const data: JournalData = {
   setups: [],
   rules: [{ id: 'r1', text: 'No trades in the first 30 minutes after news', isActive: true, sortOrder: 0 }],
   reviews: [],
+  checkins: [],
   images: [],
   profile: { ...defaultProfile(), dailyLossLimit: '300', dailyTradeLimit: 6 },
 }

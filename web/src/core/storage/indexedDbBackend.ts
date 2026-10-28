@@ -1,5 +1,5 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
-import { PROFILE_ID, type Account, type JournalData, type JournalProfile, type MistakeTag, type Rule, type SetupTag, type Trade, type TradeImage, type WeeklyReview } from '../models'
+import { PROFILE_ID, type Account, type JournalData, type JournalProfile, type MistakeTag, type Rule, type SetupTag, type Trade, type TradeImage, type WeeklyReview, type DayCheckIn } from '../models'
 import { changeKey, type Change, type SyncMeta, type SyncStateStore } from '../sync/types'
 import { COLLECTIONS, normalizeJournal, type Collection, type ImageBlobStore, type JournalBackend, type RecordOf } from './backend'
 
@@ -14,6 +14,7 @@ interface MirrorDB extends DBSchema {
   setups: { key: string; value: SetupTag }
   rules: { key: string; value: Rule }
   reviews: { key: string; value: WeeklyReview }
+  checkins: { key: string; value: DayCheckIn }
   images: { key: string; value: TradeImage }
   profile: { key: string; value: JournalProfile }
   imageBlobs: { key: string; value: { id: string; blob: Blob } }
@@ -27,8 +28,8 @@ type StoreName = Collection | 'profile'
 const STORES: readonly StoreName[] = [...COLLECTIONS, 'profile']
 const SYNC_STORES = ['syncVersions', 'syncOutbox', 'syncMeta'] as const
 
-/** Schema version. 1: accounts, trades, mistakes, setups. 2: rules, reviews, profile. 3: sync state. 4: images. */
-const VERSION = 4
+/** Schema version. 1: accounts, trades, mistakes, setups. 2: rules, reviews, profile. 3: sync state. 4: images. 5: day check-ins. */
+const VERSION = 5
 
 export class IndexedDbBackend implements JournalBackend {
   private readonly db: Promise<IDBPDatabase<MirrorDB>>
@@ -51,17 +52,18 @@ export class IndexedDbBackend implements JournalBackend {
 
   async load(): Promise<JournalData> {
     const db = await this.db
-    const [accounts, trades, mistakes, setups, rules, reviews, images, profile] = await Promise.all([
+    const [accounts, trades, mistakes, setups, rules, reviews, checkins, images, profile] = await Promise.all([
       db.getAll('accounts'),
       db.getAll('trades'),
       db.getAll('mistakes'),
       db.getAll('setups'),
       db.getAll('rules'),
       db.getAll('reviews'),
+      db.getAll('checkins'),
       db.getAll('images'),
       db.get('profile', PROFILE_ID),
     ])
-    return normalizeJournal({ accounts, trades, mistakes, setups, rules, reviews, images, profile })
+    return normalizeJournal({ accounts, trades, mistakes, setups, rules, reviews, checkins, images, profile })
   }
 
   async put<C extends Collection>(collection: C, records: RecordOf<C>[]): Promise<void> {

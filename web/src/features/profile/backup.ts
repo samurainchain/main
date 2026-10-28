@@ -3,8 +3,8 @@ import { normalizeJournal } from '../../core/storage/backend'
 
 // Kept from the app's first name, so older backups still import.
 const FORMAT = 'mirror-backup'
-/** 1: accounts, trades, mistakes, setups. 2: adds rules, reviews and the profile. */
-const VERSION = 2
+/** 1: accounts, trades, mistakes, setups. 2: adds rules, reviews and the profile. 3: adds day check-ins. */
+const VERSION = 3
 
 interface BackupFile {
   format: typeof FORMAT

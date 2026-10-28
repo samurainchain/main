@@ -142,6 +142,31 @@ export interface WeeklyReview {
   updatedAt: Timestamp
 }
 
+export const SLEEP_LEVELS = ['poor', 'ok', 'good'] as const
+export type SleepLevel = (typeof SLEEP_LEVELS)[number]
+export const PLAN_KEPT = ['yes', 'partly', 'no'] as const
+export type PlanKept = (typeof PLAN_KEPT)[number]
+
+/**
+ * The day's check-in: how the trader starts the session and how it went. One per local day;
+ * every part is optional, so a quick "slept badly, anxious" counts.
+ */
+export interface DayCheckIn {
+  id: string
+  /** Local date `YYYY-MM-DD`. */
+  date: string
+  sleep?: SleepLevel
+  /** How the trader feels before the first trade. */
+  mood?: Emotion
+  /** Setups, levels, what not to do today. */
+  plan: string
+  /** After the session: whether the plan held. */
+  planKept?: PlanKept
+  review: string
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
 export const PROFILE_ID = 'profile'
 
 /** Limits and review preferences: one record per journal. */
@@ -176,6 +201,7 @@ export interface JournalData {
   setups: SetupTag[]
   rules: Rule[]
   reviews: WeeklyReview[]
+  checkins: DayCheckIn[]
   images: TradeImage[]
   profile: JournalProfile
 }

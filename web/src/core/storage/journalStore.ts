@@ -12,6 +12,7 @@ import {
   type Trade,
   type TradeImage,
   type WeeklyReview,
+  type DayCheckIn,
   MAX_IMAGES_PER_TRADE,
 } from '../models'
 import type { ImportedTrade } from '../import/importTrades'
@@ -305,6 +306,12 @@ export class JournalStore {
     const saved = { ...review, updatedAt: new Date().toISOString() }
     this.set(withRecord(this.snapshot, 'reviews', saved))
     await this.backend.put('reviews', [saved])
+  }
+
+  async saveCheckIn(checkIn: DayCheckIn): Promise<void> {
+    const saved = { ...checkIn, updatedAt: new Date().toISOString() }
+    this.set(withRecord(this.snapshot, 'checkins', saved))
+    await this.backend.put('checkins', [saved])
   }
 
   // Onboarding

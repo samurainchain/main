@@ -1311,3 +1311,34 @@
   margin-top: var(--space-xs);
   text-align: center;
 }
+
+/* Day check-in: the card on Today, the sheet's two parts, the analytics groups. */
+.checkin-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  margin-top: var(--space-s);
+}
+
+.checkin-card__plan {
+  white-space: pre-wrap;
+}
+
+.checkin-card .action-row {
+  margin-top: var(--space-xxs);
+}
+
+.checkin__part {
+  margin-bottom: var(--space-xs);
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.checkin-results__group h3 {
+  margin-bottom: var(--space-xs);
+  font-weight: 500;
+}
