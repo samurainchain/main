@@ -3,15 +3,15 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL } from './cloudConfig'
 
 // Pro subscription through Stripe (SPEC section 8, web). Prices and checkout go through the
 // billing functions in web/supabase/functions; the subscription status is a row the Stripe
-// webhook writes and the signed-in user can read. Nothing here limits features yet: the web app
-// is free for now.
+// webhook writes and the signed-in user can read. What Pro unlocks is decided in
+// core/entitlements.ts; who has it, in app/entitlement.tsx.
 
 /**
- * Whether Profile shows Tiltless Pro (plans, checkout, the subscription). Off while the web app
- * is free; the checkout, portal and webhook were tested end to end in Stripe test mode. Turn on
- * together with Stripe live keys and the Terms, Privacy and Refund pages.
+ * Whether Pro is on sale: Profile shows Tiltless Pro, the Pro page takes payments and the free
+ * plan's limits apply. On since 2026-10-28, sold with crypto (PAYMENT_PROVIDER); existing
+ * accounts got 30 days of Pro as a gift (docs/pro-launch.md).
  */
-export const PRO_ON_SALE = false
+export const PRO_ON_SALE = true
 
 /**
  * Shows Pro before it is on sale, for the owner to test payments on the live site: open the site
