@@ -12,6 +12,9 @@ import { Button, Card, Field, PnLText, SectionHeader } from '../../design/compon
 import { formatMoney, formatPercent, formatR, formatShare, formatWeekRange } from '../../i18n/format'
 import { useI18n, type Translator } from '../../i18n/i18n'
 import { PageHeader } from '../shell/PageHeader'
+import { useAccess } from '../../app/entitlement'
+import { canUse } from '../../core/entitlements'
+import { ProLock } from '../billing/ProLock'
 import { dayFromKey, useVisibleTrades } from '../trades/tradeQueries'
 import { TradeRow } from '../trades/TradeRow'
 import { renderShareCard, shareCard, type ShareCardContent } from './shareCard'
@@ -24,6 +27,7 @@ export function WeeklyReviewPage({ week }: { week?: string }) {
   const { mistakes, reviews, profile, accounts } = useJournal()
   const { trades, currency, selected } = useVisibleTrades()
   const weekStart = useWeekStart()
+  const access = useAccess()
 
   const start = week ? dayFromKey(week) : defaultReviewWeek(new Date(), weekStart)
   const startKey = localDayKey(start)
@@ -44,6 +48,25 @@ export function WeeklyReviewPage({ week }: { week?: string }) {
   const shiftWeek = (offset: number) => {
     const next = new Date(start.getFullYear(), start.getMonth(), start.getDate() + offset * 7)
     navigate({ name: 'review', week: localDayKey(next) })
+  }
+
+  if (!canUse('weeklyReview', access)) {
+    return (
+      <>
+        <PageHeader
+          title={t('review.title')}
+          leading={
+            <a className="back-link" href={routeHref({ name: 'profile' })}>
+              <ChevronLeft size={20} aria-hidden="true" />
+              {t('tab.profile')}
+            </a>
+          }
+        />
+        <div className="card">
+          <ProLock feature="weeklyReview" />
+        </div>
+      </>
+    )
   }
 
   return (

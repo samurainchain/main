@@ -9,6 +9,9 @@ import { useI18n } from '../../i18n/i18n'
 import { PageHeader } from '../shell/PageHeader'
 import { useVisibleTrades } from '../trades/tradeQueries'
 import { Dashboard } from './Dashboard'
+import { useAccess } from '../../app/entitlement'
+import { periodUnlocked } from '../../core/entitlements'
+import { ProLock } from '../billing/ProLock'
 
 /**
  * Analytics as a dashboard of blocks (SPEC section 4.7): cost of mistakes, performance,
@@ -22,6 +25,7 @@ export function AnalyticsPage() {
   const settings = useSettings()
   const [period, setPeriod] = useState<Period>('month')
   const [draft, setDraft] = useState<DashboardLayout>()
+  const access = useAccess()
 
   const closed = useMemo(() => closedTrades(trades), [trades])
   const inRange = useMemo(() => inPeriod(closed, period, new Date(), weekStart), [closed, period, weekStart])
@@ -79,8 +83,14 @@ export function AnalyticsPage() {
       {header}
       <Segmented label={t('analytics.period')} value={period} onChange={setPeriod} options={PERIODS.map((value) => ({ value, label: t(`analytics.period.${value}`) }))} />
       {editing && <p className="dash-edit-hint caption">{t('dashboard.editHint')}</p>}
-      {inRange.length === 0 && <p className="analytics-empty-period secondary-text">{t('analytics.emptyPeriod')}</p>}
-      <Dashboard layout={layout} editing={editing} onChange={setDraft} data={{ inRange, closed, summary, currency }} />
+      {inRange.length === 0 && periodUnlocked(period, access) && <p className="analytics-empty-period secondary-text">{t('analytics.emptyPeriod')}</p>}
+      {periodUnlocked(period, access) ? (
+        <Dashboard layout={layout} editing={editing} onChange={setDraft} data={{ inRange, closed, summary, currency }} />
+      ) : (
+        <div className="card analytics-lock">
+          <ProLock feature="longPeriods" />
+        </div>
+      )}
     </>
   )
 }

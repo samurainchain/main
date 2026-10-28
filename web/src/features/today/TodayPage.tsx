@@ -12,6 +12,8 @@ import { formatDay, formatMoney } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
 import { DayCheckInCard } from '../checkin/DayCheckInCard'
 import { SessionClock } from '../sessions/SessionClock'
+import { useAccess } from '../../app/entitlement'
+import { canUse } from '../../core/entitlements'
 import { PageHeader } from '../shell/PageHeader'
 import { dayKey, newestFirst, tradeDayKey, useVisibleTrades } from '../trades/tradeQueries'
 import { TradeRow } from '../trades/TradeRow'
@@ -24,6 +26,7 @@ export function TodayPage() {
   const { trades, currency } = useVisibleTrades()
   const mistakeName = useMistakeName()
   const { newTrade, newAccount, openCalculator } = useSheets()
+  const access = useAccess()
   const today = new Date()
   const todayTrades = trades
     .filter((trade) => tradeDayKey(trade) === dayKey(today))
@@ -86,7 +89,7 @@ export function TodayPage() {
 
       <DayCheckInCard />
 
-      {reviewDue && (
+      {reviewDue && canUse('weeklyReview', access) && (
         <a className="card review-reminder" href={routeHref({ name: 'review' })}>
           <CalendarCheck size={20} aria-hidden="true" />
           <span>

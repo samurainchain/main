@@ -86,7 +86,7 @@ async function main() {
     await page.locator('.onboarding input[type=file]').setInputFiles(BACKUP)
     await page.getByRole('heading', { name: 'Today', exact: true }).waitFor()
 
-    const routes = ['today', 'trades', 'analytics', 'profile', 'accounts', 'rules', 'review', 'tags', 'partners']
+    const routes = ['today', 'trades', 'analytics', 'profile', 'accounts', 'rules', 'review', 'tags', 'partners', 'pro']
     for (const route of routes) {
       await page.goto(`${URL}#/${route}`)
       // Some screens load their code on first visit: wait for the page heading, then let it settle.
@@ -146,6 +146,16 @@ async function main() {
       if (await page.locator('dialog[open]').count()) failures.push(`[${scheme}] ${name}: Escape did not close it`)
     }
 
+    // As after Pro goes on sale (the ?pro=preview tab): the locks and the Pro page.
+    await page.goto(`${URL}?pro=preview#/analytics`)
+    await page.locator('main h1').first().waitFor({ timeout: 5000 }).catch(() => {})
+    await page.waitForTimeout(300)
+    await report('analytics on the free plan')
+    await page.goto(`${URL}#/pro`)
+    await page.locator('main h1').first().waitFor({ timeout: 5000 }).catch(() => {})
+    await page.waitForTimeout(300)
+    await report('pro page')
+
     // 200% text at phone width must not scroll sideways.
     await page.addStyleTag({ content: 'html { font-size: 200% !important; }' })
     for (const route of routes) {
@@ -184,7 +194,7 @@ async function main() {
     await page.goto(`${URL}#/trades`)
     const detail = await page.locator('.trade-row').first().getAttribute('href')
     for (const textSize of ['100%', '200%']) {
-      for (const route of ['today', 'trades', 'analytics', 'profile', 'accounts', 'rules', 'review', 'tags', 'partners', detail?.replace(/^#\//, '') ?? 'trades']) {
+      for (const route of ['today', 'trades', 'analytics', 'profile', 'accounts', 'rules', 'review', 'tags', 'partners', 'pro', detail?.replace(/^#\//, '') ?? 'trades']) {
         await page.goto(`${URL}#/${route}`)
         await page.locator('main h1').first().waitFor({ timeout: 5000 }).catch(() => {})
         await page.addStyleTag({ content: `html { font-size: ${textSize} !important; }` })

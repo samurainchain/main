@@ -7,6 +7,8 @@ import { useCloud } from '../../app/cloud'
 import { markSeen, notices, unseenCount, type Notice, type NoticeKind } from '../../core/notices'
 import { useI18n } from '../../i18n/i18n'
 import { FeedbackForm } from '../feedback/FeedbackForm'
+import { useAccess } from '../../app/entitlement'
+import { canUse } from '../../core/entitlements'
 import { Popover } from './Popover'
 
 const LANGUAGES: { value: LanguageSetting; label: string }[] = [
@@ -105,7 +107,12 @@ function NoticeBell() {
   const autoFlags = useAutoFlags()
   const weekStart = useWeekStart()
   const seen = useSettings().seenNotices ?? []
-  const list = useMemo(() => notices({ trades, profile, reviews, checkins, autoFlags, now: new Date(), weekStart }), [trades, profile, reviews, checkins, autoFlags, weekStart])
+  const access = useAccess()
+  const reviewsOpen = canUse('weeklyReview', access)
+  const list = useMemo(
+    () => notices({ trades, profile, reviews, checkins, autoFlags, now: new Date(), weekStart }).filter((notice) => reviewsOpen || notice.kind !== 'reviewDue'),
+    [trades, profile, reviews, checkins, autoFlags, weekStart, reviewsOpen],
+  )
   const unseen = unseenCount(seen, list)
 
   const text = (notice: Notice) => {

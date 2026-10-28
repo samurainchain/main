@@ -145,6 +145,29 @@ create policy "Users read their own Pro access"
   on public.pro_access for select to authenticated
   using ((select auth.uid()) = user_id);
 
+-- Pro trial (SPEC section 8): every new account gets 7 days of Pro from sign-up. A purchase
+-- during the trial adds its month or year on top of the trial's end.
+create or replace function public.start_pro_trial()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.pro_access (user_id, pro_until, source)
+    values (new.id, now() + interval '7 days', 'trial')
+    on conflict (user_id) do nothing;
+  return new;
+end;
+$$;
+
+revoke all on function public.start_pro_trial() from public, anon, authenticated;
+
+drop trigger if exists start_pro_trial on auth.users;
+create trigger start_pro_trial
+  after insert on auth.users
+  for each row execute function public.start_pro_trial();
+
 -- Applies a paid order once: marks it applied and adds its month or year to the user's Pro,
 -- counting from the current end when Pro is still running, and credits the referring partner.
 -- Returns the new end, or null when the order was already applied. Only the service role may call it.
@@ -172,7 +195,7 @@ begin
   insert into public.pro_access (user_id, pro_until, source)
     values (paid.user_id, now() + period, 'crypto')
     on conflict (user_id) do update
-      set pro_until = greatest(public.pro_access.pro_until, now()) + period, updated_at = now()
+      set pro_until = greatest(public.pro_access.pro_until, now()) + period, source = 'crypto', updated_at = now()
     returning pro_until into until;
   -- Partner program: 30% of payments in the 12 months from the trader's first one, payable after 14 days.
   select r.partner_user_id into partner from public.referrals r where r.referred_user_id = paid.user_id;

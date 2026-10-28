@@ -259,13 +259,20 @@ export function LimitBar({
 }
 
 /** Privacy Policy and Terms of Use: static pages next to the app (public/privacy, public/terms). */
-export function LegalLinks() {
+/** Privacy and Terms; `refund` adds the Refund Policy where Pro is sold. */
+export function LegalLinks({ refund = false }: { refund?: boolean }) {
   const { t } = useI18n()
   return (
     <p className="legal-links caption">
       <a href="./privacy/">{t('legal.privacy')}</a>
       <span aria-hidden="true"> · </span>
       <a href="./terms/">{t('legal.terms')}</a>
+      {refund && (
+        <>
+          <span aria-hidden="true"> · </span>
+          <a href="./refund/">{t('legal.refund')}</a>
+        </>
+      )}
     </p>
   )
 }

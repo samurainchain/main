@@ -1,16 +1,16 @@
-import { CalendarCheck, ChevronRight, HandCoins, Download, FileSpreadsheet, FileUp, ShieldCheck, Smartphone, Tags, Trash2, Upload, Wallet } from 'lucide-react'
+import { CalendarCheck, ChevronRight, HandCoins, Sparkles, Download, FileSpreadsheet, FileUp, ShieldCheck, Smartphone, Tags, Trash2, Upload, Wallet } from 'lucide-react'
 import { lazy, Suspense, useId, useRef, useState, type ChangeEvent } from 'react'
 import { useFlaggedTrades, useJournal, useMistakeName, useStore } from '../../app/journal'
 import { downloadCsv, tradesToCsv } from '../../core/export/csv'
-import { routeHref } from '../../app/router'
+import { navigate, routeHref } from '../../app/router'
 import { updateSettings, useSettings, type LanguageSetting, type StyleSetting, type ThemeSetting, type WeekStartSetting } from '../../app/settings'
 import { Button, Card, Field, LegalLinks, SectionHeader } from '../../design/components'
+import { formatDate } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
 import { useCloud } from '../../app/cloud'
 import { useInstall } from '../../app/install'
-import { PAYMENT_PROVIDER, PRO_ON_SALE, proPreview } from '../../app/billing'
-import { CryptoProSection } from '../billing/CryptoProSection'
-import { ProSection } from '../billing/ProSection'
+import { useAccess } from '../../app/entitlement'
+import { canUse } from '../../core/entitlements'
 import { CloudSection } from '../cloud/CloudSection'
 import { FeedbackSection } from '../feedback/FeedbackSection'
 import { AccentPicker } from '../shell/AppBar'
@@ -22,7 +22,8 @@ const ImportSheet = lazy(() => import('../import/ImportSheet').then((module) => 
 
 /** Settings, accounts and data management (SPEC section 4.10, web subset). */
 export function ProfilePage() {
-  const { t, tp } = useI18n()
+  const { t, tp, locale } = useI18n()
+  const access = useAccess()
   const store = useStore()
   const { accounts, trades, rules, mistakes } = useJournal()
   const flaggedTrades = useFlaggedTrades()
@@ -152,7 +153,18 @@ export function ProfilePage() {
         </>
       )}
 
-      {(PRO_ON_SALE || proPreview()) && (PAYMENT_PROVIDER === 'crypto' ? <CryptoProSection /> : <ProSection />)}
+      {access.gated && (
+        <div className="list-card profile-pro">
+          <a className="nav-row" href={routeHref({ name: 'pro' })}>
+            <Sparkles size={20} aria-hidden="true" />
+            <span className="nav-row__label">
+              Tiltless Pro
+              <span className="caption"> · {access.pro && access.until ? t('proPage.activeUntil', { date: formatDate(access.until, locale) }) : t('proPage.freePlan')}</span>
+            </span>
+            <ChevronRight size={18} aria-hidden="true" className="secondary-text" />
+          </a>
+        </div>
+      )}
 
       <FeedbackSection className="profile-feedback" />
 
@@ -160,7 +172,7 @@ export function ProfilePage() {
       <Card className="form-stack">
         <p className="secondary-text">{t(cloudState.email ? 'profile.storageNoteSynced' : 'profile.storageNote')}</p>
         <div className="action-row action-row--wrap">
-          <Button icon={<FileUp size={18} aria-hidden="true" />} onClick={() => setImportOpen(true)}>
+          <Button icon={<FileUp size={18} aria-hidden="true" />} onClick={() => (canUse('exchangeImport', access) ? setImportOpen(true) : navigate({ name: 'pro' }))}>
             {t('import.button')}
           </Button>
           <Button icon={<Download size={18} aria-hidden="true" />} disabled={trades.length === 0 && accounts.length === 0} onClick={() => downloadBackup(serializeBackup(store.exportData()))}>

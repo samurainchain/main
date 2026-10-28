@@ -1,0 +1,59 @@
+import type { WidgetId } from './dashboard'
+import type { Period } from './stats'
+
+// What Pro unlocks on the web (SPEC section 8, "Бесплатно и Pro на сайте"). The journal itself
+// is free: trades without a limit, Today, the day check-in, limits, the calculator, pictures of
+// trades and the core analytics for up to a month. Pro adds the deeper analysis and the
+// time savers. Pure, so the split is tested; the UI asks `canUse`.
+
+export type ProFeature =
+  /** Analytics periods longer than a month. */
+  | 'longPeriods'
+  /** The dashboard blocks beyond the free ones below. */
+  | 'deepAnalytics'
+  /** Reading a trade from an exchange screenshot. */
+  | 'screenshotReader'
+  /** Importing trades from exchange CSV files. */
+  | 'exchangeImport'
+  /** More than one active account. */
+  | 'multipleAccounts'
+  /** The weekly review and its card. */
+  | 'weeklyReview'
+
+export const PRO_FEATURES: readonly ProFeature[] = ['deepAnalytics', 'longPeriods', 'screenshotReader', 'exchangeImport', 'multipleAccounts', 'weeklyReview']
+
+/** Dashboard blocks everyone gets; the rest need Pro. */
+export const FREE_WIDGETS: readonly WidgetId[] = ['performance', 'tradeCount', 'streaks', 'equity', 'tradeStats', 'calendar', 'econCalendar']
+export const FREE_PERIODS: readonly Period[] = ['week', 'month']
+export const FREE_ACCOUNTS = 1
+/** Pro for a new account, from sign-up (written by the database, start_pro_trial). */
+export const TRIAL_DAYS = 7
+
+export interface Access {
+  /** Whether Pro limits apply at all: only once Pro is on sale (or previewed). */
+  gated: boolean
+  pro: boolean
+}
+
+/** Every Pro feature opens with Pro today; the feature names the reason on the lock. */
+export function canUse(_feature: ProFeature, access: Access): boolean {
+  return !access.gated || access.pro
+}
+
+export function widgetUnlocked(id: WidgetId, access: Access): boolean {
+  return FREE_WIDGETS.includes(id) || canUse('deepAnalytics', access)
+}
+
+export function periodUnlocked(period: Period, access: Access): boolean {
+  return FREE_PERIODS.includes(period) || canUse('longPeriods', access)
+}
+
+/** Whether another account can be added next to `activeAccounts` existing ones. */
+export function canAddAccount(activeAccounts: number, access: Access): boolean {
+  return activeAccounts < FREE_ACCOUNTS || canUse('multipleAccounts', access)
+}
+
+/** Pro is running when its end is still ahead. */
+export function proActive(until: Date | undefined, now: Date): boolean {
+  return until !== undefined && until.getTime() > now.getTime()
+}

@@ -24,6 +24,7 @@ import { AppBar } from './AppBar'
 // Heavier screens load when first opened, keeping the first download small; the service worker
 // still caches them for offline use.
 const AnalyticsPage = lazy(() => import('../analytics/AnalyticsPage').then((module) => ({ default: module.AnalyticsPage })))
+const ProPage = lazy(() => import('../billing/ProPage').then((module) => ({ default: module.ProPage })))
 const PartnersPage = lazy(() => import('../partners/PartnersPage').then((module) => ({ default: module.PartnersPage })))
 const WeeklyReviewPage = lazy(() => import('../review/WeeklyReviewPage').then((module) => ({ default: module.WeeklyReviewPage })))
 
@@ -39,7 +40,7 @@ const TABS: Tab[] = [
   { route: 'today', label: 'tab.today', icon: Sun, matches: ['today'] },
   { route: 'trades', label: 'tab.trades', icon: ListChecks, matches: ['trades', 'trade'] },
   { route: 'analytics', label: 'tab.analytics', icon: ChartColumn, matches: ['analytics'] },
-  { route: 'profile', label: 'tab.profile', icon: CircleUser, matches: ['profile', 'accounts', 'rules', 'review', 'tags', 'partners'] },
+  { route: 'profile', label: 'tab.profile', icon: CircleUser, matches: ['profile', 'accounts', 'rules', 'review', 'tags', 'partners', 'pro'] },
 ]
 
 /**
@@ -141,6 +142,8 @@ function Page({ route }: { route: Route }) {
       return <AccountsPage />
     case 'partners':
       return <PartnersPage />
+    case 'pro':
+      return <ProPage />
     case 'rules':
       return <RulesPage />
     case 'tags':

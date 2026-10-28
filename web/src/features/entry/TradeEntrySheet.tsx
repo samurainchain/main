@@ -3,6 +3,9 @@ import { ImagePlus, ImageUp, Plus, Wallet, X } from 'lucide-react'
 import { useEffect, useId, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from 'react'
 import { activeAccounts, useJournal, useMistakeName, useSelectedAccount, useStore } from '../../app/journal'
 import { useSheets, type TradePrefill } from '../../app/sheets'
+import { useAccess } from '../../app/entitlement'
+import { canUse } from '../../core/entitlements'
+import { ProLock } from '../billing/ProLock'
 import { EMOTIONS, MAX_IMAGES_PER_TRADE, type Account, type Trade } from '../../core/models'
 import { FUTURES_PRESETS, SYMBOL_SUGGESTIONS } from '../../core/presets'
 import { Button, Chip, EmptyState, Field, PnLText, Segmented, Sheet } from '../../design/components'
@@ -48,6 +51,7 @@ function EntrySheetContent({ existing, prefill, onClose }: { existing: Trade | u
   const store = useStore()
   const { accounts, trades, mistakes, setups, rules } = useJournal()
   const { newAccount } = useSheets()
+  const access = useAccess()
   const selected = useSelectedAccount()
   const mistakeName = useMistakeName()
   const ids = { symbol: useId(), symbols: useId(), entry: useId(), exit: useId(), size: useId(), stop: useId(), fees: useId(), opened: useId(), closed: useId(), note: useId(), account: useId(), contract: useId(), multiplier: useId(), leverage: useId() }
@@ -208,7 +212,8 @@ function EntrySheetContent({ existing, prefill, onClose }: { existing: Trade | u
       }
     >
       <form id="trade-entry" className="form-stack" onSubmit={save} onKeyDown={onKeyDown} noValidate>
-        {!existing && (
+        {!existing && !canUse('screenshotReader', access) && <ProLock feature="screenshotReader" compact onNavigate={onClose} />}
+        {!existing && canUse('screenshotReader', access) && (
           <div className="screenshot-start">
             <Button
               icon={<ImageUp size={18} aria-hidden="true" />}

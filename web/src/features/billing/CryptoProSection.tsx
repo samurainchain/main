@@ -2,6 +2,7 @@ import Big from 'big.js'
 import { useEffect, useState } from 'react'
 import { fetchCryptoPrices, fetchProUntil, startCryptoCheckout, takeCheckoutResult, type CryptoPrices, type Plan } from '../../app/billing'
 import { useCloud } from '../../app/cloud'
+import { useAccess } from '../../app/entitlement'
 import { Button, Card, SectionHeader } from '../../design/components'
 import { formatDate, formatPrice } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
@@ -18,6 +19,8 @@ const CONFIRM_INTERVAL_MS = 10_000
 export function CryptoProSection() {
   const { t, locale } = useI18n()
   const { cloud, state } = useCloud()
+  const access = useAccess()
+  const refreshAccess = access.refresh
   const signedIn = Boolean(state.email)
   const [prices, setPrices] = useState<CryptoPrices>()
   const [pricesFailed, setPricesFailed] = useState(false)
@@ -46,14 +49,17 @@ export function CryptoProSection() {
       if (cancelled) return
       setProUntil(until)
       const extended = until !== undefined && until.getTime() > before
-      if (justPaid && extended) setMessage(t('pro.success'))
+      if (justPaid && extended) {
+        setMessage(t('pro.success'))
+        void refreshAccess()
+      }
       else if (justPaid && tries > 1) setTimeout(() => void load(tries - 1), CONFIRM_INTERVAL_MS)
     }
     void load(justPaid ? CONFIRM_TRIES : 1)
     return () => {
       cancelled = true
     }
-  }, [cloud, signedIn, t])
+  }, [cloud, signedIn, t, refreshAccess])
 
   if (state.status === 'unavailable') return null
 
@@ -84,7 +90,7 @@ export function CryptoProSection() {
             <span className="secondary-text"> · {t('pro.crypto.until', { date: formatDate(proUntil, locale) })}</span>
           </p>
         ) : (
-          <p className="secondary-text">{t('pro.freeNow')}</p>
+          <p className="secondary-text">{t(access.gated ? 'proPage.freePlan' : 'pro.freeNow')}</p>
         )}
         {pricesFailed && <p className="caption">{t('pro.unavailable')}</p>}
         {prices && (

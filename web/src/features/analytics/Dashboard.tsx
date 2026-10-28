@@ -4,6 +4,9 @@ import { MIN_WIDTH, WIDTHS, hideWidget, moveWidget, resizeWidget, showWidget, st
 import { Button } from '../../design/components'
 import { useI18n } from '../../i18n/i18n'
 import { WIDGETS, WidgetBody, type WidgetData } from './widgets'
+import { useAccess } from '../../app/entitlement'
+import { widgetUnlocked } from '../../core/entitlements'
+import { ProLock } from '../billing/ProLock'
 
 const WIDTH_LABEL: Record<number, string> = { 3: '1/4', 4: '1/3', 6: '1/2', 8: '2/3', 12: '1/1' }
 
@@ -23,6 +26,7 @@ function reducedMotion(): boolean {
  */
 export function Dashboard({ layout, editing, onChange, data }: { layout: DashboardLayout; editing: boolean; onChange: (layout: DashboardLayout) => void; data: WidgetData }) {
   const { t } = useI18n()
+  const access = useAccess()
   const grid = useRef<HTMLDivElement>(null)
   const [dragging, setDragging] = useState<WidgetId>()
   // The block being dragged, and where the pointer holds it (read synchronously by the effects below).
@@ -221,7 +225,7 @@ export function Dashboard({ layout, editing, onChange, data }: { layout: Dashboa
                 )}
               </header>
               <div className="dash-widget__body">
-                <WidgetBody id={id} data={data} />
+                {widgetUnlocked(id, access) ? <WidgetBody id={id} data={data} /> : <ProLock feature="deepAnalytics" compact />}
               </div>
               {editing && <span className="dash-widget__resize" aria-hidden="true" title={t('dashboard.resizeHint')} onPointerDown={(event) => startResize(event, id)} />}
             </section>

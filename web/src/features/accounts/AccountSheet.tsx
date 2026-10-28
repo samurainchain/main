@@ -1,5 +1,8 @@
 import { useId, useState, type FormEvent } from 'react'
-import { useJournal, useStore } from '../../app/journal'
+import { activeAccounts, useJournal, useStore } from '../../app/journal'
+import { useAccess } from '../../app/entitlement'
+import { canAddAccount } from '../../core/entitlements'
+import { ProLock } from '../billing/ProLock'
 import { useSheets } from '../../app/sheets'
 import { parsePositive } from '../../core/decimal'
 import { ASSET_CLASSES, CURRENCIES, newId, TAG_COLORS, type Account, type AssetClass, type Currency } from '../../core/models'
@@ -10,8 +13,10 @@ import { useI18n } from '../../i18n/i18n'
 export function AccountSheet() {
   const { sheet, close } = useSheets()
   const { accounts } = useJournal()
+  const access = useAccess()
   if (sheet.kind !== 'account') return null
   const existing = sheet.accountId ? accounts.find((account) => account.id === sheet.accountId) : undefined
+  if (!existing && !canAddAccount(activeAccounts(accounts).length, access)) return <AccountLimit onClose={close} />
   return <AccountForm key={sheet.accountId ?? 'new'} existing={existing} onClose={close} />
 }
 
@@ -120,6 +125,16 @@ function AccountForm({ existing, onClose }: { existing: Account | undefined; onC
           </div>
         </fieldset>
       </form>
+    </Sheet>
+  )
+}
+
+/** A second account on the free plan: what Pro gives instead of the form. */
+function AccountLimit({ onClose }: { onClose: () => void }) {
+  const { t } = useI18n()
+  return (
+    <Sheet open title={t('accounts.newTitle')} onClose={onClose}>
+      <ProLock feature="multipleAccounts" onNavigate={onClose} />
     </Sheet>
   )
 }

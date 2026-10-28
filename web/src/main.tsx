@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { CloudController, CloudProvider } from './app/cloud'
+import { AccessProvider } from './app/entitlement'
 import { registerServiceWorker } from './app/install'
 import { captureReferral } from './app/referral'
 import { applyAppearance, currentSettings } from './app/settings'
@@ -35,9 +36,11 @@ createRoot(document.getElementById('root')!).render(
     <JournalProvider store={store}>
       <CloudProvider value={cloud}>
         <I18nProvider>
-          <SheetProvider>
-            <AppShell />
-          </SheetProvider>
+          <AccessProvider>
+            <SheetProvider>
+              <AppShell />
+            </SheetProvider>
+          </AccessProvider>
         </I18nProvider>
       </CloudProvider>
     </JournalProvider>
