@@ -129,11 +129,11 @@ export function takeCheckoutResult(marker: 'success' | 'crypto' = 'success'): bo
 }
 
 /** The prices crypto-invoice charges when no secret overrides them; for copy shown before prices load. */
-export const DEFAULT_CRYPTO_PRICES = { monthly: '12.99', annual: '44.99' } as const
+export const DEFAULT_CRYPTO_PRICES = { monthly: '15.00', annual: '44.99' } as const
 
 export interface CryptoPrices {
   currency: string
-  /** USD amounts as decimal strings, e.g. "12.99". */
+  /** USD amounts as decimal strings, e.g. "15.00". */
   monthly: string
   annual: string
   /** NOWPayments' sandbox: no real coins. */
