@@ -98,12 +98,21 @@ async function main() {
     await page.locator('.trade-row').first().click()
     await page.waitForTimeout(250)
     await report('trade detail')
+    // The table view stays on from here, so the 200% text pass below covers it too.
+    await page.goto(`${URL}#/trades`)
+    await page.getByRole('radio', { name: 'Table' }).click()
+    await page.waitForTimeout(250)
+    await report('trade table')
 
     for (const [name, open] of [
       ['entry sheet', () => page.locator('.tabbar .nav-add').click()],
       ['filters sheet', async () => {
         await page.goto(`${URL}#/trades`)
         await page.getByRole('button', { name: 'Filters' }).click()
+      }],
+      ['trade panel', async () => {
+        await page.goto(`${URL}#/trades`)
+        await page.locator('.trade-table__open').first().click()
       }],
       ['account sheet', async () => {
         await page.goto(`${URL}#/accounts`)

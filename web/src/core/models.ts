@@ -61,6 +61,8 @@ export interface Trade {
   openedAt: Timestamp
   closedAt?: Timestamp
   emotion?: Emotion
+  /** The trader's own grade of how well the trade was executed, 1–5 stars. */
+  rating?: number
   mistakeIds: string[]
   setupIds: string[]
   /** Personal rules the trader marked as broken on this trade. */

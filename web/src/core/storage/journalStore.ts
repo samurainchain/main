@@ -157,6 +157,13 @@ export class JournalStore {
     await this.saveTrade({ ...trade, dismissedFlags: [...(trade.dismissedFlags ?? []), key], updatedAt: new Date().toISOString() })
   }
 
+  /** Sets the trade's star rating (1–5), or clears it. */
+  async rateTrade(tradeId: string, rating: number | undefined): Promise<void> {
+    const trade = this.snapshot.trades.find((item) => item.id === tradeId)
+    if (!trade || trade.rating === rating) return
+    await this.saveTrade({ ...trade, rating })
+  }
+
   async deleteTrade(id: string): Promise<void> {
     await this.removeImages(this.imagesOf(id).map((image) => image.id))
     this.set({ ...this.snapshot, trades: this.snapshot.trades.filter((trade) => trade.id !== id) })
@@ -168,7 +175,7 @@ export class JournalStore {
     const original = this.snapshot.trades.find((trade) => trade.id === id)
     if (!original) return undefined
     const now = new Date().toISOString()
-    const copy: Trade = { ...original, id: newId(), source: 'manual', createdAt: now, updatedAt: now }
+    const copy: Trade = { ...original, id: newId(), rating: undefined, source: 'manual', createdAt: now, updatedAt: now }
     await this.saveTrade(copy)
     return copy
   }

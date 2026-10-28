@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { parseDecimalInput, parsePositive } from './decimal'
 import type { Side, Trade } from './models'
-import { isWin, percentOfDeposit, quoteToBaseQuantity, riskAmount, rMultiple, totalPnl, tradeDuration, tradePnl } from './pnl'
+import { grossPnl, isWin, percentOfDeposit, priceMovePercent, quoteToBaseQuantity, riskAmount, rMultiple, totalPnl, tradeDuration, tradePnl } from './pnl'
 
 type Input = Parameters<typeof rMultiple>[0]
 
@@ -109,5 +109,23 @@ describe('decimal input', () => {
     expect(parseDecimalInput('1.2.3')).toBeUndefined()
     expect(parseDecimalInput('abc')).toBeUndefined()
     expect(parsePositive('0')).toBeUndefined()
+  })
+})
+
+describe('grossPnl and priceMovePercent', () => {
+  it('adds the fees back for gross PnL', () => {
+    expect(grossPnl(trade({ side: 'long', fees: '1.5' }))?.toString()).toBe('10')
+    expect(grossPnl(trade({ side: 'short', fees: '1.5' }))?.toString()).toBe('-10')
+  })
+
+  it('measures the move in the trade\'s favour', () => {
+    expect(priceMovePercent(trade({ side: 'long' }))?.toString()).toBe('10')
+    expect(priceMovePercent(trade({ side: 'short' }))?.toString()).toBe('-10')
+    expect(priceMovePercent(trade({ side: 'short', entryPrice: '1.1455', exitPrice: '1.1468' }))?.toFixed(4)).toBe('-0.1135')
+  })
+
+  it('is undefined while the trade is open', () => {
+    expect(grossPnl(trade({ side: 'long', exitPrice: undefined }))).toBeUndefined()
+    expect(priceMovePercent(trade({ side: 'long', exitPrice: undefined }))).toBeUndefined()
   })
 })

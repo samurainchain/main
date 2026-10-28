@@ -5,7 +5,8 @@ import { useAutoFlags, useJournal, useMistakeName, useStore } from '../../app/jo
 import { navigate, routeHref } from '../../app/router'
 import { useSheets } from '../../app/sheets'
 import { activeFlags, type AutoFlag } from '../../core/mistakeDetector'
-import { percentOfDeposit, rMultiple, tradeDuration, tradePnl } from '../../core/pnl'
+import type { Trade } from '../../core/models'
+import { grossPnl, percentOfDeposit, priceMovePercent, rMultiple, tradeDuration, tradePnl } from '../../core/pnl'
 import { systemMistakeId } from '../../core/storage/journalStore'
 import { Button, Card, Chip, EmptyState, PnLText, SectionHeader } from '../../design/components'
 import { formatDateTime, formatDecimal, formatDuration, formatMoney, formatPercent, formatR } from '../../i18n/format'
@@ -13,6 +14,7 @@ import { useI18n, type Translator } from '../../i18n/i18n'
 import { PageHeader } from '../shell/PageHeader'
 import { TradeGallery } from '../images/TradeImages'
 import { EMOTION_ICONS } from './TradeRow'
+import { StarRating } from './StarRating'
 
 /** Why the detector raised a flag, in the trader's words. */
 function flagReason(flag: AutoFlag, t: Translator['t'], locale: Translator['locale']): string {
@@ -36,14 +38,10 @@ function flagReason(flag: AutoFlag, t: Translator['t'], locale: Translator['loca
   }
 }
 
-/** Every field of a trade with its computed values (SPEC section 4.6). */
+/** Every field of a trade with its computed values (SPEC section 4.6), as a page. */
 export function TradeDetailPage({ id }: { id: string }) {
-  const { t, locale } = useI18n()
-  const { trades, accounts, mistakes, setups, rules } = useJournal()
-  const store = useStore()
-  const { editTrade } = useSheets()
-  const mistakeName = useMistakeName()
-  const autoFlags = useAutoFlags()
+  const { t } = useI18n()
+  const { trades, accounts } = useJournal()
   const trade = trades.find((item) => item.id === id)
 
   const back = (
@@ -62,11 +60,38 @@ export function TradeDetailPage({ id }: { id: string }) {
     )
   }
 
+  return (
+    <>
+      <PageHeader
+        title={trade.symbol}
+        subtitle={accounts.find((item) => item.id === trade.accountId)?.name}
+        leading={back}
+        trailing={<span className={`side-badge side-badge--${trade.side}`}>{t(`side.${trade.side}`)}</span>}
+      />
+      <TradeDetail trade={trade} onDeleted={() => navigate({ name: 'trades' })} onDuplicated={(copy) => navigate({ name: 'trade', id: copy })} />
+    </>
+  )
+}
+
+/**
+ * The body of a trade's details, shared by the page and the side panel next to the trade
+ * table: result and rating, screenshots, grouped fields, tags, rules, note and actions.
+ */
+export function TradeDetail({ trade, onDeleted, onDuplicated }: { trade: Trade; onDeleted: () => void; onDuplicated: (id: string) => void }) {
+  const { t, locale } = useI18n()
+  const { accounts, mistakes, setups, rules } = useJournal()
+  const store = useStore()
+  const { editTrade } = useSheets()
+  const mistakeName = useMistakeName()
+  const autoFlags = useAutoFlags()
+
   const account = accounts.find((item) => item.id === trade.accountId)
   const currency = account?.currency ?? 'USD'
   const pnl = tradePnl(trade)
+  const gross = grossPnl(trade)
   const r = rMultiple(trade)
   const duration = tradeDuration(trade)
+  const move = priceMovePercent(trade)
   const percent = pnl ? percentOfDeposit(pnl, account?.depositAmount) : undefined
   const tradeMistakes = mistakes.filter((tag) => trade.mistakeIds.includes(tag.id))
   // Flags the trader hasn't tagged by hand or dismissed, with the tag they count toward.
@@ -83,28 +108,25 @@ export function TradeDetailPage({ id }: { id: string }) {
   const remove = async () => {
     if (!window.confirm(t('trade.deleteConfirm'))) return
     await store.deleteTrade(trade.id)
-    navigate({ name: 'trades' })
+    onDeleted()
   }
 
   const duplicate = async () => {
     const copy = await store.duplicateTrade(trade.id)
-    if (copy) navigate({ name: 'trade', id: copy.id })
+    if (copy) onDuplicated(copy.id)
   }
 
   return (
     <>
-      <PageHeader
-        title={trade.symbol}
-        subtitle={account?.name}
-        leading={back}
-        trailing={<span className={`side-badge side-badge--${trade.side}`}>{t(`side.${trade.side}`)}</span>}
-      />
-
       <Card className="trade-summary">
-        {pnl ? <PnLText amount={pnl} currency={currency} size="hero" /> : <p className="pnl--hero secondary-text">{t('trade.open')}</p>}
+        <div className="trade-summary__top">
+          {pnl ? <PnLText amount={pnl} currency={currency} size="hero" /> : <p className="pnl--hero secondary-text">{t('trade.open')}</p>}
+          <StarRating trade={trade} size={20} />
+        </div>
         <dl className="stat-row">
           <Stat label={t('trade.r')} value={r ? formatR(r, locale) : '—'} />
           <Stat label={t('trade.duration')} value={duration !== undefined ? formatDuration(duration, locale) : '—'} />
+          {move && <Stat label={t('trade.priceMove')} value={formatPercent(move, locale)} />}
           {percent && <Stat label={t('trade.percentOfDeposit')} value={formatPercent(percent, locale)} />}
         </dl>
       </Card>
@@ -112,22 +134,13 @@ export function TradeDetailPage({ id }: { id: string }) {
       {images.length > 0 && <TradeGallery images={images} />}
 
       <SectionHeader title={t('trade.detailsSection')} />
-      <Card>
-        <dl className="detail-list">
+      <Card className="fact-groups">
+        <FactGroup title={t('trade.group.position')}>
           <Detail label={t('entry.account')} value={account?.name} />
           <Detail label={t('entry.market')} value={t(`market.${trade.market}`)} />
-          <Detail label={t('entry.entryPrice')} value={price(trade.entryPrice)} />
-          <Detail label={t('entry.exitPrice')} value={price(trade.exitPrice)} />
           <Detail label={t(trade.market === 'futures' ? 'entry.contracts' : trade.market === 'stock' ? 'entry.shares' : 'entry.quantity')} value={price(trade.quantity)} />
           {trade.market === 'futures' && <Detail label={t('entry.multiplier')} value={price(trade.contractMultiplier)} />}
           {trade.leverage && <Detail label={t('entry.leverage')} value={`${formatDecimal(trade.leverage, locale)}×`} />}
-          <Detail label={t('entry.stopLoss')} value={price(trade.stopLoss)} />
-          {trade.initialStopLoss && trade.initialStopLoss !== trade.stopLoss && (
-            <Detail label={t('trade.initialStop')} value={price(trade.initialStopLoss)} />
-          )}
-          <Detail label={t('entry.fees')} value={formatMoney(new Big(trade.fees), currency, locale, false)} />
-          <Detail label={t('entry.openedAt')} value={formatDateTime(trade.openedAt, locale)} />
-          <Detail label={t('entry.closedAt')} value={trade.closedAt ? formatDateTime(trade.closedAt, locale) : undefined} />
           <Detail
             label={t('entry.emotion')}
             value={
@@ -139,7 +152,23 @@ export function TradeDetailPage({ id }: { id: string }) {
               ) : undefined
             }
           />
-        </dl>
+        </FactGroup>
+        <FactGroup title={t('trade.group.prices')}>
+          <Detail label={t('entry.entryPrice')} value={price(trade.entryPrice)} />
+          <Detail label={t('entry.exitPrice')} value={price(trade.exitPrice)} />
+          <Detail label={t('entry.stopLoss')} value={price(trade.stopLoss)} />
+          {trade.initialStopLoss && trade.initialStopLoss !== trade.stopLoss && <Detail label={t('trade.initialStop')} value={price(trade.initialStopLoss)} />}
+          {trade.takeProfit && <Detail label={t('trade.takeProfit')} value={price(trade.takeProfit)} />}
+        </FactGroup>
+        <FactGroup title={t('trade.group.time')}>
+          <Detail label={t('entry.openedAt')} value={formatDateTime(trade.openedAt, locale)} />
+          <Detail label={t('entry.closedAt')} value={trade.closedAt ? formatDateTime(trade.closedAt, locale) : undefined} />
+        </FactGroup>
+        <FactGroup title={t('trade.group.result')}>
+          <Detail label={t('trade.grossPnl')} value={gross ? <PnLText amount={gross} currency={currency} /> : undefined} />
+          <Detail label={t('trade.fees')} value={formatMoney(new Big(trade.fees), currency, locale, false)} />
+          <Detail label={t('trade.netPnl')} value={pnl ? <PnLText amount={pnl} currency={currency} /> : undefined} />
+        </FactGroup>
       </Card>
 
       {(tradeMistakes.length > 0 || tradeSetups.length > 0 || flagged.length > 0) && (
@@ -234,6 +263,15 @@ function Stat({ label, value }: { label: string; value: string }) {
       <dt className="caption">{label}</dt>
       <dd className="numeric">{value}</dd>
     </div>
+  )
+}
+
+function FactGroup({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="fact-group">
+      <h3 className="label">{title}</h3>
+      <dl className="detail-list">{children}</dl>
+    </section>
   )
 }
 

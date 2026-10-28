@@ -17,6 +17,10 @@ export interface Settings {
   railHidden: boolean
   /** The analytics dashboard's blocks; read through normalizeLayout (core/dashboard). */
   dashboard?: unknown
+  /** Trades screen: grouped by day, or the table; unset picks by screen width. */
+  tradesView?: 'days' | 'table'
+  /** Columns hidden in the trade table; read through normalizeHiddenColumns (core/tradeTable). */
+  hiddenTradeColumns?: unknown
 }
 
 export const RAIL_MIN_WIDTH = 280

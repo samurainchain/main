@@ -212,6 +212,7 @@ export function buildTrade(
     openedAt,
     closedAt,
     emotion: form.emotion,
+    rating: existing?.rating,
     mistakeIds: form.mistakeIds,
     setupIds: form.setupIds,
     brokenRuleIds: form.brokenRuleIds,

@@ -38,6 +38,19 @@ export function riskAmount(trade: RiskInput): Big | undefined {
   return risk.gt(0) ? risk : undefined
 }
 
+/** PnL before fees: (exit − entry) × Q × M × d. Undefined for an open trade. */
+export function grossPnl(trade: PnlInput): Big | undefined {
+  return tradePnl(trade)?.plus(trade.fees)
+}
+
+/** How far the price moved in the trade's favour, as a percentage of the entry price. */
+export function priceMovePercent(trade: Pick<Trade, 'side' | 'entryPrice' | 'exitPrice'>): Big | undefined {
+  const exit = toBig(trade.exitPrice)
+  const entry = new Big(trade.entryPrice)
+  if (!exit || entry.eq(0)) return undefined
+  return exit.minus(entry).div(entry).times(100).times(direction(trade.side))
+}
+
 /** R multiple = PnL / Risk. */
 export function rMultiple(trade: PnlInput & RiskInput): Big | undefined {
   const pnl = tradePnl(trade)
