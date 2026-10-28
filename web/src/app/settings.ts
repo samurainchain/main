@@ -25,6 +25,8 @@ export interface Settings {
   calculatorRisk?: { mode: 'percent' | 'amount'; value: string }
   /** The trader turned on Investing.com's calendar on Today (it loads a third-party frame). */
   economicCalendar?: boolean
+  /** Ids of the bell's notices already seen (core/notices). */
+  seenNotices?: string[]
 }
 
 export const RAIL_MIN_WIDTH = 280

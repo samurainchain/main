@@ -114,6 +114,18 @@ async function main() {
         await page.goto(`${URL}#/trades`)
         await page.locator('.trade-table__open').first().click()
       }],
+      ['language menu', async () => {
+        await page.goto(`${URL}#/today`)
+        await page.getByRole('button', { name: 'Language' }).click()
+      }],
+      ['notifications', async () => {
+        await page.goto(`${URL}#/today`)
+        await page.locator('.app-bar__button').last().click()
+      }],
+      ['feedback popover', async () => {
+        await page.goto(`${URL}#/today`)
+        await page.getByRole('button', { name: 'Feedback' }).click()
+      }],
       ['position size calculator', async () => {
         await page.goto(`${URL}#/today`)
         await page.getByRole('button', { name: 'Calculator' }).click()

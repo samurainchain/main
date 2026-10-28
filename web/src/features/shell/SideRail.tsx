@@ -10,7 +10,6 @@ import { dailyPnl, localDayKey, startOfWeek } from '../../core/stats'
 import { Card, PnLText, SectionHeader } from '../../design/components'
 import { formatMoney, formatShare, weekdayNames } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
-import { FeedbackSection } from '../feedback/FeedbackSection'
 import { useInsightText } from '../review/WeekBreakdown'
 import { SessionClock } from '../sessions/SessionClock'
 import { dayFromKey, useVisibleTrades } from '../trades/tradeQueries'
@@ -21,8 +20,8 @@ const COLLAPSE_SLACK = 80
 const KEY_STEP = 16
 
 /**
- * The right column on wide screens: this week at a glance (PnL, day bars, the costliest
- * pattern) and the feedback form at the bottom. Hidden below 1400 px by CSS; the person can
+ * The right column on wide screens: trading sessions and this week at a glance (PnL, day bars,
+ * the costliest pattern); feedback lives in the top bar. Hidden below 1400 px by CSS; the person can
  * collapse it to a thin strip or drag its left edge to resize it, and the browser remembers.
  */
 export function SideRail() {
@@ -51,7 +50,6 @@ export function SideRail() {
         </div>
         <SessionClock />
         {activeAccounts(accounts).length > 0 && <WeekGlance />}
-        <FeedbackSection className="side-rail__feedback" />
       </div>
     </aside>
   )

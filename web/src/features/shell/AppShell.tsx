@@ -18,6 +18,7 @@ import { TagsPage } from '../tags/TagsPage'
 import { TodayPage } from '../today/TodayPage'
 import { TradeDetailPage } from '../trades/TradeDetailPage'
 import { TradesPage } from '../trades/TradesPage'
+import { AppBar } from './AppBar'
 import { SideRail } from './SideRail'
 
 // Heavier screens load when first opened, keeping the first download small; the service worker
@@ -102,6 +103,7 @@ export function AppShell() {
             {t('common.loadError')}
           </p>
         )}
+        {status === 'ready' && <AppBar />}
         {status === 'ready' && (
           <Suspense fallback={null}>
             <Page route={route} />
