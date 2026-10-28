@@ -6,7 +6,7 @@ import { allowedOrigin, cors, currentUser, env, json, nowPayments, rest } from '
 
 function prices(): Record<CryptoPlan, string> {
   return {
-    monthly: parsePrice(Deno.env.get('CRYPTO_PRICE_MONTHLY'), '8.99'),
+    monthly: parsePrice(Deno.env.get('CRYPTO_PRICE_MONTHLY'), '12.99'),
     annual: parsePrice(Deno.env.get('CRYPTO_PRICE_ANNUAL'), '44.99'),
   }
 }

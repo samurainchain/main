@@ -91,7 +91,7 @@ export function trialDays(): number {
 export const PRO_STATUSES = ['active', 'trialing', 'past_due']
 
 // Crypto payments through NOWPayments. Secrets: NOWPAYMENTS_API_KEY, NOWPAYMENTS_IPN_SECRET;
-// optional CRYPTO_PRICE_MONTHLY (8.99), CRYPTO_PRICE_ANNUAL (44.99) in USD and
+// optional CRYPTO_PRICE_MONTHLY (12.99; NOWPayments refused $8.99 as below its minimum), CRYPTO_PRICE_ANNUAL (44.99) in USD and
 // NOWPAYMENTS_SANDBOX=true to use NOWPayments' sandbox.
 
 /** Calls the NOWPayments API with our key. */

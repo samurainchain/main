@@ -1,6 +1,7 @@
 import { Check, ChevronLeft, Copy } from 'lucide-react'
 import Big from 'big.js'
 import { useCallback, useEffect, useId, useState } from 'react'
+import { DEFAULT_CRYPTO_PRICES, fetchCryptoPrices } from '../../app/billing'
 import { useCloud } from '../../app/cloud'
 import { becomePartner, fetchPartnerStats, partnerLink, savePayoutWallet, type PartnerStats } from '../../app/referral'
 import { routeHref } from '../../app/router'
@@ -26,6 +27,12 @@ export function PartnersPage() {
   const [loaded, setLoaded] = useState(false)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string>()
+  // The example uses the prices actually charged, falling back to the defaults while they load.
+  const [prices, setPrices] = useState<{ monthly: string; annual: string }>(DEFAULT_CRYPTO_PRICES)
+
+  useEffect(() => {
+    fetchCryptoPrices().then(setPrices, () => {})
+  }, [])
 
   const usd = (amount: Big | string) => formatMoney(new Big(amount), 'USD', locale, false)
   const percent = `${Number(PARTNER_TERMS.rate) * 100}%`
@@ -160,10 +167,10 @@ export function PartnersPage() {
       <Card className="form-stack">
         <p>
           {t('partners.exampleText', {
-            monthly: usd('8.99'),
-            monthlyCut: usd(commissionFor('8.99')),
-            annual: usd('44.99'),
-            annualCut: usd(commissionFor('44.99')),
+            monthly: usd(prices.monthly),
+            monthlyCut: usd(commissionFor(prices.monthly)),
+            annual: usd(prices.annual),
+            annualCut: usd(commissionFor(prices.annual)),
           })}
         </p>
         <p className="caption">{t('partners.exampleNote')}</p>

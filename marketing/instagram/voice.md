@@ -17,7 +17,7 @@ lines marked TODO are for the owner to fill in.
   behaviour: one loss, then three trades to win it back. English-speaking first
   (US, UK, Canada, Australia).
 - **What I sell:** the web app at tiltless.xyz, free for now. Pro later
-  (about $44.99/yr with a 7-day trial, or $8.99/mo); iOS app to follow.
+  (about $44.99/yr with a 7-day trial, or $12.99/mo); iOS app to follow.
 
 ## What I sound like
 
