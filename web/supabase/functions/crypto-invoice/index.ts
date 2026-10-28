@@ -15,13 +15,15 @@ const DESCRIPTION: Record<CryptoPlan, string> = { monthly: 'Tiltless Pro, 1 mont
 
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') return new Response(null, { headers: cors(request) })
-  if (request.method === 'GET' && new URL(request.url).searchParams.has('minimums')) {
-    // NOWPayments' smallest payment per coin, paid out to our USDT (TRC20) wallet: what decides
-    // the lowest price a pass can have ("amountTo is too small" below it).
-    const coins = ['usdttrc20', 'usdcsol', 'usdterc20', 'btc', 'eth', 'sol', 'ltc', 'trx']
+  const search = new URL(request.url).searchParams
+  if (request.method === 'GET' && search.has('minimums')) {
+    // NOWPayments' smallest payment per coin, paid out to the payout wallet's coin (?to=, USDT
+    // TRC20 unless named): what decides the lowest price a pass can have ("amountTo is too small").
+    const payout = /^[a-z0-9]{2,20}$/.test(search.get('to') ?? '') ? search.get('to')! : 'usdttrc20'
+    const coins = ['usdttrc20', 'usdcsol', 'usdtsol', 'usdterc20', 'usdtbsc', 'btc', 'eth', 'sol', 'ltc', 'trx']
     const results = await Promise.all(
       coins.map(async (coin) => {
-        const query = new URLSearchParams({ currency_from: coin, currency_to: 'usdttrc20', fiat_equivalent: 'usd', is_fixed_rate: 'true', is_fee_paid_by_user: 'false' })
+        const query = new URLSearchParams({ currency_from: coin, currency_to: payout, fiat_equivalent: 'usd', is_fixed_rate: 'true', is_fee_paid_by_user: 'false' })
         try {
           const answer = await nowPayments<{ min_amount?: number; fiat_equivalent?: number }>(`/min-amount?${query}`)
           return { coin, min: answer.min_amount, usd: answer.fiat_equivalent }
@@ -30,7 +32,7 @@ Deno.serve(async (request) => {
         }
       }),
     )
-    return json(request, { payout: 'usdttrc20', minimums: results }, 200, { 'Cache-Control': 'public, max-age=300' })
+    return json(request, { payout, minimums: results }, 200, { 'Cache-Control': 'public, max-age=300' })
   }
   if (request.method === 'GET') {
     const { monthly, annual } = prices()
