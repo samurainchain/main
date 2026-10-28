@@ -29,10 +29,11 @@ Next week's queue (story and demo formats):
 - Fri: screenshot of the weekly review breakdown (demo) + link sticker to tiltless.xyz.
 
 ## Engagement round (20 min a day, before posting)
-10 accounts, to fill in from what's actually active in the niche (search #tradingpsychology, #daytrading, #tradingjournal; sort by recent):
-- 5 reach: larger trading-psychology and day-trading educators whose comments are still under ~200.
-- 3 peers: small trading-tool and journaling accounts around our size.
-- 2 buyers: active retail traders who post their own P&L and talk about tilt.
-Comment with a point of view (use /ig-comment), never a pitch.
+TikTok accounts from a "daytrading" search (Oct 28); check each feed before commenting and skip anyone selling signals or promising returns.
+- 5 reach: @joovier99 (569k), @stephtradez (423k), @daytradingwithcasper (253k), @lew_trading (74k), @daytrading.gold (61k). Comment within the first hour of a new video.
+- 3 peers: still to find. Search TikTok and Instagram for "trading journal" and "trading psychology" and pick small accounts (1k-20k) that post regularly.
+- 2 buyers: @tokyothetrader2 (9k, US30), @daytradinguriel (2.8k). Traders who post their own days; comment for weeks, never pitch.
+Also worth a comment now and then: @tradingview (brand, big audience).
+Comments come from /ig-comment: a point of view tied to tilt and discipline, never a link or a pitch.
 
-TODO (owner): the 10 handles; a real story from your own trading for a STORY reel (it beats demo numbers).
+TODO (owner): 3 peer accounts; a real story from your own trading for a STORY reel (it beats demo numbers).
