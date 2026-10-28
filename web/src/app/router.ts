@@ -15,7 +15,8 @@ export type Route =
   | { name: 'review'; week?: string }
 
 export function parseRoute(hash: string): Route {
-  const [first, second] = hash.replace(/^#\/?/, '').split('/')
+  // A query after the route (#/profile?pro=preview) isn't part of it.
+  const [first, second] = hash.replace(/^#\/?/, '').split('?')[0]!.split('/')
   switch (first) {
     case 'trades':
       return second ? { name: 'trade', id: decodeURIComponent(second) } : { name: 'trades' }

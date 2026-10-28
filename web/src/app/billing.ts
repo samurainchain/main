@@ -19,7 +19,8 @@ export const PRO_ON_SALE = false
  */
 export function proPreview(): boolean {
   try {
-    if (new URL(window.location.href).searchParams.get('pro') === 'preview') sessionStorage.setItem('mirror.proPreview', '1')
+    // Works before or after the hash route: ?pro=preview#/profile or #/profile?pro=preview.
+    if (/[?&]pro=preview\b/.test(window.location.search + window.location.hash)) sessionStorage.setItem('mirror.proPreview', '1')
     return sessionStorage.getItem('mirror.proPreview') === '1'
   } catch {
     return false
