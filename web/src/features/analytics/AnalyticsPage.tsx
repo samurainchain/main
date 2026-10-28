@@ -30,6 +30,8 @@ export function AnalyticsPage() {
   const closed = useMemo(() => closedTrades(trades), [trades])
   const inRange = useMemo(() => inPeriod(closed, period, new Date(), weekStart), [closed, period, weekStart])
   const summary = useMemo(() => metrics(inRange), [inRange])
+  // One object per change of data, so moving blocks around doesn't redraw their charts.
+  const data = useMemo(() => ({ inRange, closed, summary, currency }), [inRange, closed, summary, currency])
   const saved = useMemo(() => normalizeLayout(settings.dashboard), [settings.dashboard])
   const editing = draft !== undefined
   const layout = draft ?? saved
@@ -85,7 +87,7 @@ export function AnalyticsPage() {
       {editing && <p className="dash-edit-hint caption">{t('dashboard.editHint')}</p>}
       {inRange.length === 0 && periodUnlocked(period, access) && <p className="analytics-empty-period secondary-text">{t('analytics.emptyPeriod')}</p>}
       {periodUnlocked(period, access) ? (
-        <Dashboard layout={layout} editing={editing} onChange={setDraft} data={{ inRange, closed, summary, currency }} />
+        <Dashboard layout={layout} editing={editing} onChange={setDraft} data={data} />
       ) : (
         <div className="card analytics-lock">
           <ProLock feature="longPeriods" />

@@ -1,5 +1,5 @@
 import Big from 'big.js'
-import type { ReactNode } from 'react'
+import { memo, type ReactNode } from 'react'
 import { useJournal, useMistakeName } from '../../app/journal'
 import { useWeekStart } from '../../app/settings'
 import type { WidgetId } from '../../core/dashboard'
@@ -59,7 +59,8 @@ export const WIDGETS: Record<WidgetId, { title: MessageKey; needsTrades: boolean
   metrics: { title: 'analytics.keyMetrics', needsTrades: true },
 }
 
-export function WidgetBody({ id, data }: { id: WidgetId; data: WidgetData }) {
+/** A block's content; it only redraws when its data changes, not when blocks move. */
+export const WidgetBody = memo(function WidgetBody({ id, data }: { id: WidgetId; data: WidgetData }) {
   const { inRange, closed, currency } = data
   switch (id) {
     case 'performance':
@@ -99,7 +100,7 @@ export function WidgetBody({ id, data }: { id: WidgetId; data: WidgetData }) {
     case 'metrics':
       return <KeyMetrics data={data} />
   }
-}
+})
 
 /** Net PnL, win rate, profit factor, expectancy, average R, and how far the win rate is from break-even. */
 function Performance({ data }: { data: WidgetData }) {

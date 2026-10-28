@@ -11,16 +11,22 @@
   --grid-line: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
 }
 
-/* Light from the top right and bottom left corners, over a faint grid. */
-:root[data-style='glow'] body {
+/* Light from the top right and bottom left corners, over a faint grid. It sits on its own fixed
+   layer that is drawn once: as a fixed body background it was redrawn on every scroll and under
+   every moving block, which made dragging dashboard blocks stutter. */
+:root[data-style='glow'] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  will-change: transform;
   background:
     radial-gradient(60rem 40rem at 95% -5%, color-mix(in srgb, var(--color-accent) 26%, transparent), transparent 62%),
     radial-gradient(45rem 35rem at 30% 0%, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 60%),
     radial-gradient(50rem 40rem at -5% 105%, color-mix(in srgb, var(--color-accent) 16%, transparent), transparent 62%),
     linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0 / 40px 40px,
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0 / 40px 40px,
-    var(--color-background);
-  background-attachment: fixed;
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0 / 40px 40px;
 }
 
 /* Panels let the light through, with a lit top edge; hovering one warms it up. */
@@ -99,6 +105,13 @@
 
 :root[data-style='glow'] .notice--fresh {
   box-shadow: 0 0 14px var(--glow-soft);
+}
+
+/* While the dashboard is edited its blocks are solid: blocks sliding over each other and over
+   the light behind them stay cheap to draw. */
+:root[data-style='glow'] .dash-grid--editing .card {
+  background: linear-gradient(180deg, var(--color-surface-elevated), var(--color-surface));
+  transition: none;
 }
 
 :root[data-style='glow'] .dash-grid .dash-widget--dragging {

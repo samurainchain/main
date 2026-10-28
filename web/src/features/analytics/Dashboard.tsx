@@ -29,6 +29,10 @@ export function Dashboard({ layout, editing, onChange, data }: { layout: Dashboa
   const access = useAccess()
   const grid = useRef<HTMLDivElement>(null)
   const [dragging, setDragging] = useState<WidgetId>()
+  // While a block is dragged the blocks keep their place in the page and CSS `order` shows the
+  // new arrangement: moving a node in the DOM would drop the pointer events of the drag and
+  // reload the calendar's frame. The DOM catches up on drop.
+  const [frozen, setFrozen] = useState<WidgetId[]>()
   // The block being dragged, and where the pointer holds it (read synchronously by the effects below).
   const drag = useRef<{ id: WidgetId; x: number; y: number; grabX: number; grabY: number }>(undefined)
   // Where every block was on screen right before a layout change, to animate from (FLIP).
@@ -42,6 +46,8 @@ export function Dashboard({ layout, editing, onChange, data }: { layout: Dashboa
 
   const hasTrades = data.inRange.length > 0
   const visible = layout.items.filter((item) => hasTrades || !WIDGETS[item.id].needsTrades)
+  const position = new Map(visible.map((item, index) => [item.id, index]))
+  const rendered = frozen ? visible.slice().sort((a, b) => frozen.indexOf(a.id) - frozen.indexOf(b.id)) : visible
   const name = (id: WidgetId) => t(WIDGETS[id].title)
 
   const widgets = () => [...(grid.current?.querySelectorAll<HTMLElement>('[data-widget]') ?? [])]
@@ -93,13 +99,12 @@ export function Dashboard({ layout, editing, onChange, data }: { layout: Dashboa
   const startMove = (event: ReactPointerEvent<HTMLButtonElement>, id: WidgetId) => {
     if (event.button !== 0) return
     event.preventDefault()
-    const handle = event.currentTarget
     const element = widget(id)
     if (!element) return
-    handle.setPointerCapture(event.pointerId)
     const box = element.getBoundingClientRect()
     drag.current = { id, x: event.clientX, y: event.clientY, grabX: event.clientX - box.left, grabY: event.clientY - box.top }
     setDragging(id)
+    setFrozen(visible.map((item) => item.id))
 
     const move = (moveEvent: PointerEvent) => {
       const held = drag.current
@@ -137,11 +142,12 @@ export function Dashboard({ layout, editing, onChange, data }: { layout: Dashboa
     }
     const end = () => {
       window.clearTimeout(retry)
-      handle.removeEventListener('pointermove', move)
-      handle.removeEventListener('pointerup', end)
-      handle.removeEventListener('pointercancel', end)
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', end)
+      window.removeEventListener('pointercancel', end)
       drag.current = undefined
       setDragging(undefined)
+      setFrozen(undefined)
       // Drop: glide from under the pointer into the slot.
       const dropped = widget(id)
       if (!dropped) return
@@ -150,9 +156,9 @@ export function Dashboard({ layout, editing, onChange, data }: { layout: Dashboa
       const slot = dropped.getBoundingClientRect()
       if (!reducedMotion()) dropped.animate([{ transform: `translate(${held.left - slot.left}px, ${held.top - slot.top}px)` }, { transform: 'none' }], MOTION)
     }
-    handle.addEventListener('pointermove', move)
-    handle.addEventListener('pointerup', end)
-    handle.addEventListener('pointercancel', end)
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', end)
+    window.addEventListener('pointercancel', end)
   }
 
   const moveByKey = (event: KeyboardEvent<HTMLButtonElement>, id: WidgetId) => {
@@ -162,8 +168,8 @@ export function Dashboard({ layout, editing, onChange, data }: { layout: Dashboa
     const index = current.current.items.findIndex((item) => item.id === id)
     const next = moveWidget(current.current, id, index + step)
     update(next)
-    const position = next.items.findIndex((item) => item.id === id) + 1
-    setAnnouncement(t('dashboard.moved', { name: name(id), position: String(position), count: String(next.items.length) }))
+    const place = next.items.findIndex((item) => item.id === id) + 1
+    setAnnouncement(t('dashboard.moved', { name: name(id), position: String(place), count: String(next.items.length) }))
   }
 
   const startResize = (event: ReactPointerEvent<HTMLSpanElement>, id: WidgetId) => {
@@ -189,8 +195,8 @@ export function Dashboard({ layout, editing, onChange, data }: { layout: Dashboa
   return (
     <div className="dash">
       <div ref={grid} className={`dash-grid${editing ? ' dash-grid--editing' : ''}`}>
-        {visible.map(({ id, width }) => {
-          const style = { '--span': width, '--span-md': width <= 6 ? 6 : 12 } as CSSProperties
+        {rendered.map(({ id, width }) => {
+          const style = { '--span': width, '--span-md': width <= 6 ? 6 : 12, order: position.get(id) } as CSSProperties
           return (
             <section key={id} data-widget={id} className={`card dash-widget${dragging === id ? ' dash-widget--dragging' : ''}`} style={style} aria-labelledby={`widget-${id}`}>
               <header className="dash-widget__header">
