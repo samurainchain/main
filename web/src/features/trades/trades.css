@@ -360,7 +360,7 @@
   flex-direction: column;
   gap: var(--space-s);
   /* Hugs the widget's table instead of leaving an empty band to its right. */
-  max-width: calc(900px + 2 * var(--space-m) + 2px);
+  max-width: calc(650px + 2 * var(--space-m) + 2px);
   margin-top: var(--space-l);
 }
 
@@ -379,8 +379,8 @@
 .econ-calendar__frame {
   display: block;
   width: 100%;
-  /* The widget's table doesn't grow past about 880px; a wider frame is only white space. */
-  max-width: 900px;
+  /* The widget's table is 650px wide (the width its builder gives); a wider frame is only white space. */
+  max-width: 650px;
   /* Most of a week's events without scrolling inside the frame, but never taller than the screen. */
   height: clamp(480px, 80vh, 900px);
   border: 1px solid var(--color-border);
