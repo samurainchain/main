@@ -1,7 +1,8 @@
 import { CalendarDays, EyeOff } from 'lucide-react'
+import { useSyncExternalStore } from 'react'
 import { updateSettings, useSettings } from '../../app/settings'
 import { Button, Card } from '../../design/components'
-import { useI18n } from '../../i18n/i18n'
+import { useI18n, type Locale } from '../../i18n/i18n'
 
 /**
  * Investing.com's free economic calendar widget (their Webmaster Tools), as they offer it for
@@ -9,22 +10,52 @@ import { useI18n } from '../../i18n/i18n'
  * the calendar is their own page in a frame. It sets its own cookies and ads, so it loads only
  * after the trader turns it on (SPEC section 4.3, privacy page).
  */
-const WIDGET_URL =
-  'https://sslecal2.investing.com?' +
-  new URLSearchParams({
-    columns: 'exc_flags,exc_currency,exc_importance,exc_actual,exc_forecast,exc_previous',
-    features: 'datepicker,timezone,timeselector,filters',
-    // United States, Euro Zone, United Kingdom, Germany, Japan, Canada, Australia, China.
-    countries: '5,72,4,17,35,6,25,37',
-    // Medium and high importance only.
-    importance: '2,3',
-    calType: 'week',
-    lang: '1',
-  }).toString()
+// Settings from the widget builder at investing.com/webmaster-tools/economic-calendar.
+const WIDGET_BASE = {
+  columns: 'exc_flags,exc_currency,exc_importance,exc_actual,exc_forecast,exc_previous',
+  category: '_employment,_economicActivity,_inflation,_credit,_centralBanks,_confidenceIndex,_balance,_Bonds',
+  // Medium and high importance only.
+  importance: '2,3',
+  features: 'datepicker,timezone,timeselector,filters',
+  countries: '25,6,37,72,22,17,39,35,43,56,36,110,11,26,4,5',
+  calType: 'week',
+  // Eastern Time, where most of the audience trades; the widget lets each viewer change it.
+  timeZone: '8',
+}
+
+/** The widget's colors, from the design tokens of each theme (it can't read CSS variables). */
+const WIDGET_COLORS = {
+  dark: { ecoDayBackground: '#171717', defaultFont: '#ededed', innerBorderColor: '#2e2e2e', borderColor: '#2e2e2e', ecoDayFontColor: '#a1a1a1' },
+  light: { ecoDayBackground: '#ffffff', defaultFont: '#171717', innerBorderColor: '#e4e4e4', borderColor: '#e4e4e4', ecoDayFontColor: '#666666' },
+}
+
+/** Investing.com's language ids; languages without a known id fall back to English. */
+const WIDGET_LANGUAGES: Partial<Record<Locale, string>> = { en: '1' }
+
+export function widgetUrl(theme: 'dark' | 'light', locale: Locale): string {
+  const params = new URLSearchParams({ ...WIDGET_COLORS[theme], ...WIDGET_BASE, lang: WIDGET_LANGUAGES[locale] ?? '1' })
+  return `https://sslecal2.investing.com?${params.toString()}`
+}
+
+const DARK_QUERY = '(prefers-color-scheme: dark)'
+
+function subscribeToScheme(listener: () => void): () => void {
+  const query = window.matchMedia?.(DARK_QUERY)
+  query?.addEventListener('change', listener)
+  return () => query?.removeEventListener('change', listener)
+}
+
+/** The theme on screen: the setting, or the system's when it follows the system. */
+function useResolvedTheme(): 'dark' | 'light' {
+  const { theme } = useSettings()
+  const systemDark = useSyncExternalStore(subscribeToScheme, () => window.matchMedia?.(DARK_QUERY).matches ?? true)
+  return theme === 'system' ? (systemDark ? 'dark' : 'light') : theme
+}
 
 export function EconomicCalendar() {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const shown = useSettings().economicCalendar === true
+  const theme = useResolvedTheme()
 
   return (
     <Card className="econ-calendar">
@@ -40,7 +71,7 @@ export function EconomicCalendar() {
         <>
           <iframe
             className="econ-calendar__frame"
-            src={WIDGET_URL}
+            src={widgetUrl(theme, locale)}
             title={t('calendar.frameTitle')}
             loading="lazy"
             sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms"
