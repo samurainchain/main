@@ -14,13 +14,18 @@ when it is missing.
 
 Paste them in Supabase → Authentication → Emails → Templates:
 
-| Template | File | Subject |
-| --- | --- | --- |
-| Magic Link | `magic-link.html` | `Tiltless: sign in · вход · acceso` |
-| Confirm signup | `confirm-signup.html` | `Tiltless: confirm your email · подтверди почту · confirma tu correo` |
+| Template | File |
+| --- | --- |
+| Magic link or OTP | `magic-link.html` |
+| Confirm signup | `confirm-signup.html` |
+
+Subjects (Supabase templates the subject too, so it follows the language):
+
+- Magic link or OTP: `{{ $l := "en" }}{{ with .Data.locale }}{{ $l = . }}{{ end }}{{ if eq $l "ru" }}Вход в Tiltless{{ else if eq $l "es" }}Entra en Tiltless{{ else }}Sign in to Tiltless{{ end }}`
+- Confirm signup: `{{ $l := "en" }}{{ with .Data.locale }}{{ $l = . }}{{ end }}{{ if eq $l "ru" }}Подтверди почту в Tiltless{{ else if eq $l "es" }}Confirma tu correo en Tiltless{{ else }}Confirm your email for Tiltless{{ end }}`
 
 A new account gets "Confirm signup" on its first sign-in; after that every sign-in is a
-"Magic Link". The subject stays the same in every language, so it carries all three.
+"Magic link or OTP".
 
 Check a change before pasting it: the templates are Go `html/template`, the engine Supabase uses.
 Render them with sample data (`.ConfirmationURL`, `.Data.locale` = "ru", "es", none) and look at
