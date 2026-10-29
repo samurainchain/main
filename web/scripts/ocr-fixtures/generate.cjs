@@ -3,7 +3,8 @@
 // Real exchange screenshots are copyrighted and can't live in this repository, so these
 // pages imitate the layouts and wording of Binance, Bybit, OKX and TradingView history
 // screens (not their branding) with varied pairs, sides, prices and themes, in English and,
-// for the phone screens, in Russian.
+// for the phone screens, in Russian; plus a phone position screen with its order history, where
+// the entry and exit are the opening and closing orders' fill prices.
 //
 // Usage (needs Playwright with Chromium installed):
 //   node scripts/ocr-fixtures/generate.cjs
@@ -156,6 +157,35 @@ const LAYOUTS = {
     <div class="muted" style="margin-top:10px">Средняя цена закрытия</div><div>${groupRu(t.exit, t.decimals)}</div>
     <div class="muted" style="margin-top:10px">Закрытая сумма</div><div>${groupRu(t.qty, t.qtyDecimals)} ${t.base}</div>
   </div>`),
+
+  // A position screen with its order history: net PnL on top, then the closing and opening
+  // orders with their fill prices and values, as some exchanges' phone apps show a closed trade.
+  orderHistoryRu: (t, th) => {
+    const open = t.entry * t.qty
+    const close = t.exit * t.qty
+    const fee = (value) => value * 0.00045
+    const net = t.pnl - fee(open) - fee(close)
+    const sideWord = sideRu(t.side).toLowerCase()
+    const price = (value) => `₮${groupRu(value, Math.max(t.decimals, 4))}`
+    const order = (label, color, value, fill, time) => `
+      <div class="row" style="margin-top:14px"><span><span class="tag" style="background:${color}22;color:${color}">${label} ${sideWord}</span> <span class="muted">27.10, ${time}</span></span></div>
+      <div class="row"><span class="muted">Исполнено</span><span>${groupRu(value, 2)} USDT</span></div>
+      <div class="row"><span class="muted">Цена зап.</span><span>${price(fill)}</span></div>
+      <div class="row"><span class="muted">Комиссия</span><span>−${groupRu(fee(value), 8)} USDT</span></div>`
+    return page(th, 390, `<div class="card">
+      <div class="row"><span class="big">${t.symbol} Бессрочные</span><span class="tag" style="color:${tone(th, t.side === 'long' ? 1 : -1)}">${sideRu(t.side)}</span></div>
+      <div class="row"><span class="muted">Реализованный PnL (USDT)</span><span class="muted">Закрытие (USDT)</span></div>
+      <div class="row"><span class="big" style="color:${tone(th, net)}">${signedRu(net)}</span><span class="big">${groupRu(open, 2)}</span></div>
+      <div class="row"><span class="muted">Реализованный PnL</span><span>${signedRu(t.pnl)} USDT</span></div>
+      <div class="row"><span class="muted">Торговая комиссия</span><span>−${groupRu(fee(open) + fee(close), 8)} USDT</span></div>
+      <div class="row"><span class="muted">Комиссия за финансирование</span><span>--</span></div>
+      <div class="row"><span class="muted">Время открытия</span><span>27.10.2026, 10:15:02</span></div>
+      <div class="row"><span class="muted">Время закрытия</span><span>27.10.2026, 12:40:11</span></div>
+      <div class="big" style="margin-top:14px">История ордеров</div>
+      ${order('Закрыть', th.red, close, t.exit, '12:40:11')}
+      ${order('Открыть', th.green, open, t.entry, '10:15:02')}
+    </div>`)
+  },
 }
 
 async function main() {

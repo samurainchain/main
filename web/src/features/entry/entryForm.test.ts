@@ -156,6 +156,21 @@ Closing PNL +60.00 USDT`)
     expect(trade?.quantity).toBe('0.100')
   })
 
+  it('fills fees and times read from an order history', () => {
+    const history = parseScreenshotText(`ETHUSDT Бессрочные Лонг
+Торговая комиссия -2,7 USDT
+Время открытия 27.10.2026, 09:10:00
+Время закрытия 27.10.2026, 10:45:30
+Закрыть лонг
+Цена зап. 3 120,5
+Открыть лонг
+Исполнено 6 160,00 USDT
+Цена зап. 3 080`)
+    const { form: filled, recognized } = applyScreenshot(form('cryptoPerp', {}), history, 'cryptoPerp')
+    expect(filled).toMatchObject({ entryPrice: '3080', exitPrice: '3120.5', size: '2', sizeUnit: 'base', fees: '2.7', openedAt: '2026-10-27T09:10', closedAt: '2026-10-27T10:45' })
+    expect(recognized).toMatchObject({ fees: 'high', openedAt: 'high', closedAt: 'high', size: 'low' })
+  })
+
   it('picks the futures preset for a known contract symbol', () => {
     const { form: filled } = applyScreenshot(form('futures', {}), parseScreenshotText('CME_MINI:NQ1! Long'), 'futures')
     expect(filled.contract).toBe('NQ')

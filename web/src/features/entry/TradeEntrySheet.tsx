@@ -126,6 +126,8 @@ function EntrySheetContent({ existing, prefill, onClose }: { existing: Trade | u
       if (Object.keys(applied.recognized).length === 0) return setOcr({ state: 'empty', progress: 1 })
       setForm(applied.form)
       setRecognized(applied.recognized)
+      // Fees and times live under "More": open it so what was read from the screenshot shows.
+      if (applied.recognized.fees || applied.recognized.openedAt || applied.recognized.closedAt) setShowMore(true)
       setErrors({})
       setOcr({ state: 'done', progress: 1 })
     } catch (error) {
@@ -444,15 +446,15 @@ function EntrySheetContent({ existing, prefill, onClose }: { existing: Trade | u
         <details className="more" open={showMore} onToggle={(event) => setShowMore(event.currentTarget.open)}>
           <summary>{t('entry.more')}</summary>
           <div className="form-stack more__content">
-            <Field label={t('entry.fees')} htmlFor={ids.fees} error={error('fees')}>
-              <DecimalInput id={ids.fees} value={form.fees} placeholder="0" onChange={(fees) => update({ fees })} />
+            <Field label={t('entry.fees')} htmlFor={ids.fees} error={error('fees')} recognized={recognized.fees}>
+              <DecimalInput id={ids.fees} value={form.fees} placeholder="0" onChange={(fees) => edit('fees', { fees })} />
             </Field>
             <div className="form-grid">
-              <Field label={t('entry.openedAt')} htmlFor={ids.opened}>
-                <input id={ids.opened} className="input" type="datetime-local" value={form.openedAt} onChange={(event) => update({ openedAt: event.target.value })} />
+              <Field label={t('entry.openedAt')} htmlFor={ids.opened} recognized={recognized.openedAt}>
+                <input id={ids.opened} className="input" type="datetime-local" value={form.openedAt} onChange={(event) => edit('openedAt', { openedAt: event.target.value })} />
               </Field>
-              <Field label={t('entry.closedAt')} htmlFor={ids.closed} error={error('closedAt')}>
-                <input id={ids.closed} className="input" type="datetime-local" value={form.closedAt} onChange={(event) => update({ closedAt: event.target.value })} />
+              <Field label={t('entry.closedAt')} htmlFor={ids.closed} error={error('closedAt')} recognized={recognized.closedAt}>
+                <input id={ids.closed} className="input" type="datetime-local" value={form.closedAt} onChange={(event) => edit('closedAt', { closedAt: event.target.value })} />
               </Field>
             </div>
             <Field label={t('entry.note')} htmlFor={ids.note}>

@@ -226,7 +226,7 @@ export function buildTrade(
 }
 
 /** Fields filled from a screenshot, with how sure the recognition was about each. */
-export type RecognizedFields = Partial<Record<'symbol' | 'side' | 'entryPrice' | 'exitPrice' | 'size' | 'leverage', Confidence>>
+export type RecognizedFields = Partial<Record<'symbol' | 'side' | 'entryPrice' | 'exitPrice' | 'size' | 'leverage' | 'fees' | 'openedAt' | 'closedAt', Confidence>>
 
 /**
  * Prefills the form from a parsed screenshot. Only recognized fields change; the rest of
@@ -261,6 +261,12 @@ export function applyScreenshot(form: EntryForm, parsed: ParsedScreenshot, marke
   if (parsed.leverage && market === 'cryptoPerp') {
     next.leverage = Math.min(125, Math.max(1, Number(parsed.leverage.value)))
     recognized.leverage = parsed.leverage.confidence
+  }
+  for (const field of ['fees', 'openedAt', 'closedAt'] as const) {
+    const value = parsed[field]
+    if (!value) continue
+    next[field] = value.value
+    recognized[field] = value.confidence
   }
   return { form: next, recognized }
 }

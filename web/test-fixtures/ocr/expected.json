@@ -398,5 +398,55 @@
     "entryPrice": "0.5219",
     "exitPrice": "0.5259",
     "quantity": "4694"
+  },
+  {
+    "file": "41-orderHistoryRu-dark.png",
+    "layout": "orderHistoryRu",
+    "theme": "dark",
+    "symbol": "DOGEUSDT",
+    "side": "long",
+    "entryPrice": "0.14625",
+    "exitPrice": "0.14772",
+    "quantity": "6709"
+  },
+  {
+    "file": "42-orderHistoryRu-light.png",
+    "layout": "orderHistoryRu",
+    "theme": "light",
+    "symbol": "XRPUSDT",
+    "side": "short",
+    "entryPrice": "0.5511",
+    "exitPrice": "0.5489",
+    "quantity": "942"
+  },
+  {
+    "file": "43-orderHistoryRu-dark.png",
+    "layout": "orderHistoryRu",
+    "theme": "dark",
+    "symbol": "BTCUSDT",
+    "side": "short",
+    "entryPrice": "62408.6",
+    "exitPrice": "62377.9",
+    "quantity": "0.043"
+  },
+  {
+    "file": "44-orderHistoryRu-light.png",
+    "layout": "orderHistoryRu",
+    "theme": "light",
+    "symbol": "SOLUSDT",
+    "side": "short",
+    "entryPrice": "154.112",
+    "exitPrice": "152.202",
+    "quantity": "51.6"
+  },
+  {
+    "file": "45-orderHistoryRu-dark.png",
+    "layout": "orderHistoryRu",
+    "theme": "dark",
+    "symbol": "BNBUSDT",
+    "side": "short",
+    "entryPrice": "604.27",
+    "exitPrice": "603.60",
+    "quantity": "0.56"
   }
 ]

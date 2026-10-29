@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { normalizeNumber, parseScreenshotText, type ParsedScreenshot } from './parseScreenshot'
+import { dateTimeIn, normalizeNumber, parseScreenshotText, quantityFromValue, type ParsedScreenshot } from './parseScreenshot'
 
 // Text as OCR returns it from screenshots: one line per row, labels and values sometimes on
 // separate lines, stray "|" from table borders, letter-for-digit slips.
@@ -312,5 +312,130 @@ Entry Price 60,000.0`)
       leverage: undefined,
       pnl: undefined,
     })
+  })
+})
+
+describe('position with its order history', () => {
+  // A phone position screen: the net PnL and value on top, the fees and times below, then the
+  // closing and opening orders with their fill prices and values (newest first).
+  const russian = `ZECUSDT Бессрочные Лонг
+Реализованный PnL (USDT) Закрытие (USDT)
++107,03 9 997,93
+Реализованный PnL +116,08 USDT
+Торговая комиссия -9,0503685 USDT
+Комиссия за финансирование --
+Время открытия 26.10.2026, 11:39:19
+Время закрытия 26.10.2026, 12:44:28
+История ордеров
+Закрыть лонг 26.10, 12:44:28 +116,08 USDT
+Исполнено 10 114,00 USDT
+Цена зап. ₮1 201,18822413
+Комиссия -4,5513 USDT
+Номер ордера 4044458914072629248
+Открыть лонг 26.10, 11:39:19
+Исполнено 9 997,93 USDT
+Цена зап. ₮1 187,4021593
+Комиссия -4,4990685 USDT
+Номер ордера 4044327766373830656`
+
+  it('takes the entry from the opening order and the exit from the closing one', () => {
+    const parsed = parseScreenshotText(russian)
+    expect(values(parsed)).toMatchObject({ symbol: 'ZECUSDT', side: 'long', entryPrice: '1187.4021593', exitPrice: '1201.18822413', quantity: '8.42', pnl: '107.03' })
+    expect(parsed.quantityUnit).toBe('base')
+    // The net PnL matches once the fees are taken off, which confirms the fields.
+    expect(parsed.entryPrice?.confidence).toBe('high')
+    expect(parsed.quantity?.confidence).toBe('high')
+  })
+
+  it('reads the total fee, leaving funding out, and the open and close times', () => {
+    const parsed = parseScreenshotText(russian)
+    expect(parsed.fees?.value).toBe('9.0503685')
+    expect(parsed.openedAt?.value).toBe('2026-10-26T11:39')
+    expect(parsed.closedAt?.value).toBe('2026-10-26T12:44')
+  })
+
+  it('adds up the orders’ fees when there is no total', () => {
+    const parsed = parseScreenshotText(russian.replace(/Торговая комиссия.*\n/, ''))
+    expect(parsed.fees).toEqual({ value: '9.0503685', confidence: 'low' })
+  })
+
+  it('reads the English screen of a short', () => {
+    const text = `DOGEUSDT Perpetual Short
+Realized PnL (USDT)   Close (USDT)
++118.10   4,681.77
+Trading fee  -4.3618 USDT
+Funding fee  -0.42 USDT
+Open time  2026-10-24 09:02:11
+Close time  2026-10-24 16:30:05
+Order history
+Close short  10-24 16:30:05  +122.47 USDT
+Filled  4,559.30 USDT
+Fill price  0.17950012
+Fee  -2.0517 USDT
+Open short  10-24 09:02:11
+Filled  4,681.77 USDT
+Fill price  0.18432177
+Fee  -2.3101 USDT`
+    const parsed = parseScreenshotText(text)
+    expect(values(parsed)).toMatchObject({ symbol: 'DOGEUSDT', side: 'short', entryPrice: '0.18432177', exitPrice: '0.17950012', quantity: '25400' })
+    expect(parsed.fees?.value).toBe('4.3618')
+    expect(parsed.openedAt?.value).toBe('2026-10-24T09:02')
+    expect(parsed.closedAt?.value).toBe('2026-10-24T16:30')
+  })
+
+  it('drops a currency sign OCR read as a leading 1 when the orders’ sizes disagree', () => {
+    const misread = russian.replace('₮1 201,18822413', '11 201,18822413').replace('₮1 187,4021593', '1 187,4021593')
+    const parsed = parseScreenshotText(misread)
+    // Fixed, then confirmed by the printed PnL.
+    expect(parsed.exitPrice).toEqual({ value: '1201.18822413', confidence: 'high' })
+    expect(parsed.entryPrice?.value).toBe('1187.4021593')
+    const small = parseScreenshotText(`XRPUSDT Бессрочные Шорт
+Закрыть шорт 27.10, 12:40:11
+Исполнено 517,06 USDT
+Цена зап. 10,5489
+Открыть шорт 27.10, 10:15:02
+Исполнено 519,14 USDT
+Цена зап. 10,5511`)
+    expect(values(small)).toMatchObject({ entryPrice: '0.5511', exitPrice: '0.5489', quantity: '942' })
+  })
+
+  it('takes the size from the order whose price lost no digit', () => {
+    const parsed = parseScreenshotText(`XRPUSDT Шорт
+Закрыть шорт
+Исполнено 517,06 USDT
+Цена зап. 0,5489
+Открыть шорт
+Исполнено 519,14 USDT
+Цена зап. 0,551`)
+    expect(parsed.quantity?.value).toBe('942')
+    // …and puts back the digit the other price lost.
+    expect(parsed.entryPrice).toEqual({ value: '0.5511', confidence: 'low' })
+  })
+
+  it('outside an order, "Цена исполнения" is still the entry', () => {
+    expect(parseScreenshotText('BTCUSDT Лонг\nЦена исполнения 61 000,5').entryPrice?.value).toBe('61000.5')
+  })
+})
+
+describe('quantityFromValue', () => {
+  it.each([
+    ['9997.93', '1187.4021593', '8.42'],
+    ['4681.77', '0.18432177', '25400'],
+    ['6100.05', '61000.5', '0.1'],
+    ['0', '100', undefined],
+  ])('%s at %s → %s', (value, price, expected) => {
+    expect(quantityFromValue(value, price)).toBe(expected)
+  })
+})
+
+describe('dateTimeIn', () => {
+  it.each([
+    ['Opened 2026-10-27 10:15:02', '2026-10-27T10:15'],
+    ['Время открытия 26.10.2026, 11:39:19', '2026-10-26T11:39'],
+    ['Открыто 7.3.2026 9:05', '2026-03-07T09:05'],
+    ['Закрыть лонг 26.10, 12:44:28', undefined],
+    ['2026-13-01 10:00', undefined],
+  ])('%s → %s', (line, expected) => {
+    expect(dateTimeIn(line)).toBe(expected)
   })
 })

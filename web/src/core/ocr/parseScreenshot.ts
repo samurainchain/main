@@ -7,7 +7,9 @@ import { tradePnl } from '../pnl'
 // "Цена входа", "Avg. Close Price", "Qty"…)
 // rather than positions, so it copes with layouts it hasn't seen as long as the wording is
 // familiar. Two layouts are understood: "label value" (or label above value) as on phone
-// screens, and a table header followed by a row of values as on desktop terminals.
+// screens, and a table header followed by a row of values as on desktop terminals. A position
+// screen with its order history ("Open long … fill price", "Close long … fill price") takes the
+// entry from the opening order and the exit from the closing one.
 // Every field carries a confidence; low ones are highlighted for the user to check.
 
 export type Confidence = 'high' | 'low'
@@ -30,6 +32,11 @@ export interface ParsedScreenshot {
   leverage?: Recognized<string>
   /** Realized PnL printed on the screenshot, used to cross-check the other fields. */
   pnl?: Recognized<string>
+  /** Trading fees for the whole trade, in the quote currency. Funding is left out. */
+  fees?: Recognized<string>
+  /** When the position was opened and closed, as `datetime-local` values ("2026-10-26T11:39"). */
+  openedAt?: Recognized<string>
+  closedAt?: Recognized<string>
 }
 
 type NumericField = 'entryPrice' | 'exitPrice' | 'quantity' | 'pnl'
@@ -55,6 +62,22 @@ const LABELS: { field: NumericField; pattern: RegExp }[] = [
       /объ[её]м\s*закрытия|закрытый\s*объ[её]м|закрыт(?:ая|ое)\s*(?:сумма|кол-во|количество)|размер\s*позиции|макс\.?\s*открытый\s*интерес|кол-?во|количество|(?<!\p{L})(?:размер|объ[её]м)(?!\p{L})|контракт(?:ы|ов)?(?!\p{L})/iu,
   },
 ]
+
+// Fees: the trade's total first; per-order fees are added up when there is no total. Funding
+// ("Funding fee", "Комиссия за финансирование") can be paid or received, so it is never a fee here.
+const TOTAL_FEE = /trading fees?|total fees?|торгов(?:ая|ые)\s*комисси[яи]|комисси[яи]\s*за\s*торговлю|итого\s*комисси[яи]/iu
+const FUNDING = /funding|финансировани/iu
+const ORDER_FEE = /(?<!\p{L})(?:fees?|commission|комисси[яи])(?!\p{L})/iu
+
+// An order in a position's history: "Open long", "Закрыть шорт". Inside one, the fill price is
+// the entry or the exit, and "Filled" is the order's value in the quote currency.
+const ORDER_SECTION = /^(?:(open(?:ing)?|открыть|открытие)|(close|closing|закрыть|закрытие))\s+(?:long|short|лонг|шорт)(?!\p{L})/iu
+const FILL_PRICE = /avg\.?\s*fill\s*price|fill(?:ed)?\s*price|order\s*price|avg\.?\s*price|цена\s*[з3]ап(?:олнения|\.)?|цена\s*исполнения|ср(?:едняя)?\.?\s*цена(?!\s*(?:входа|выхода|открытия|закрытия))/iu
+const FILLED_VALUE = /^(?:filled(?:\s*value)?|executed|исполнено|исполненная\s*сумма)(?!\p{L})/iu
+
+// Open and close times: a label with a date on the same line or the next one.
+const OPENED_AT = /opened|open(?:ing)?\s*time|time\s*opened|время\s*открытия|дата\s*открытия|(?<!\p{L})открыт[оа]?(?!\p{L})/iu
+const CLOSED_AT = /closed|clos(?:e|ing)\s*time|time\s*closed|время\s*закрытия|дата\s*закрытия|(?<!\p{L})закрыт[оа]?(?!\p{L})/iu
 
 // Words of a Russian exchange interface. A stray Cyrillic letter (OCR reading "Avg." as "Ауд.")
 // must not switch an English screenshot to Russian number format.
@@ -205,6 +228,36 @@ function findLeverage(text: string): Recognized<string> | undefined {
   return value >= 1 && value <= 125 ? { value: String(value), confidence: 'high' } : undefined
 }
 
+/**
+ * A date and time on a line, as a `datetime-local` value: "2026-10-27 12:40:11" or Russian
+ * "27.10.2026, 12:40:11". Without a year ("26.10, 12:44") it isn't trusted.
+ */
+export function dateTimeIn(line: string): string | undefined {
+  const pad = (value: string) => value.padStart(2, '0')
+  const iso = line.match(/(\d{4})-(\d{1,2})-(\d{1,2})[ T,]+(\d{1,2}):(\d{2})/)
+  const dotted = line.match(/(\d{1,2})\.(\d{1,2})\.(\d{4}),?\s+(\d{1,2}):(\d{2})/)
+  const [year, month, day, hour, minute] = iso ? iso.slice(1) : dotted ? [dotted[3], dotted[2], dotted[1], dotted[4], dotted[5]] : []
+  if (!year || !month || !day || !hour || !minute) return undefined
+  if (Number(month) > 12 || Number(day) > 31 || Number(hour) > 23 || Number(minute) > 59) return undefined
+  return `${year}-${pad(month)}-${pad(day)}T${pad(hour)}:${minute}`
+}
+
+/**
+ * The size behind an order's value: the shortest quantity that, times the fill price, gives the
+ * printed value to its last digit ("14 341,06" at 1 229,93673242 is 11.66).
+ */
+export function quantityFromValue(value: string, price: string): string | undefined {
+  const fill = new Big(price)
+  if (fill.lte(0)) return undefined
+  const decimals = value.includes('.') ? value.length - value.indexOf('.') - 1 : 0
+  const tolerance = new Big(10).pow(-decimals).div(2)
+  for (let places = 0; places <= 8; places++) {
+    const quantity = new Big(value).div(fill).round(places)
+    if (quantity.gt(0) && quantity.times(fill).minus(value).abs().lte(tolerance)) return quantity.toString()
+  }
+  return undefined
+}
+
 /** Labels on a line, left to right, without overlaps. */
 function labelsIn(line: string): { field: NumericField; start: number; end: number }[] {
   const found: { field: NumericField; start: number; end: number }[] = []
@@ -237,10 +290,49 @@ export function parseScreenshotText(text: string, ocrConfidence = 100): ParsedSc
     if (field === 'quantity') result.quantityUnit = QUOTES.includes(item.unit) ? 'quote' : 'base'
   }
 
+  const filled: Partial<Record<'open' | 'close', PrintedNumber>> = {}
+  const orderFees: string[] = []
+  let section: 'open' | 'close' | undefined
+
   lines.forEach((line, index) => {
+    const next = lines[index + 1]
+    const header = line.match(ORDER_SECTION)
+    if (header) section = header[1] ? 'open' : 'close'
+    const valueHere = (pattern: RegExp) => {
+      const match = line.match(pattern)
+      if (!match) return undefined
+      const after = line.slice((match.index ?? 0) + match[0].length)
+      return numbersIn(after, russian).find(isAmount) ?? (next && labelsIn(next).length === 0 ? numbersIn(next, russian).find(isAmount) : undefined)
+    }
+
+    // Order history: the fill price and value belong to the order above them.
+    if (section && FILL_PRICE.test(line)) {
+      const price = valueHere(FILL_PRICE)
+      if (price) assign(section === 'open' ? 'entryPrice' : 'exitPrice', price, base)
+      return
+    }
+    if (section && FILLED_VALUE.test(line)) {
+      const value = valueHere(FILLED_VALUE)
+      if (value && !filled[section]) filled[section] = value
+      return
+    }
+
+    if (!FUNDING.test(line)) {
+      const total = TOTAL_FEE.test(line) ? valueHere(TOTAL_FEE) : undefined
+      if (total && !result.fees) result.fees = { value: new Big(total.value).toString(), confidence: base }
+      else if (!total && ORDER_FEE.test(line) && labelsIn(line).length === 0) {
+        const fee = valueHere(ORDER_FEE)
+        if (fee) orderFees.push(fee.value)
+      }
+    }
+    for (const [field, pattern] of [['openedAt', OPENED_AT], ['closedAt', CLOSED_AT]] as const) {
+      if (result[field] || !pattern.test(line)) continue
+      const at = dateTimeIn(line.slice(line.search(pattern))) ?? (next ? dateTimeIn(next) : undefined)
+      if (at) result[field] = { value: at, confidence: base }
+    }
+
     const labels = labelsIn(line)
     if (labels.length === 0) return
-    const next = lines[index + 1]
     const nextIsLabels = next !== undefined && labelsIn(next).length > 0
 
     // Table header: several labels and no numbers of their own; the next row holds the values
@@ -261,6 +353,31 @@ export function parseScreenshotText(text: string, ocrConfidence = 100): ParsedSc
     })
   })
 
+  repairFillPrices(result, filled)
+
+  // Order history: the size is an order's value over its fill price. Both orders give it; the
+  // one with fewer decimals is the likelier, as a digit OCR dropped from a price adds decimals.
+  if (!result.quantity) {
+    const sizes = [
+      filled.open && result.entryPrice ? quantityFromValue(filled.open.value, result.entryPrice.value) : undefined,
+      filled.close && result.exitPrice ? quantityFromValue(filled.close.value, result.exitPrice.value) : undefined,
+    ].filter((size): size is string => size !== undefined)
+    const decimals = (size: string) => (size.includes('.') ? size.length - size.indexOf('.') : 0)
+    const quantity = sizes.sort((a, b) => decimals(a) - decimals(b))[0]
+    if (quantity) {
+      result.quantity = { value: quantity, confidence: 'low' }
+      result.quantityUnit = 'base'
+    }
+  }
+  fixPricesFromSize(result, filled)
+  if (!result.fees && orderFees.length > 0) {
+    result.fees = { value: orderFees.reduce((sum, fee) => sum.plus(fee), new Big(0)).toString(), confidence: 'low' }
+  }
+  if (result.openedAt && result.closedAt && result.closedAt.value < result.openedAt.value) {
+    delete result.openedAt
+    delete result.closedAt
+  }
+
   // Share cards (OKX, Binance) print the PnL as a bare amount under the ROI, with no label.
   if (!result.pnl) {
     const bare = lines.find((line) => labelsIn(line).length === 0 && /^[+\-−–]?\d[\d\s.,]*\s?[A-Z]{3,5}$/.test(line))
@@ -269,6 +386,60 @@ export function parseScreenshotText(text: string, ocrConfidence = 100): ParsedSc
   }
 
   return deriveQuantity(crossCheck(alignPrices(result)))
+}
+
+/**
+ * Some apps print fill prices after a currency sign ("₮0,5489") that OCR reads as a digit
+ * ("10,5489"). Opening and closing orders of one trade hold the same size, so each order's value
+ * over its price must agree: of the prices with and without a suspect first digit, the pair
+ * that agrees best wins.
+ */
+function repairFillPrices(result: ParsedScreenshot, filled: Partial<Record<'open' | 'close', PrintedNumber>>): void {
+  const { entryPrice, exitPrice } = result
+  if (!entryPrice || !exitPrice || !filled.open || !filled.close) return
+  const options = (price: string) => (/^[17]\d/.test(price) ? [price, price.slice(1)] : [price])
+  const gap = (entry: string, exit: string) => {
+    if (Number(entry) <= 0 || Number(exit) <= 0) return Infinity
+    const open = new Big(filled.open!.value).div(entry)
+    const close = new Big(filled.close!.value).div(exit)
+    return open.minus(close).abs().div(open).toNumber()
+  }
+  let best = { entry: entryPrice.value, exit: exitPrice.value, gap: gap(entryPrice.value, exitPrice.value) }
+  if (best.gap < 0.0005) return
+  for (const entry of options(entryPrice.value)) {
+    for (const exit of options(exitPrice.value)) {
+      const candidate = gap(entry, exit)
+      if (candidate < best.gap) best = { entry, exit, gap: candidate }
+    }
+  }
+  if (best.gap >= 0.0005) return
+  if (best.entry !== entryPrice.value) result.entryPrice = { value: best.entry, confidence: 'low' }
+  if (best.exit !== exitPrice.value) result.exitPrice = { value: best.exit, confidence: 'low' }
+}
+
+/**
+ * With the size known, an order's value pins its fill price: a price that doesn't give the
+ * printed value to its last digit lost one to OCR ("0,551" for "0,5511"). It is recomputed to
+ * the other price's decimals, when that lands near the other price and gives the value exactly.
+ */
+function fixPricesFromSize(result: ParsedScreenshot, filled: Partial<Record<'open' | 'close', PrintedNumber>>): void {
+  const size = result.quantity?.value
+  if (!size || Number(size) <= 0) return
+  const decimals = (number: string) => (number.includes('.') ? number.length - number.indexOf('.') - 1 : 0)
+  const pairs = [
+    ['entryPrice', filled.open, result.exitPrice],
+    ['exitPrice', filled.close, result.entryPrice],
+  ] as const
+  for (const [field, value, other] of pairs) {
+    const price = result[field]
+    if (!price || !value || !other) continue
+    const tolerance = new Big(10).pow(-decimals(value.value)).div(2)
+    const gives = (candidate: Big) => candidate.times(size).minus(value.value).abs().lte(tolerance)
+    if (gives(new Big(price.value))) continue
+    const fixed = new Big(value.value).div(size).round(Math.max(decimals(other.value), decimals(price.value)))
+    const ratio = fixed.div(other.value).toNumber()
+    if (gives(fixed) && ratio > 0.8 && ratio < 1.25) result[field] = { value: fixed.toString(), confidence: 'low' }
+  }
 }
 
 /**
@@ -312,8 +483,10 @@ function crossCheck(result: ParsedScreenshot): ParsedScreenshot {
   if (!pnl || !side || !entryPrice || !exitPrice || !quantity || result.quantityUnit === 'quote') return result
   const computed = tradePnl({ side: side.value, entryPrice: entryPrice.value, exitPrice: exitPrice.value, quantity: quantity.value, contractMultiplier: '1', fees: '0' })
   if (!computed || computed.eq(0)) return result
-  const close = computed.abs().minus(new Big(pnl.value)).abs().lte(computed.abs().times(0.03))
-  if (!close) return result
+  // The printed PnL may be before fees or after them ("Realized PnL" net of the trading fee).
+  const printed = new Big(pnl.value)
+  const near = (amount: Big) => amount.abs().minus(printed).abs().lte(amount.abs().times(0.03))
+  if (!near(computed) && !(result.fees && near(computed.minus(result.fees.value)))) return result
   const confirm = <T,>(field: Recognized<T>): Recognized<T> => ({ ...field, confidence: 'high' })
   return { ...result, side: confirm(side), entryPrice: confirm(entryPrice), exitPrice: confirm(exitPrice), quantity: confirm(quantity) }
 }
