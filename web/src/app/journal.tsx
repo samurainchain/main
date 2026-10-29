@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useSyncExternalStore, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useMemo, useSyncExternalStore, type ReactNode } from 'react'
 import { DEFAULT_REVENGE_MINUTES, detectMistakes, effectiveMistakeIds, type AutoFlag } from '../core/mistakeDetector'
 import type { Account, MistakeTag, Trade } from '../core/models'
 import type { JournalSnapshot, JournalStore } from '../core/storage/journalStore'
@@ -76,5 +76,6 @@ export function useSelectedAccount(): Account | undefined {
 /** Display name of a mistake tag: the user's name, or the translated system name. */
 export function useMistakeName(): (tag: MistakeTag) => string {
   const { t } = useI18n()
-  return (tag) => tag.name || (tag.systemKey ? t(`mistake.${tag.systemKey}` as MessageKey) : '')
+  // Stable while the language stays, so memoized pictures and lists that use it don't redraw.
+  return useCallback((tag: MistakeTag) => tag.name || (tag.systemKey ? t(`mistake.${tag.systemKey}` as MessageKey) : ''), [t])
 }

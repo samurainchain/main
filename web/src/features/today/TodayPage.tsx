@@ -1,4 +1,5 @@
-import { Calculator, CalendarCheck, Flame, Plus, Sun, Wallet } from 'lucide-react'
+import { Calculator, CalendarCheck, Flame, Plus, Share2, Sun, Wallet } from 'lucide-react'
+import { useState } from 'react'
 import { activeAccounts, useJournal, useMistakeName } from '../../app/journal'
 import { routeHref } from '../../app/router'
 import { useWeekStart } from '../../app/settings'
@@ -15,6 +16,7 @@ import { SessionClock } from '../sessions/SessionClock'
 import { useAccess } from '../../app/entitlement'
 import { canUse } from '../../core/entitlements'
 import { PageHeader } from '../shell/PageHeader'
+import { RecapShareSheet } from '../share/RecapShareSheet'
 import { dayKey, newestFirst, tradeDayKey, useVisibleTrades } from '../trades/tradeQueries'
 import { TradeRow } from '../trades/TradeRow'
 
@@ -27,6 +29,7 @@ export function TodayPage() {
   const mistakeName = useMistakeName()
   const { newTrade, newAccount, openCalculator } = useSheets()
   const access = useAccess()
+  const [sharing, setSharing] = useState(false)
   const today = new Date()
   const todayTrades = trades
     .filter((trade) => tradeDayKey(trade) === dayKey(today))
@@ -45,9 +48,16 @@ export function TodayPage() {
       subtitle={formatDay(today, locale)}
       showAccountSwitcher
       trailing={
-        <Button icon={<Calculator size={18} aria-hidden="true" />} onClick={openCalculator}>
-          {t('calc.button')}
-        </Button>
+        <>
+          {trades.length > 0 && (
+            <Button icon={<Share2 size={18} aria-hidden="true" />} onClick={() => setSharing(true)}>
+              {t('recap.button')}
+            </Button>
+          )}
+          <Button icon={<Calculator size={18} aria-hidden="true" />} onClick={openCalculator}>
+            {t('calc.button')}
+          </Button>
+        </>
       }
     />
   )
@@ -73,6 +83,7 @@ export function TodayPage() {
   return (
     <>
       {header}
+      <RecapShareSheet open={sharing} onClose={() => setSharing(false)} initialSpan="day" />
       <Card className="today-summary">
         <p className="caption">{t('today.pnlLabel')}</p>
         <PnLText amount={totalPnl(todayTrades)} currency={currency} size="hero" />

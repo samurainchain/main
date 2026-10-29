@@ -1,4 +1,4 @@
-import { ChartColumn, LayoutGrid, Plus } from 'lucide-react'
+import { ChartColumn, LayoutGrid, Plus, Share2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { updateSettings, useSettings, useWeekStart } from '../../app/settings'
 import { useSheets } from '../../app/sheets'
@@ -12,6 +12,7 @@ import { Dashboard } from './Dashboard'
 import { useAccess } from '../../app/entitlement'
 import { periodUnlocked } from '../../core/entitlements'
 import { ProLock } from '../billing/ProLock'
+import { RecapShareSheet } from '../share/RecapShareSheet'
 
 /**
  * Analytics as a dashboard of blocks (SPEC section 4.7): cost of mistakes, performance,
@@ -25,6 +26,7 @@ export function AnalyticsPage() {
   const settings = useSettings()
   const [period, setPeriod] = useState<Period>('month')
   const [draft, setDraft] = useState<DashboardLayout>()
+  const [sharing, setSharing] = useState(false)
   const access = useAccess()
 
   const closed = useMemo(() => closedTrades(trades), [trades])
@@ -54,9 +56,14 @@ export function AnalyticsPage() {
     </>
   ) : (
     closed.length > 0 && (
-      <Button icon={<LayoutGrid size={18} aria-hidden="true" />} onClick={() => setDraft(saved)}>
-        {t('dashboard.customize')}
-      </Button>
+      <>
+        <Button icon={<Share2 size={18} aria-hidden="true" />} onClick={() => setSharing(true)}>
+          {t('recap.button')}
+        </Button>
+        <Button icon={<LayoutGrid size={18} aria-hidden="true" />} onClick={() => setDraft(saved)}>
+          {t('dashboard.customize')}
+        </Button>
+      </>
     )
   )
 
@@ -83,6 +90,7 @@ export function AnalyticsPage() {
   return (
     <>
       {header}
+      <RecapShareSheet open={sharing} onClose={() => setSharing(false)} initialSpan={period === 'week' ? 'week' : 'month'} />
       <Segmented label={t('analytics.period')} value={period} onChange={setPeriod} options={PERIODS.map((value) => ({ value, label: t(`analytics.period.${value}`) }))} />
       {editing && <p className="dash-edit-hint caption">{t('dashboard.editHint')}</p>}
       {inRange.length === 0 && periodUnlocked(period, access) && <p className="analytics-empty-period secondary-text">{t('analytics.emptyPeriod')}</p>}

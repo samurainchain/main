@@ -61,7 +61,7 @@ export function buildShareCard(trade: Trade, account: Account | undefined, hideA
 export const CARD_SIZE = 1080
 
 /** Colors of the card, from the dark theme's tokens: the card looks the same wherever it's posted. */
-const COLORS = {
+export const COLORS = {
   background: '#121212',
   surface: '#171717',
   border: '#2e2e2e',
@@ -71,12 +71,15 @@ const COLORS = {
   profit: '#3ecf8e',
   loss: '#f87171',
   star: '#f5a623',
+  /** The "biggest leak" box: a dark tint of the loss color. */
+  leakSurface: '#1f1414',
+  leakBorder: '#4a2626',
 }
-const SANS = "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
-const MONO = "ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace"
+export const SANS = "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+export const MONO = "ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace"
 
 /** Sets a font, shrinking it until the text fits the width. */
-function fit(ctx: CanvasRenderingContext2D, text: string, weight: number, size: number, family: string, maxWidth: number): number {
+export function fit(ctx: CanvasRenderingContext2D, text: string, weight: number, size: number, family: string, maxWidth: number): number {
   let current = size
   ctx.font = `${weight} ${current}px ${family}`
   while (ctx.measureText(text).width > maxWidth && current > 12) {
@@ -86,7 +89,7 @@ function fit(ctx: CanvasRenderingContext2D, text: string, weight: number, size: 
   return current
 }
 
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
+export function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
   ctx.beginPath()
   ctx.roundRect(x, y, width, height, radius)
 }
