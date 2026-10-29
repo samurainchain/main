@@ -3,6 +3,13 @@
 Hook: formula #2 Negative Command, hookscore 94.8 STRONG. Demo journal numbers, labelled on screen (Analytics → "PnL by hold time", demo month: 29 trades, 52% win rate, +$255).
 Video: 27.5s, 1080x1920, no audio (add a track in Instagram / TikTok). Script timed with beats.py at 165 wpm (27.3s, loops on "15-minute trades"); ig-human 77.2 PASS.
 
+## Voiceover (2026-10-29)
+
+Voiced version, the one to post: Callan voice (Higgsfield text2speech_v2, ElevenLabs engine), scenes
+retimed to the voice, word-by-word subtitles, original pad underneath, -15 LUFS, 33.4 s. The end
+card no longer says "free": hold-time analytics is Pro since 2026-10-28, so it reads
+"30 days of Pro free · sign up by Nov 30" and the voice ends "Thirty days free at tiltless.xyz".
+
 ## Script / burned-in text
 
 ```
@@ -40,9 +47,9 @@ Your quick trades might be eating your good ones. Sort a month of trades by hold
 
 This is a demo trading journal. Win rate 52%, up $255, nothing looks wrong. Then you split the same trades by how long they were held: 11 trades under an hour, not one winner, down $1,475. The trades held one to four hours made $1,730. The win rate never showed that.
 
-That's day trading psychology in numbers: impatience has a price. Tiltless is a free journal that sorts your trades by hold time, flags revenge trades and puts a number on each mistake. Your month will look different. The point is to look.
+That's day trading psychology in numbers: impatience has a price. Tiltless is a trading journal that flags revenge trades, and Pro sorts your trades by hold time and puts a number on each mistake. Your month will look different. The point is to look.
 
-Free in your browser, link in bio.
+The journal is free. Pro is 30 days free if you sign up by November 30. Link in bio.
 
 #tradingjournal #daytrading #tradingpsychology
 ```
@@ -50,7 +57,7 @@ Free in your browser, link in bio.
 ## TikTok caption
 
 ```
-Sorted a demo month by hold time: 11 trades under an hour, 0 winners. The win rate said 52%. Free journal, link in bio.
+Sorted a demo month by hold time: 11 trades under an hour, 0 winners. The win rate said 52%. 30 days of Pro free till Nov 30, link in bio.
 
 #tradingjournal #daytrading #tradingpsychology #daytrader #trading
 ```

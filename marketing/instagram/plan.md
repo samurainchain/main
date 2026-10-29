@@ -1,4 +1,4 @@
-# Plan: week of Oct 29 – Nov 4, 2026
+# Plan: week of Oct 29 – Nov 6, 2026
 
 Read by the ig-* skills. Same videos on Instagram (Reels) and TikTok; carousels go to TikTok as photo posts.
 Faceless brand: app screen recordings and on-screen text, demo journal numbers labelled "demo".
@@ -11,13 +11,17 @@ The hour matters far less than the first two seconds. Every hook below was score
 
 | day | time (NY) | format | type | hook formula | angle |
 | --- | --- | --- | --- | --- | --- |
-| Thu Oct 29 | 7:30 pm | CAROUSEL (IG) + photo post (TikTok) | TEACH / OFFER | Job B caption | "7 ways traders tilt", ready in posts/01-7-ways-traders-tilt.md. Pin it on IG. |
-| Fri Oct 30 | — | stories + engage | | | |
-| Sat Oct 31 | 7:30 pm | REEL | OPINION | #20 Permission (78) | "You don't need a new strategy. You need 15 minutes after a loss." The revenge flag fires inside 15 minutes; show the flag and what those trades cost. |
-| Sun Nov 1 | — | engage only | | | |
-| Mon Nov 2 | 7:30 pm | REEL | TEACH | #2 Negative Command (83) | "Stop trading for 15 minutes after a loss. Here's why." The 15-minute rule, then set a daily loss limit in Rules and Limits. |
+| Thu Oct 29 | 7:30 pm | REEL (voiced) | OFFER | Cost Confession + Deadline (87) | Reel 03 "See what your mistakes cost. 30 days free." Launch offer is live in the database. |
+| Fri Oct 30 | 7:30 pm | REEL (voiced) | PROOF | #2 Negative Command (94.8) | Reel 02 "Stop taking 15-minute trades." Voiced; end card now says 30 days of Pro free. |
+| Sat Oct 31 | 7:30 pm | REEL (voiced) | OPINION | #20 Permission (78) | Reel 04 "You don't need a new strategy. You need 15 minutes after a loss." |
+| Sun Nov 1 | 7:30 pm | CAROUSEL (IG) + photo post (TikTok) | TEACH | Job B caption | "7 ways traders tilt", posts/01-7-ways-traders-tilt.md. Pin it on IG. |
+| Mon Nov 2 | 7:30 pm | REEL (voiced) | TEACH / DEMO | #2 Negative Command (80) | Reel 05 "Stop logging trades by hand. Drop a screenshot." |
 | Tue Nov 3 | — | stories + engage | | | |
-| Wed Nov 4 | 7:30 pm | REEL | PROOF | #1 Cost Confession variant (84) | "Your 52% win rate is hiding a $620 problem." Analytics: win rate looks fine, the cost-of-mistakes card says otherwise (demo month). |
+| Wed Nov 4 | 7:30 pm | REEL (voiced) | PROOF | #1 Cost Confession (100) | Reel 06 "Trading angry cost you $680 this month. Calm made $885." |
+| Thu Nov 5 | — | stories + engage | | | |
+| Fri Nov 6 | 7:30 pm | REEL (voiced) | STORY | #1 Cost Confession (87) | Reel 07 "Moving your stop just this once cost $280 this month." |
+
+All reels are voiced (Callan voice, Higgsfield), with word-by-word subtitles; scripts in reels/04-07. 7:30 pm New York is 5:30 pm Mexico City through Oct 31 and 6:30 pm from Nov 1.
 
 Next week's queue (story and demo formats):
 - #18 Cold Open Demo: drop an exchange screenshot, the trade fills itself (rescore once the line is final; no time claims we haven't measured).
