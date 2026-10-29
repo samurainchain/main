@@ -76,11 +76,15 @@ export class CloudController {
     this.store.onImagesRemoved = (ids) => void this.removeRemoteImages(ids)
     this.client.auth.onAuthStateChange((_event, session) => {
       // Run outside the auth callback: Supabase holds a lock while it executes.
-      setTimeout(() => void this.onSession(session?.user ? { id: session.user.id, email: session.user.email ?? '' } : undefined), 0)
+      setTimeout(() => {
+        void this.onSession(session?.user ? { id: session.user.id, email: session.user.email ?? '' } : undefined)
+        if (session?.user) this.rememberLocale(session.user.user_metadata)
+      }, 0)
     })
     const { data } = await this.client.auth.getSession()
     removeAuthParams()
     await this.onSession(data.session?.user ? { id: data.session.user.id, email: data.session.user.email ?? '' } : undefined)
+    if (data.session?.user) this.rememberLocale(data.session.user.user_metadata)
 
     window.addEventListener('online', () => this.scheduleSync(0))
     window.addEventListener('offline', () => this.userId && this.set({ status: 'offline' }))
@@ -92,8 +96,20 @@ export class CloudController {
     if (!this.client) throw new Error('Cloud sync is not configured')
     const redirect = `${window.location.origin}${window.location.pathname}`
     this.set({ signInProblem: undefined })
-    const { error } = await this.client.auth.signInWithOtp({ email: email.trim(), options: { emailRedirectTo: redirect } })
+    const locale = appLocale()
+    const { error } = await this.client.auth.signInWithOtp({ email: email.trim(), options: { emailRedirectTo: redirect, ...(locale ? { data: { locale } } : {}) } })
     if (error) throw error
+  }
+
+  /**
+   * Keeps the app's language with the account, so sign-in emails come in it: the Supabase email
+   * templates (supabase/templates) read it as `.Data.locale`. A new account gets it on sign-up;
+   * an existing one once signed in, here.
+   */
+  private rememberLocale(metadata: Record<string, unknown> | undefined): void {
+    const locale = appLocale()
+    if (!this.client || !locale || metadata?.locale === locale) return
+    void this.client.auth.updateUser({ data: { locale } }).catch(() => undefined)
   }
 
   /** Signs out on this device; the journal stays here, sync stops. */
@@ -174,6 +190,12 @@ export class CloudController {
     this.state = { ...this.state, ...patch }
     for (const listener of this.listeners) listener()
   }
+}
+
+/** The language the app is shown in (set on <html lang> by the i18n provider). */
+function appLocale(): 'en' | 'ru' | 'es' | undefined {
+  const lang = document.documentElement.lang
+  return lang === 'en' || lang === 'ru' || lang === 'es' ? lang : undefined
 }
 
 function imagePath(userId: string, imageId: string): string {

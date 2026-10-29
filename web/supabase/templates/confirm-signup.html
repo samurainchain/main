@@ -1,0 +1,54 @@
+{{/* Tiltless email: written in the language saved with the account (user_metadata.locale,
+   set by the app); English when there is none. Paste into Supabase → Authentication → Emails. */}}
+{{ $lang := "en" }}{{ with .Data.locale }}{{ $lang = . }}{{ end }}
+<!doctype html>
+<html lang="{{ $lang }}">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark light"><title>Tiltless</title></head>
+<body style="margin:0;padding:0;background:#0b0d0c;" bgcolor="#0b0d0c">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0b0d0c" style="background:#0b0d0c;">
+    <tr><td align="center" style="padding:40px 16px;font-family:Inter,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;">
+        <tr><td style="padding:0 8px 20px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+            <td><img src="https://tiltless.xyz/icons/icon-192.png" width="36" height="36" alt="" style="display:block;border-radius:9px;"></td>
+            <td style="padding-left:10px;font-size:20px;font-weight:700;color:#f2f5f3;">Tiltless</td>
+          </tr></table>
+        </td></tr>
+        <tr><td bgcolor="#161a18" style="background:#161a18;border:1px solid #26302b;border-top:1px solid #2f6b50;border-radius:16px;padding:32px 28px;">
+            {{ if eq $lang "ru" }}
+            <h1 style="margin:0 0 12px;font-size:24px;line-height:1.25;font-weight:700;color:#f2f5f3;">Добро пожаловать в Tiltless</h1>
+            <p style="margin:0 0 28px;font-size:16px;line-height:1.55;color:#c3ccc7;">Подтверди почту, чтобы войти и включить синхронизацию журнала. Ссылка одноразовая и действует час.</p>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="#0b6b45" style="border-radius:10px;border:1px solid #3ecf8e;">
+              <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:14px 28px;font-size:16px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:10px;">Подтвердить и войти</a>
+            </td></tr></table>
+            <p style="margin:28px 0 6px;font-size:13px;line-height:1.5;color:#8a948f;">Если кнопка не работает, открой эту ссылку:</p>
+            <p style="margin:0 0 24px;font-size:13px;line-height:1.5;word-break:break-all;"><a href="{{ .ConfirmationURL }}" style="color:#3ecf8e;">{{ .ConfirmationURL }}</a></p>
+            <p style="margin:0;font-size:13px;line-height:1.5;color:#8a948f;">Если это не ты, просто проигнорируй письмо.</p>
+          </td></tr>
+          <tr><td style="padding:20px 8px 0;font-size:12px;line-height:1.5;color:#8a948f;">Tiltless — журнал сделок, который ловит тильт · <a href="https://tiltless.xyz" style="color:#8a948f;">tiltless.xyz</a></td></tr>{{ else if eq $lang "es" }}
+            <h1 style="margin:0 0 12px;font-size:24px;line-height:1.25;font-weight:700;color:#f2f5f3;">Te damos la bienvenida a Tiltless</h1>
+            <p style="margin:0 0 28px;font-size:16px;line-height:1.55;color:#c3ccc7;">Confirma tu correo para entrar y sincronizar tu diario. El enlace funciona una vez y caduca en una hora.</p>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="#0b6b45" style="border-radius:10px;border:1px solid #3ecf8e;">
+              <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:14px 28px;font-size:16px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:10px;">Confirmar y entrar</a>
+            </td></tr></table>
+            <p style="margin:28px 0 6px;font-size:13px;line-height:1.5;color:#8a948f;">Si el botón no funciona, abre este enlace:</p>
+            <p style="margin:0 0 24px;font-size:13px;line-height:1.5;word-break:break-all;"><a href="{{ .ConfirmationURL }}" style="color:#3ecf8e;">{{ .ConfirmationURL }}</a></p>
+            <p style="margin:0;font-size:13px;line-height:1.5;color:#8a948f;">¿No te registraste? Ignora este correo.</p>
+          </td></tr>
+          <tr><td style="padding:20px 8px 0;font-size:12px;line-height:1.5;color:#8a948f;">Tiltless, el diario de trading que detecta el tilt · <a href="https://tiltless.xyz" style="color:#8a948f;">tiltless.xyz</a></td></tr>{{ else }}
+            <h1 style="margin:0 0 12px;font-size:24px;line-height:1.25;font-weight:700;color:#f2f5f3;">Welcome to Tiltless</h1>
+            <p style="margin:0 0 28px;font-size:16px;line-height:1.55;color:#c3ccc7;">Confirm your email to sign in and start syncing your journal. The link works once and expires in an hour.</p>
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="#0b6b45" style="border-radius:10px;border:1px solid #3ecf8e;">
+              <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:14px 28px;font-size:16px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:10px;">Confirm and sign in</a>
+            </td></tr></table>
+            <p style="margin:28px 0 6px;font-size:13px;line-height:1.5;color:#8a948f;">If the button doesn't work, open this link:</p>
+            <p style="margin:0 0 24px;font-size:13px;line-height:1.5;word-break:break-all;"><a href="{{ .ConfirmationURL }}" style="color:#3ecf8e;">{{ .ConfirmationURL }}</a></p>
+            <p style="margin:0;font-size:13px;line-height:1.5;color:#8a948f;">Didn't sign up? Ignore this email and no account will be used.</p>
+          </td></tr>
+          <tr><td style="padding:20px 8px 0;font-size:12px;line-height:1.5;color:#8a948f;">Tiltless, the trading journal that catches tilt · <a href="https://tiltless.xyz" style="color:#8a948f;">tiltless.xyz</a></td></tr>
+          {{ end }}
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
