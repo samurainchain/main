@@ -2,8 +2,8 @@
 
 The owner's own voice: a senior product designer presenting a side project they designed and
 shipped with Claude as the engineering pair. English for LinkedIn, Russian version below
-(written without gendered past-tense verbs). Post with one image: the Analytics screen with
-demo data (labelled "demo data"), or a short screen recording.
+(written without gendered past-tense verbs). Image: 01-launch.png (1800x2250, 4:5), real
+screens with demo data, labelled as such.
 
 ## Post
 
