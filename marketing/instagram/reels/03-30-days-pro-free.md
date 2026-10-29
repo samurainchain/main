@@ -3,6 +3,14 @@
 Launch offer reel (Pro on sale 2026-10-28): accounts created by November 30, 2026 get 30 days of Pro, no payment (start_pro_trial, LAUNCH_OFFER_ENDS). Demo journal numbers, labelled on screen.
 Hook: "See what your mistakes cost. 30 days free." hookscore 87.0 STRONG (Cost Confession + Deadline). Video 27.5s, 1080x1920, no audio. beats.py 26.9s, loops on "see what your mistakes cost"; ig-human on the script 72.3 (on-screen text, short lines).
 
+## Voiceover (2026-10-29)
+
+Voiced version: Higgsfield text2speech_v2 (ElevenLabs engine), preset voice Callan
+(d8061b90-ff25-5882-8384-7a6a28806f30), the script below read as written. Long pauses cut to 0.4 s,
+scenes retimed to the voice, word-by-word subtitles (the word being said lights up), an original
+synthesized pad underneath, ducked under the voice, mixed to -15.5 LUFS. 30.8 s. Word timings from
+faster-whisper. Post this version; the silent one stays as a fallback.
+
 ## Script / burned-in text
 
 ```
