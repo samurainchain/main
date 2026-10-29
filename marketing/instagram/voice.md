@@ -16,8 +16,9 @@ lines marked TODO are for the owner to fill in.
   futures who already know a setup or two and keep losing the gains to their own
   behaviour: one loss, then three trades to win it back. English-speaking first
   (US, UK, Canada, Australia).
-- **What I sell:** the web app at tiltless.xyz, free for now. Pro later
-  (about $44.99/yr with a 7-day trial, or $15.99/mo); iOS app to follow.
+- **What I sell:** the web app at tiltless.xyz. The journal is free; Pro (deeper analytics,
+  screenshot reader, imports) is on sale since 2026-10-28 at $15.99/mo or $44.99/yr, paid in
+  crypto, with a 7-day trial (30 days for signups through Nov 30). iOS app to follow.
 
 ## What I sound like
 
