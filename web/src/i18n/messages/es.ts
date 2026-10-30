@@ -258,6 +258,7 @@ export const es: Messages = {
   'entry.ocrHint': 'Elige una captura de una operación cerrada en Binance, OKX, Bybit, BingX o TradingView, o una tarjeta para compartir. Se lee en este dispositivo.',
   'entry.ocrRunning': 'Leyendo la captura… {percent}%',
   'entry.ocrDone': 'Completado desde la captura. Revisa los campos resaltados.',
+  'entry.ocrOpen': 'La posición sigue abierta: la entrada ya está. Agrega el precio de salida cuando la cierres.',
   'entry.ocrEmpty': 'No encontré una operación en esta captura. Completa los campos a mano.',
   'entry.ocrError': 'No se pudo leer la captura. La primera vez necesitas conexión (el lector se descarga una vez); inténtalo de nuevo.',
   'entry.checkValue': 'Revisa este valor',

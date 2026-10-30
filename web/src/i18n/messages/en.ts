@@ -259,6 +259,7 @@ export const en = {
   'entry.ocrHint': 'Pick a screenshot of a closed trade from Binance, OKX, Bybit, BingX or TradingView, or a share card. It is read on this device.',
   'entry.ocrRunning': 'Reading the screenshot… {percent}%',
   'entry.ocrDone': 'Filled from the screenshot. Check the highlighted fields.',
+  'entry.ocrOpen': 'This position is still open: the entry is filled. Add the exit price once you close it.',
   'entry.ocrEmpty': 'Couldn’t find a trade on this screenshot. Fill the fields by hand.',
   'entry.ocrError': 'Couldn’t read the screenshot. Check your connection the first time (the reader downloads once) and try again.',
   'entry.checkValue': 'Check this value',

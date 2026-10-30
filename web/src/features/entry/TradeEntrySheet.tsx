@@ -89,7 +89,7 @@ function EntrySheetContent({ existing, prefill, onClose }: { existing: Trade | u
   }
   const [saving, setSaving] = useState(false)
   const [recognized, setRecognized] = useState<RecognizedFields>({})
-  const [ocr, setOcr] = useState<{ state: 'idle' | 'running' | 'done' | 'empty' | 'error'; progress: number }>({ state: 'idle', progress: 0 })
+  const [ocr, setOcr] = useState<{ state: 'idle' | 'running' | 'done' | 'open' | 'empty' | 'error'; progress: number }>({ state: 'idle', progress: 0 })
   const screenshotInput = useRef<HTMLInputElement>(null)
 
   const account = accounts.find((item) => item.id === form.accountId) ?? defaultAccount
@@ -129,7 +129,8 @@ function EntrySheetContent({ existing, prefill, onClose }: { existing: Trade | u
       // Fees and times live under "More": open it so what was read from the screenshot shows.
       if (applied.recognized.fees || applied.recognized.openedAt || applied.recognized.closedAt) setShowMore(true)
       setErrors({})
-      setOcr({ state: 'done', progress: 1 })
+      // An open position fills the entry only; the exit waits until the trade is closed.
+      setOcr({ state: parsed.open ? 'open' : 'done', progress: 1 })
     } catch (error) {
       console.error('Screenshot recognition failed', error)
       setOcr({ state: 'error', progress: 0 })
@@ -230,11 +231,13 @@ function EntrySheetContent({ existing, prefill, onClose }: { existing: Trade | u
                 ? t('entry.ocrRunning', { percent: Math.round(ocr.progress * 100) })
                 : ocr.state === 'done'
                   ? t('entry.ocrDone')
-                  : ocr.state === 'empty'
-                    ? t('entry.ocrEmpty')
-                    : ocr.state === 'error'
-                      ? t('entry.ocrError')
-                      : t('entry.ocrHint')}
+                  : ocr.state === 'open'
+                    ? t('entry.ocrOpen')
+                    : ocr.state === 'empty'
+                      ? t('entry.ocrEmpty')
+                      : ocr.state === 'error'
+                        ? t('entry.ocrError')
+                        : t('entry.ocrHint')}
             </p>
           </div>
         )}

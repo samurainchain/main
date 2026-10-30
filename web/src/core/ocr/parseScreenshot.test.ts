@@ -579,6 +579,40 @@ describe('share card with the ROI (BingX)', () => {
   })
 })
 
+describe('open position card', () => {
+  const card = `BingX
+UNIUSDT Бессрочные
+Лонг | 30X | Позиция активна
++101.83%
+Цена входа 7.041
+Последняя цена 7.28`
+
+  it('fills the entry but not the exit: the last price is not one', () => {
+    const parsed = parseScreenshotText(card)
+    expect(values(parsed)).toMatchObject({ exchange: 'bingx', symbol: 'UNIUSDT', side: 'long', leverage: '30', entryPrice: '7.041', exitPrice: undefined })
+    expect(parsed.open).toBe(true)
+  })
+
+  it('completes the entry from the last price and the ROI', () => {
+    const parsed = parseScreenshotText(card.replace('7.041', '7.04'))
+    expect(parsed.entryPrice).toEqual({ value: '7.04', confidence: 'high' })
+    const cut = parseScreenshotText(card.replace('Цена входа 7.041', 'Цена входа 7.0'))
+    expect(cut.entryPrice?.value).toBe('7.04')
+  })
+
+  it('reads English and Spanish open positions', () => {
+    expect(parseScreenshotText('ETHUSDT Long 10x Position active\nEntry Price 3,000\nMark Price 3,100').open).toBe(true)
+    const es = parseScreenshotText('ETHUSDT Largo 10x Posición abierta\nPrecio de entrada 3,000\nÚltimo precio 3,100')
+    expect(values(es)).toMatchObject({ entryPrice: '3000', exitPrice: undefined })
+  })
+
+  it('stays open when merged with a reading that missed the words', () => {
+    const merged = mergeReadings(parseScreenshotText('UNIUSDT Лонг 30X\n+101.83%\nЦена входа 7.041\nЦена закрытия 7.28'), parseScreenshotText(card))
+    expect(merged.open).toBe(true)
+    expect(merged.exitPrice).toBeUndefined()
+  })
+})
+
 describe('quantityFromValue', () => {
   it.each([
     ['9997.93', '1187.4021593', '8.42'],

@@ -39,6 +39,8 @@ export interface ParsedScreenshot {
   closedAt?: Recognized<string>
   /** The ROI a share card prints, in percent ("293.42"), used to check the prices. */
   roi?: string
+  /** The screenshot shows a position still open: its last price is not an exit. */
+  open?: boolean
 }
 
 type NumericField = 'entryPrice' | 'exitPrice' | 'quantity' | 'pnl'
@@ -84,6 +86,10 @@ const TOTAL_FEE =
   /trading fees?|total fees?|торгов(?:ая|ые)\s*комисси[яи]|комисси[яи]\s*за\s*торговлю|итого\s*комисси[яи]|comisi.n(?:es)?\s*de\s*(?:trading|negociaci.n|operaci.n)|comisiones\s*totales/iu
 const FUNDING = /funding|финансировани|financiaci|fondeo/iu
 const ORDER_FEE = /(?<!\p{L})(?:fees?|commission|комисси[яи]|comisi.n|tarifa)(?!\p{L})/iu
+
+// A position still open ("Позиция активна"), and its current price, which is not an exit.
+const OPEN_POSITION = /position\s*(?:is\s*)?(?:active|open)|(?:active|open)\s*position|позиция\s*(?:активна|открыта)|открытая\s*позиция|posici.n\s*(?:activa|abierta)/iu
+const LAST_PRICE = /last\s*price|mark\s*price|последняя\s*цена|цена\s*маркировки|маркировочная\s*цена|[úu]ltimo\s*precio|precio\s*(?:de\s*)?(?:marca|actual)/iu
 
 // An order in a position's history: "Open long", "Закрыть шорт". Inside one, the fill price is
 // the entry or the exit, and "Filled" is the order's value in the quote currency.
@@ -428,6 +434,14 @@ export function parseScreenshotText(text: string, ocrConfidence = 100): ParsedSc
   }
 
   const roi = findRoi(lines)
+  if (OPEN_POSITION.test(joined)) {
+    // An open position: no exit yet. Its last price only checks the entry against the ROI.
+    delete result.exitPrice
+    const lastLine = lines.find((line) => LAST_PRICE.test(line))
+    const last = lastLine ? numbersIn(lastLine.slice(lastLine.search(LAST_PRICE)), russian).find(isAmount) : undefined
+    const entry = last ? checkRoi({ ...result, exitPrice: { value: last.value, confidence: base } }, roi).entryPrice : result.entryPrice
+    return { ...result, ...(entry ? { entryPrice: entry } : {}), ...(roi ? { roi } : {}), open: true }
+  }
   const checked = deriveQuantity(crossCheck(checkRoi(alignPrices(result), roi)))
   return roi ? { ...checked, roi } : checked
 }
@@ -496,11 +510,13 @@ export function mergeReadings(first: ParsedScreenshot, second: ParsedScreenshot)
   for (const field of RECOGNIZED_FIELDS) if (!merged[field] && extra[field]) Object.assign(merged, { [field]: extra[field] })
   merged.exchange ??= extra.exchange
   merged.roi ??= extra.roi
+  merged.open ||= extra.open
   if (!main.quantity && extra.quantity) merged.quantityUnit = extra.quantityUnit
   // The readings may disagree on a digit of a price ("0.09788" and "0.09778"): with the ROI known,
   // the entry and exit that agree with it win.
   const { roi, side, leverage } = merged
-  if (roi && side && leverage) {
+  if (merged.open) delete merged.exitPrice
+  else if (roi && side && leverage) {
     const entries = [main.entryPrice, extra.entryPrice].filter((price) => price !== undefined)
     const exits = [main.exitPrice, extra.exitPrice].filter((price) => price !== undefined)
     let best: { entry: Recognized<string>; exit: Recognized<string>; gap: number } | undefined
