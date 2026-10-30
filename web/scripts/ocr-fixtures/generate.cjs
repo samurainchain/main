@@ -3,8 +3,9 @@
 // Real exchange screenshots are copyrighted and can't live in this repository, so these
 // pages imitate the layouts and wording of Binance, Bybit, OKX and TradingView history
 // screens (not their branding) with varied pairs, sides, prices and themes, in English and,
-// for the phone screens, in Russian; plus a phone position screen with its order history, where
-// the entry and exit are the opening and closing orders' fill prices.
+// for the phone screens, in Russian and Spanish; plus a phone position screen with its order
+// history, where the entry and exit are the opening and closing orders' fill prices. The Spanish
+// screens use the Mexican number format ("61,234.5"), as exchanges show it in Latin America.
 //
 // Usage (needs Playwright with Chromium installed):
 //   node scripts/ocr-fixtures/generate.cjs
@@ -67,6 +68,7 @@ const THEMES = {
 const signed = (value, decimals = 2) => `${value >= 0 ? '+' : '-'}${group(Math.abs(value), decimals)}`
 const signedRu = (value, decimals = 2) => `${value >= 0 ? '+' : '−'}${groupRu(Math.abs(value), decimals)}`
 const sideRu = (side) => (side === 'long' ? 'Лонг' : 'Шорт')
+const sideEs = (side) => (side === 'long' ? 'Largo' : 'Corto')
 const tone = (theme, value) => (value >= 0 ? theme.green : theme.red)
 const cap = (word) => word[0].toUpperCase() + word.slice(1)
 
@@ -184,6 +186,69 @@ const LAYOUTS = {
       <div class="big" style="margin-top:14px">История ордеров</div>
       ${order('Закрыть', th.red, close, t.exit, '12:40:11')}
       ${order('Открыть', th.green, open, t.entry, '10:15:02')}
+    </div>`)
+  },
+  // Spanish interface (new layouts go last, so the earlier screenshots stay the same).
+  binanceAppEs: (t, th) => page(th, 390, `<div class="card">
+    <div class="row"><span class="big">${t.symbol} Perpetuo</span><span class="muted">Cerrado</span></div>
+    <div class="row"><span><span class="tag" style="background:${tone(th, t.side === 'long' ? 1 : -1)}33;color:${tone(th, t.side === 'long' ? 1 : -1)}">${sideEs(t.side)}</span> <span class="muted">Cruzado ${t.leverage}x</span></span></div>
+    <div class="muted" style="margin-top:10px">PNL de cierre</div>
+    <div class="big" style="color:${tone(th, t.pnl)}">${signed(t.pnl)} USDT</div>
+    <div class="row" style="margin-top:10px"><span class="muted">Precio de entrada</span><span class="muted">Precio promedio de cierre</span></div>
+    <div class="row"><span>${group(t.entry, t.decimals)}</span><span>${group(t.exit, t.decimals)}</span></div>
+    <div class="row"><span class="muted">Vol. cerrado</span><span>${group(t.qty, t.qtyDecimals)} ${t.base}</span></div>
+    <div class="row"><span class="muted">Abierto</span><span>27/10/2026 10:15:02</span></div>
+    <div class="row"><span class="muted">Cerrado</span><span>27/10/2026 12:40:11</span></div>
+  </div>`),
+
+  bybitAppEs: (t, th) => page(th, 390, `<div class="card">
+    <div class="row"><span class="big">${t.symbol}</span><span style="color:${tone(th, t.side === 'long' ? 1 : -1)}">Cerrar ${sideEs(t.side).toLowerCase()}</span></div>
+    <div class="row"><span class="muted">P&amp;L cerrado</span><span style="color:${tone(th, t.pnl)}">${signed(t.pnl, 4)}</span></div>
+    <div class="row"><span class="muted">Cant.</span><span>${group(t.qty, t.qtyDecimals)}</span></div>
+    <div class="row"><span class="muted">Precio de entrada</span><span>${group(t.entry, t.decimals)}</span></div>
+    <div class="row"><span class="muted">Precio de salida</span><span>${group(t.exit, t.decimals)}</span></div>
+    <div class="row"><span class="muted">Hora de la operación</span><span>27/10/2026 12:40:11</span></div>
+  </div>`),
+
+  okxAppEs: (t, th) => page(th, 390, `<div class="card">
+    <div class="big">${t.base}-USDT-SWAP</div>
+    <div class="muted">${sideEs(t.side)} · ${t.leverage}x · Cruzado</div>
+    <div class="muted" style="margin-top:12px">PnL realizado</div>
+    <div class="big" style="color:${tone(th, t.pnl)}">${signed(t.pnl)} USDT</div>
+    <div class="muted" style="margin-top:10px">Precio de entrada prom.</div><div>${group(t.entry, t.decimals)}</div>
+    <div class="muted" style="margin-top:10px">Precio de cierre prom.</div><div>${group(t.exit, t.decimals)}</div>
+    <div class="muted" style="margin-top:10px">Monto cerrado</div><div>${group(t.qty, t.qtyDecimals)} ${t.base}</div>
+  </div>`),
+
+  binanceDesktopEs: (t, th) => page(th, 1100, `<div class="card"><table>
+    <tr><th>Símbolo</th><th>Lado</th><th>Precio de entrada</th><th>Precio promedio de cierre</th><th>Vol. cerrado</th><th>PNL de cierre</th></tr>
+    <tr><td>${t.symbol} Perp ${t.leverage}x</td><td style="color:${tone(th, t.side === 'long' ? 1 : -1)}">${sideEs(t.side)}</td><td>${group(t.entry, t.decimals)}</td><td>${group(t.exit, t.decimals)}</td><td>${group(t.qty, t.qtyDecimals)} ${t.base}</td><td style="color:${tone(th, t.pnl)}">${signed(t.pnl)} USDT</td></tr>
+  </table></div>`),
+
+  orderHistoryEs: (t, th) => {
+    const open = t.entry * t.qty
+    const close = t.exit * t.qty
+    const fee = (value) => value * 0.00045
+    const net = t.pnl - fee(open) - fee(close)
+    const sideWord = sideEs(t.side).toLowerCase()
+    const price = (value) => `₮${group(value, Math.max(t.decimals, 4))}`
+    const order = (label, color, value, fill, time) => `
+      <div class="row" style="margin-top:14px"><span><span class="tag" style="background:${color}22;color:${color}">${label} ${sideWord}</span> <span class="muted">27/10, ${time}</span></span></div>
+      <div class="row"><span class="muted">Ejecutado</span><span>${group(value, 2)} USDT</span></div>
+      <div class="row"><span class="muted">Precio de ejec.</span><span>${price(fill)}</span></div>
+      <div class="row"><span class="muted">Comisión</span><span>-${group(fee(value), 8)} USDT</span></div>`
+    return page(th, 390, `<div class="card">
+      <div class="row"><span class="big">${t.symbol} Perpetuos</span><span class="tag" style="color:${tone(th, t.side === 'long' ? 1 : -1)}">${sideEs(t.side)}</span></div>
+      <div class="row"><span class="muted">PnL realizado (USDT)</span><span class="muted">Cierre (USDT)</span></div>
+      <div class="row"><span class="big" style="color:${tone(th, net)}">${signed(net)}</span><span class="big">${group(open, 2)}</span></div>
+      <div class="row"><span class="muted">PnL realizado</span><span>${signed(t.pnl)} USDT</span></div>
+      <div class="row"><span class="muted">Comisión de trading</span><span>-${group(fee(open) + fee(close), 8)} USDT</span></div>
+      <div class="row"><span class="muted">Comisión de financiación</span><span>--</span></div>
+      <div class="row"><span class="muted">Hora de apertura</span><span>27/10/2026, 10:15:02</span></div>
+      <div class="row"><span class="muted">Hora de cierre</span><span>27/10/2026, 12:40:11</span></div>
+      <div class="big" style="margin-top:14px">Historial de órdenes</div>
+      ${order('Cerrar', th.red, close, t.exit, '12:40:11')}
+      ${order('Abrir', th.green, open, t.entry, '10:15:02')}
     </div>`)
   },
 }

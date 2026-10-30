@@ -51,33 +51,50 @@ const LABELS: { field: NumericField; pattern: RegExp }[] = [
     field: 'pnl',
     pattern: /закрыт(?:ый|ая)\s*(?:p&l|pnl)|(?:p&l|pnl)\s*закрытия|реализованн(?:ый|ая)\s*(?:p&l|pnl|прибыль)|чистая прибыль|(?<!\p{L})прибыль(?!\p{L})/iu,
   },
+  {
+    field: 'pnl',
+    // Spanish: "PNL de cierre", "P&L cerrado", "PnL realizado", "Ganancia neta"
+    pattern: /(?:pnl|p&l)\s*(?:de\s*|al\s*)?(?:cierre|cerrad[oa]|realizad[oa])|ganancia\s*neta|(?<!\p{L})ganancias?(?!\p{L})/iu,
+  },
   { field: 'exitPrice', pattern: /avg\.?\s*close price|average close price|avg\.?\s*exit price|close price|closing price|exit price/i },
+  { field: 'exitPrice', pattern: /precio\s*(?:prom(?:edio|\.)?\s*)?(?:de\s*)?(?:cierre|salida)(?:\s*prom(?:edio|\.)?)?/iu },
   { field: 'exitPrice', pattern: /(?:ср(?:едн(?:яя)?)?\.?\s*)?цена\s*(?:закрытия|выхода)|выходн(?:ая|ой)\s*цена/iu },
   { field: 'entryPrice', pattern: /avg\.?\s*entry price|average entry price|entry price|avg\.?\s*open price|open price|opening price|avg\.?\s*fill price/i },
   { field: 'entryPrice', pattern: /(?:ср(?:едн(?:яя)?)?\.?\s*)?цена\s*(?:входа|открытия|исполнения)|входн(?:ая|ой)\s*цена/iu },
+  { field: 'entryPrice', pattern: /precio\s*(?:prom(?:edio|\.)?\s*)?(?:de\s*)?(?:entrada|apertura)(?:\s*prom(?:edio|\.)?)?/iu },
   { field: 'quantity', pattern: /closed vol\.?|closed amount|closed qty|max open interest|position size|\bqty\b|quantity|\bsize\b|contracts|\bamount\b/i },
   {
     field: 'quantity',
     pattern:
       /объ[её]м\s*закрытия|закрытый\s*объ[её]м|закрыт(?:ая|ое)\s*(?:сумма|кол-во|количество)|размер\s*позиции|макс\.?\s*открытый\s*интерес|кол-?во|количество|(?<!\p{L})(?:размер|объ[её]м)(?!\p{L})|контракт(?:ы|ов)?(?!\p{L})/iu,
   },
+  {
+    field: 'quantity',
+    // Spanish: "Vol. cerrado", "Cantidad cerrada", "Monto cerrado", "Tamaño de la posición", "Cant."
+    pattern:
+      /vol(?:umen|\.)?\s*(?:de\s*)?(?:cierre|cerrad[oa])|(?:cantidad|monto|importe)\s*cerrad[oa]|tama.o\s*de\s*(?:la\s*)?posici.n|(?<!\p{L})cant(?:idad|\.)|(?<!\p{L})contratos(?!\p{L})/iu,
+  },
 ]
 
 // Fees: the trade's total first; per-order fees are added up when there is no total. Funding
 // ("Funding fee", "Комиссия за финансирование") can be paid or received, so it is never a fee here.
-const TOTAL_FEE = /trading fees?|total fees?|торгов(?:ая|ые)\s*комисси[яи]|комисси[яи]\s*за\s*торговлю|итого\s*комисси[яи]/iu
-const FUNDING = /funding|финансировани/iu
-const ORDER_FEE = /(?<!\p{L})(?:fees?|commission|комисси[яи])(?!\p{L})/iu
+const TOTAL_FEE =
+  /trading fees?|total fees?|торгов(?:ая|ые)\s*комисси[яи]|комисси[яи]\s*за\s*торговлю|итого\s*комисси[яи]|comisi.n(?:es)?\s*de\s*(?:trading|negociaci.n|operaci.n)|comisiones\s*totales/iu
+const FUNDING = /funding|финансировани|financiaci|fondeo/iu
+const ORDER_FEE = /(?<!\p{L})(?:fees?|commission|комисси[яи]|comisi.n|tarifa)(?!\p{L})/iu
 
 // An order in a position's history: "Open long", "Закрыть шорт". Inside one, the fill price is
 // the entry or the exit, and "Filled" is the order's value in the quote currency.
-const ORDER_SECTION = /^(?:(open(?:ing)?|открыть|открытие)|(close|closing|закрыть|закрытие))\s+(?:long|short|лонг|шорт)(?!\p{L})/iu
-const FILL_PRICE = /avg\.?\s*fill\s*price|fill(?:ed)?\s*price|order\s*price|avg\.?\s*price|цена\s*[з3]ап(?:олнения|\.)?|цена\s*исполнения|ср(?:едняя)?\.?\s*цена(?!\s*(?:входа|выхода|открытия|закрытия))/iu
-const FILLED_VALUE = /^(?:filled(?:\s*value)?|executed|исполнено|исполненная\s*сумма)(?!\p{L})/iu
+const ORDER_SECTION = /^(?:(open(?:ing)?|открыть|открытие|abrir|apertura)|(close|closing|закрыть|закрытие|cerrar|cierre))\s+(?:long|short|лонг|шорт|largo|corto)(?!\p{L})/iu
+const FILL_PRICE =
+  /avg\.?\s*fill\s*price|fill(?:ed)?\s*price|order\s*price|avg\.?\s*price|цена\s*[з3]ап(?:олнения|\.)?|цена\s*исполнения|ср(?:едняя)?\.?\s*цена(?!\s*(?:входа|выхода|открытия|закрытия))|precio\s*(?:prom(?:edio|\.)?\s*)?(?:de\s*)?ejec(?:uci.n|\.)?|precio\s*prom(?:edio|\.)?(?!\s*(?:de\s*)?(?:entrada|salida|apertura|cierre))/iu
+const FILLED_VALUE = /^(?:filled(?:\s*value)?|executed|исполнено|исполненная\s*сумма|ejecutado|completado|importe\s*ejecutado)(?!\p{L})/iu
 
 // Open and close times: a label with a date on the same line or the next one.
-const OPENED_AT = /opened|open(?:ing)?\s*time|time\s*opened|время\s*открытия|дата\s*открытия|(?<!\p{L})открыт[оа]?(?!\p{L})/iu
-const CLOSED_AT = /closed|clos(?:e|ing)\s*time|time\s*closed|время\s*закрытия|дата\s*закрытия|(?<!\p{L})закрыт[оа]?(?!\p{L})/iu
+const OPENED_AT =
+  /opened|open(?:ing)?\s*time|time\s*opened|время\s*открытия|дата\s*открытия|(?<!\p{L})открыт[оа]?(?!\p{L})|(?:hora|fecha)\s*de\s*apertura|(?<!\p{L})abiert[oa](?!\p{L})/iu
+const CLOSED_AT =
+  /closed|clos(?:e|ing)\s*time|time\s*closed|время\s*закрытия|дата\s*закрытия|(?<!\p{L})закрыт[оа]?(?!\p{L})|(?:hora|fecha)\s*de\s*cierre|(?<!\p{L})cerrad[oa](?!\p{L})/iu
 
 // Words of a Russian exchange interface. A stray Cyrillic letter (OCR reading "Avg." as "Ауд.")
 // must not switch an English screenshot to Russian number format.
@@ -179,9 +196,9 @@ function cleanLines(text: string): string[] {
 
 function detectExchange(text: string): Exchange | undefined {
   if (/tradingview|\b[A-Z_]{3,}:[A-Z0-9]+/i.test(text)) return 'tradingview'
-  if (/\bbybit\b|closed p&l/i.test(text)) return 'bybit'
+  if (/\bbybit\b|closed p&l|p&l cerrado/i.test(text)) return 'bybit'
   if (/\bokx\b|-SWAP\b|realized pnl/i.test(text)) return 'okx'
-  if (/binance|closing pnl|perpetual/i.test(text)) return 'binance'
+  if (/binance|closing pnl|perpetual|pnl de cierre/i.test(text)) return 'binance'
   return undefined
 }
 
@@ -199,10 +216,10 @@ function findSymbol(lines: readonly string[]): Recognized<string> | undefined {
 
 function findSide(text: string): Recognized<Side> | undefined {
   // "Long 20x", "Close Long", "Closed Short", "Entry Long"
-  const explicit = text.match(/\b(long|short)\b|лонг|шорт/i)
+  const explicit = text.match(/\b(long|short|largo|corto)\b|лонг|шорт/i)
   if (explicit) {
     const word = explicit[0].toLowerCase()
-    return { value: word === 'long' || word === 'лонг' ? 'long' : 'short', confidence: 'high' }
+    return { value: word === 'long' || word === 'лонг' || word === 'largo' ? 'long' : 'short', confidence: 'high' }
   }
   // Only buy/sell printed: an opening buy is a long, a closing sell is a long too.
   const buySell = text.match(/\b(close|closing|exit)?\s*(buy|sell)\b/i)
@@ -218,6 +235,13 @@ function findSide(text: string): Recognized<Side> | undefined {
     const buy = /^(покупк|купить)$/i.test(russian[2]!)
     return { value: buy !== closing ? 'long' : 'short', confidence: 'low' }
   }
+  // "Compra", "Cerrar venta"
+  const spanish = text.match(/(cerra\p{L}*[ \t]*\(?)?(?<!\p{L})(compra|comprar|venta|vender)(?!\p{L})/iu)
+  if (spanish) {
+    const closing = Boolean(spanish[1])
+    const buy = /^compra/i.test(spanish[2]!)
+    return { value: buy !== closing ? 'long' : 'short', confidence: 'low' }
+  }
   return undefined
 }
 
@@ -229,13 +253,15 @@ function findLeverage(text: string): Recognized<string> | undefined {
 }
 
 /**
- * A date and time on a line, as a `datetime-local` value: "2026-10-27 12:40:11" or Russian
- * "27.10.2026, 12:40:11". Without a year ("26.10, 12:44") it isn't trusted.
+ * A date and time on a line, as a `datetime-local` value: "2026-10-27 12:40:11", Russian
+ * "27.10.2026, 12:40:11" or Spanish "27/10/2026 12:40:11" (day first). Without a year
+ * ("26.10, 12:44") it isn't trusted.
  */
 export function dateTimeIn(line: string): string | undefined {
   const pad = (value: string) => value.padStart(2, '0')
   const iso = line.match(/(\d{4})-(\d{1,2})-(\d{1,2})[ T,]+(\d{1,2}):(\d{2})/)
-  const dotted = line.match(/(\d{1,2})\.(\d{1,2})\.(\d{4}),?\s+(\d{1,2}):(\d{2})/)
+  // Day first with dots (Russian) or slashes (Spanish): "27.10.2026, 12:40", "27/10/2026 12:40".
+  const dotted = line.match(/(\d{1,2})[./](\d{1,2})[./](\d{4}),?\s+(\d{1,2}):(\d{2})/)
   const [year, month, day, hour, minute] = iso ? iso.slice(1) : dotted ? [dotted[3], dotted[2], dotted[1], dotted[4], dotted[5]] : []
   if (!year || !month || !day || !hour || !minute) return undefined
   if (Number(month) > 12 || Number(day) > 31 || Number(hour) > 23 || Number(minute) > 59) return undefined
@@ -327,7 +353,10 @@ export function parseScreenshotText(text: string, ocrConfidence = 100): ParsedSc
     }
     for (const [field, pattern] of [['openedAt', OPENED_AT], ['closedAt', CLOSED_AT]] as const) {
       if (result[field] || !pattern.test(line)) continue
-      const at = dateTimeIn(line.slice(line.search(pattern))) ?? (next ? dateTimeIn(next) : undefined)
+      // The time below the label counts only when the label stands alone: "Closed Vol." is a size,
+      // and a next line with its own label ("Opened …") holds that label's time.
+      const alone = labelsIn(line).length === 0 && next !== undefined && !OPENED_AT.test(next) && !CLOSED_AT.test(next)
+      const at = dateTimeIn(line.slice(line.search(pattern))) ?? (alone ? dateTimeIn(next) : undefined)
       if (at) result[field] = { value: at, confidence: base }
     }
 
@@ -355,15 +384,25 @@ export function parseScreenshotText(text: string, ocrConfidence = 100): ParsedSc
 
   repairFillPrices(result, filled)
 
-  // Order history: the size is an order's value over its fill price. Both orders give it; the
-  // one with fewer decimals is the likelier, as a digit OCR dropped from a price adds decimals.
+  // Order history: the size is an order's value over its fill price. Both orders give it. The one
+  // the printed PnL agrees with wins (OCR can drop the marks from a value: "412111" for
+  // "4,121.11"); otherwise the one with fewer decimals, as a digit dropped from a price adds some.
   if (!result.quantity) {
     const sizes = [
       filled.open && result.entryPrice ? quantityFromValue(filled.open.value, result.entryPrice.value) : undefined,
       filled.close && result.exitPrice ? quantityFromValue(filled.close.value, result.exitPrice.value) : undefined,
     ].filter((size): size is string => size !== undefined)
     const decimals = (size: string) => (size.includes('.') ? size.length - size.indexOf('.') : 0)
-    const quantity = sizes.sort((a, b) => decimals(a) - decimals(b))[0]
+    const pnlGap = (size: string) => {
+      const { pnl, entryPrice, exitPrice, fees } = result
+      if (!pnl || !entryPrice || !exitPrice || new Big(pnl.value).eq(0)) return Infinity
+      const gross = new Big(exitPrice.value).minus(entryPrice.value).abs().times(size)
+      const printed = new Big(pnl.value).abs()
+      const fee = new Big(fees?.value ?? 0)
+      return Math.min(...[gross, gross.plus(fee), gross.minus(fee)].map((amount) => amount.minus(printed).abs().div(printed).toNumber()))
+    }
+    const agreeing = sizes.filter((size) => pnlGap(size) < 0.03)
+    const quantity = (agreeing.length === 1 ? agreeing : sizes).sort((a, b) => decimals(a) - decimals(b))[0]
     if (quantity) {
       result.quantity = { value: quantity, confidence: 'low' }
       result.quantityUnit = 'base'

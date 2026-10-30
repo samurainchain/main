@@ -278,6 +278,89 @@ ZECUSDT Бессрочные
   })
 })
 
+describe('Spanish interface', () => {
+  it('reads the Binance app card with Spanish labels', () => {
+    const text = `BTCUSDT Perpetuo   Cerrado
+Largo  Cruzado 20x
+PNL de cierre
++123.40 USDT
+Precio de entrada   Precio promedio de cierre
+60,000.0            61,234.0
+Vol. cerrado        0.100 BTC
+Abierto 27/10/2026 10:15:02
+Cerrado 27/10/2026 12:40:11`
+    const parsed = parseScreenshotText(text)
+    expect(values(parsed)).toEqual({
+      exchange: 'binance',
+      symbol: 'BTCUSDT',
+      side: 'long',
+      entryPrice: '60000.0',
+      exitPrice: '61234.0',
+      quantity: '0.100',
+      leverage: '20',
+      pnl: '123.40',
+    })
+    expect(parsed.openedAt?.value).toBe('2026-10-27T10:15')
+    expect(parsed.closedAt?.value).toBe('2026-10-27T12:40')
+  })
+
+  it('reads the Bybit closed P&L entry of a short', () => {
+    const parsed = parseScreenshotText(`ETHUSDT   Cerrar corto
+P&L cerrado   -45.1200
+Cant.    1.50
+Precio de entrada   3,100.25
+Precio de salida  3,130.33
+Hora de la operación 27/10/2026 12:40:11`)
+    expect(values(parsed)).toMatchObject({ exchange: 'bybit', symbol: 'ETHUSDT', side: 'short', entryPrice: '3100.25', exitPrice: '3130.33', quantity: '1.50', pnl: '45.1200' })
+    expect(parsed.entryPrice?.confidence).toBe('high')
+  })
+
+  it('reads the OKX position with labels above values and accents OCR lost', () => {
+    const parsed = parseScreenshotText(`SOL-USDT-SWAP
+Corto · 10x · Cruzado
+PnL realizado
++12.34 USDT
+Precio de entrada prom.
+152.345
+Precio de cierre prom.
+150.112
+Monto cerrado
+5.5 SOL`)
+    expect(values(parsed)).toMatchObject({ symbol: 'SOLUSDT', side: 'short', entryPrice: '152.345', exitPrice: '150.112', quantity: '5.5', leverage: '10', pnl: '12.34' })
+  })
+
+  it('reads a buy or sell without the words long or short', () => {
+    expect(parseScreenshotText('BTCUSDT Compra\nPrecio de entrada 60,000').side?.value).toBe('long')
+    expect(parseScreenshotText('BTCUSDT Cerrar venta\nPrecio de entrada 60,000').side?.value).toBe('long')
+    expect(parseScreenshotText('BTCUSDT Venta\nPrecio de entrada 60,000').side?.value).toBe('short')
+  })
+
+  it('reads a position with its order history', () => {
+    const parsed = parseScreenshotText(`ZECUSDT Perpetuos Largo
+PnL realizado (USDT) Cierre (USDT)
++107.03 9,997.93
+PnL realizado +116.08 USDT
+Comision de trading -9.0503685 USDT
+Comisión de financiación --
+Hora de apertura 26/10/2026, 11:39:19
+Hora de cierre 26/10/2026, 12:44:28
+Historial de órdenes
+Cerrar largo 26/10, 12:44:28
+Ejecutado 10,114.00 USDT
+Precio de ejec. ₮1,201.18822413
+Comisión -4.5513 USDT
+Abrir largo 26/10, 11:39:19
+Ejecutado 9,997.93 USDT
+Precio de ejec. ₮1,187.4021593
+Comisión -4.4990685 USDT`)
+    expect(values(parsed)).toMatchObject({ symbol: 'ZECUSDT', side: 'long', entryPrice: '1187.4021593', exitPrice: '1201.18822413', quantity: '8.42', pnl: '107.03' })
+    expect(parsed.fees?.value).toBe('9.0503685')
+    expect(parsed.openedAt?.value).toBe('2026-10-26T11:39')
+    expect(parsed.closedAt?.value).toBe('2026-10-26T12:44')
+    expect(parsed.entryPrice?.confidence).toBe('high')
+  })
+})
+
 describe('noise and missing data', () => {
   it('reads digits mistaken for letters and ignores table borders', () => {
     const parsed = parseScreenshotText(`| SOLUSDT Perpetual | Long |
@@ -347,6 +430,12 @@ describe('position with its order history', () => {
     expect(parsed.quantity?.confidence).toBe('high')
   })
 
+  it('does not take the time below "Closed Vol." as the closing time', () => {
+    const parsed = parseScreenshotText('BTCUSDT Perpetual Closed\nClosed Vol. 0.100 BTC\nOpened 2026-10-27 10:15:02\nClosed 2026-10-27 12:40:11')
+    expect(parsed.openedAt?.value).toBe('2026-10-27T10:15')
+    expect(parsed.closedAt?.value).toBe('2026-10-27T12:40')
+  })
+
   it('reads the total fee, leaving funding out, and the open and close times', () => {
     const parsed = parseScreenshotText(russian)
     expect(parsed.fees?.value).toBe('9.0503685')
@@ -399,6 +488,21 @@ Fee  -2.3101 USDT`
     expect(values(small)).toMatchObject({ entryPrice: '0.5511', exitPrice: '0.5489', quantity: '942' })
   })
 
+  it('takes the size the printed PnL agrees with when an order value lost its marks', () => {
+    const parsed = parseScreenshotText(`ETHUSDT Perpetuos Largo
+PnL realizado (USDT) Cierre (USDT)
+-61.17 4178.55
+PnL realizado -57.43 USDT
+Comision de trading -3.73484628 USDT
+Cerrar largo 27/10, 12:40:11
+Ejecutado 412111 USDT
+Precio de ejec. ¥3,030.2300
+Abrir largo 27/10, 10:15:02
+Ejecutado 4,178.55 USDT
+Precio de ejec. ¥3,072.4600`)
+    expect(values(parsed)).toMatchObject({ entryPrice: '3072.4600', exitPrice: '3030.2300', quantity: '1.36' })
+  })
+
   it('takes the size from the order whose price lost no digit', () => {
     const parsed = parseScreenshotText(`XRPUSDT Шорт
 Закрыть шорт
@@ -433,6 +537,7 @@ describe('dateTimeIn', () => {
     ['Opened 2026-10-27 10:15:02', '2026-10-27T10:15'],
     ['Время открытия 26.10.2026, 11:39:19', '2026-10-26T11:39'],
     ['Открыто 7.3.2026 9:05', '2026-03-07T09:05'],
+    ['Hora de cierre 27/10/2026 12:40:11', '2026-10-27T12:40'],
     ['Закрыть лонг 26.10, 12:44:28', undefined],
     ['2026-13-01 10:00', undefined],
   ])('%s → %s', (line, expected) => {
