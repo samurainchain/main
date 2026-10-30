@@ -41,18 +41,21 @@ CSS = """
 
 body = f"""<style>{CSS}</style>
 <div id="s0" class="layer stage3d" style="opacity:1;perspective:1300px;perspective-origin:540px 860px">
+  <div class="scene" id="sc0f"><div class="gridfloor" style="left:-1600px;top:-400px;width:3200px;height:1600px;opacity:.5;transform:translateZ(-160px)"></div></div>
   <div class="scene" id="sc0">
-    <div class="gridfloor" style="left:-1600px;top:-400px;width:3200px;height:1600px;opacity:.5"></div>
     {candles}
-    <div id="sheet" style="position:absolute;left:-760px;top:0;width:1520px;height:500px;transform-origin:0 0;background:linear-gradient(180deg,#f2555a44,#f2555a10);border-top:5px solid #f2555a;box-shadow:0 0 80px #f2555a66"></div>
-    <div id="stoplbl" style="position:absolute;left:560px;top:0;font:700 40px 'JetBrains Mono', monospace;color:#f2555a;text-shadow:0 0 20px #f2555a">STOP</div>
+    <div id="sheet" style="position:absolute;left:-720px;top:0;width:1440px;height:8px;border-radius:4px;background:repeating-linear-gradient(90deg,#f2555a 0 34px,transparent 34px 54px);box-shadow:0 0 30px #f2555a;filter:drop-shadow(0 0 12px #f2555a)"></div>
+    <div id="sheetzone" style="position:absolute;left:-720px;top:0;width:1440px;height:110px;background:linear-gradient(180deg,#f2555a26,#f2555a00)"></div>
+    <div id="stoplbl" style="position:absolute;left:400px;top:0;font:700 44px 'JetBrains Mono', monospace;color:#f2555a;text-shadow:0 0 20px #f2555a">STOP</div>
   </div>
   <div class="slam" id="slam" style="top:1060px;opacity:0">−$280<span class="c1">−$280</span><span class="c2">−$280</span></div>
 </div>
 
 <div id="s1" class="layer stage3d" style="perspective:1300px;perspective-origin:540px 860px">
-  <div class="scene" id="sc1">
+  <div class="scene" id="sc1f">
     <div style="position:absolute;left:-1600px;top:-1600px;width:3200px;height:3200px;transform:translateY(10px) rotateX(90deg);background-image:radial-gradient(closest-side,#12121200 35%,#121212 100%),linear-gradient(#3ecf8e30 2px, transparent 2px),linear-gradient(90deg, #3ecf8e30 2px, transparent 2px);background-size:100% 100%,100px 100px,100px 100px"></div>
+  </div>
+  <div class="scene" id="sc1">
     {cards}
     {pods}
     <div class="tag3d r" id="cost" style="left:-300px;top:-170px;width:600px;text-align:center;opacity:0;font-size:96px"><span style="display:block;font-size:36px;margin:0 0 6px">Aguantó pasado el stop · costo</span>−$280.00</div>
@@ -91,8 +94,8 @@ if (show('s0', t, 0, W['mes de'] - .05, .2)) {{
   const levels = [100, 200, 300, 420]; let lv = levels[0]
   drops.forEach((d, i) => {{ lv = lerp(lv, levels[i + 1], easeOutBounce(clamp((t - d) / .45))) }})
   const [sx, sy] = drops.reduce((acc, d) => {{ const s = shake(t, d + .3, .25, 12); return [acc[0] + s[0], acc[1] + s[1]] }}, [0, 0])
-  $('sc0').style.transform = `translate(${{sx}}px, ${{sy}}px) ` + camCss(c)
-  $('sheet').style.transform = `translateY(${{lv}}px) rotateX(90deg) translateY(-250px)`; $('stoplbl').style.transform = `translateY(${{lv - 60}}px) translateZ(250px)`
+  $('sc0').style.transform = $('sc0f').style.transform = `translate(${{sx}}px, ${{sy}}px) ` + camCss(c)
+  $('sheet').style.transform = `translateY(${{lv}}px) translateZ(40px)`; $('sheetzone').style.transform = `translateY(${{lv + 4}}px) translateZ(-30px)`; $('stoplbl').style.transform = `translateY(${{lv - 58}}px) translateZ(40px)`
   const shown = Math.min(C.length - 1, Math.floor(1 + clamp((t - .15) / (W['costó'] - .3)) * (C.length - 1)))
   for (let i = 1; i < C.length; i++) {{
     const p = easeOutBack(clamp((t - .15 - (i - 1) * (W['costó'] - .3) / (C.length - 1)) / .25))
@@ -116,7 +119,7 @@ if (show('s1', t, W['mes de'] - .1, W['registra'] - .05, .2)) {{
     [W['juntas'], {{ x: 0, y: -330, w: 0, z: -620, rx: -16, ry: 20, rz: 0 }}],
     [W['registra'], {{ x: -120, y: -380, w: 0, z: -560, rx: -12, ry: -10, rz: 0 }}],
   ], t)
-  $('sc1').style.transform = camCss(c)
+  $('sc1').style.transform = $('sc1f').style.transform = camCss(c)
   const slots = [[-20, -390, -3], [25, -130, 2], [-15, 130, -2], [20, 390, 3]]
   const stack = ease(clamp((t - W['cada una'] - .3) / 1.0)), onPod = ease(clamp((t - W['segundo'] + .1) / .6))
   ;[0, 1, 2, 3].forEach((i) => {{

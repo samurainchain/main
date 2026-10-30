@@ -144,7 +144,7 @@ Same style as 06 in 3D, each with its own idea; demo journal data throughout, la
   15:00; the camera rides a road through the evening of Oct 26 where three trades open 4, 4 and 2 minutes after a
   loss (red zones mark the 15 minutes); a glass slab with "52%" hides the day; REVANCHA stamps land on the three
   rows; a price tag "Operar por revancha −$182.50" swings on a string.
-- `tiltless-es-07-3d.mp4`: a 3D candlestick chart where the stop sheet sinks three times, −$280 slams in; the four
+- `tiltless-es-07-3d.mp4`: a 3D candlestick chart where the dashed stop line sinks three times, −$280 slams in; the four
   trades that ran past their stop (Oct 26 8:17 and 8:05 p.m., Oct 13, Oct 8) are dealt like cards; a podium puts
   the habit in second place (Mala hora −$332.50, Aguantó pasado el stop −$280, FOMO −$260); the stop is typed into
   the desktop entry form; a red stop line wipes to the end card.
