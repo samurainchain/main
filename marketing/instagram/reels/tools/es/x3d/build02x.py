@@ -45,13 +45,13 @@ body = f"""
 
 <div id="s2" class="layer stage3d" style="perspective:1500px;perspective-origin:540px 860px">
   <div class="scene" id="sc2f">
+    <div id="brk" style="position:absolute;left:-620px;top:0;width:0;height:300px;transform:rotateX(90deg);transform-origin:0 0;border-radius:20px;background:#f2555a22;border:4px solid #f2555a;box-shadow:0 0 60px #f2555a88;opacity:0"></div>
     <div id="fl2" style="position:absolute;left:-1600px;top:-1600px;width:3200px;height:3200px;transform:translateY(6px) rotateX(90deg);background-image:radial-gradient(closest-side,#12121200 35%,#121212 100%),linear-gradient(#3ecf8e30 2px, transparent 2px),linear-gradient(90deg, #3ecf8e30 2px, transparent 2px);background-size:100% 100%,100px 100px,100px 100px"></div>
   </div>
   <div class="scene" id="sc2">
     <div id="board" style="position:absolute;left:0;top:0">{crop('holdc', A, 846, 3171, 562, 333, '', 12)}</div>
-    <div id="brk" style="position:absolute;left:-620px;top:0;width:0;height:300px;transform:rotateX(90deg);transform-origin:0 0;border-radius:20px;background:#f2555a22;border:4px solid #f2555a;box-shadow:0 0 60px #f2555a88;opacity:0"></div>
     {bar_divs}
-    <div class="tag3d r" id="bt" style="left:-540px;top:-560px;opacity:0;font-size:46px"><span id="btn">&lt; 15 min · 4 operaciones</span><b id="bta">−$620</b></div>
+    <div class="tag3d r" id="bt" style="left:-540px;top:-700px;opacity:0;font-size:46px"><span id="btn">&lt; 15 min · 4 operaciones</span><b id="bta">−$620</b></div>
   </div>
 </div>
 
