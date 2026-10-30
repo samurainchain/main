@@ -698,5 +698,105 @@
     "entryPrice": "0.14592",
     "exitPrice": "0.14422",
     "quantity": "10048"
+  },
+  {
+    "file": "71-shareCardRu-dark.png",
+    "layout": "shareCardRu",
+    "theme": "dark",
+    "symbol": "XRPUSDT",
+    "side": "long",
+    "entryPrice": "0.5332",
+    "exitPrice": "0.5388",
+    "quantity": ""
+  },
+  {
+    "file": "72-shareCardRu-light.png",
+    "layout": "shareCardRu",
+    "theme": "light",
+    "symbol": "ETHUSDT",
+    "side": "long",
+    "entryPrice": "2954.46",
+    "exitPrice": "2972.96",
+    "quantity": ""
+  },
+  {
+    "file": "73-shareCardRu-dark.png",
+    "layout": "shareCardRu",
+    "theme": "dark",
+    "symbol": "ETHUSDT",
+    "side": "long",
+    "entryPrice": "2946.22",
+    "exitPrice": "3001.53",
+    "quantity": ""
+  },
+  {
+    "file": "74-shareCardRu-light.png",
+    "layout": "shareCardRu",
+    "theme": "light",
+    "symbol": "DOGEUSDT",
+    "side": "short",
+    "entryPrice": "0.15659",
+    "exitPrice": "0.15411",
+    "quantity": ""
+  },
+  {
+    "file": "75-shareCardRu-dark.png",
+    "layout": "shareCardRu",
+    "theme": "dark",
+    "symbol": "SOLUSDT",
+    "side": "long",
+    "entryPrice": "145.085",
+    "exitPrice": "146.500",
+    "quantity": ""
+  },
+  {
+    "file": "76-shareCardEs-dark.png",
+    "layout": "shareCardEs",
+    "theme": "dark",
+    "symbol": "BTCUSDT",
+    "side": "short",
+    "entryPrice": "58908.8",
+    "exitPrice": "59306.3",
+    "quantity": ""
+  },
+  {
+    "file": "77-shareCardEs-light.png",
+    "layout": "shareCardEs",
+    "theme": "light",
+    "symbol": "SOLUSDT",
+    "side": "long",
+    "entryPrice": "148.449",
+    "exitPrice": "149.704",
+    "quantity": ""
+  },
+  {
+    "file": "78-shareCardEs-dark.png",
+    "layout": "shareCardEs",
+    "theme": "dark",
+    "symbol": "DOGEUSDT",
+    "side": "short",
+    "entryPrice": "0.15047",
+    "exitPrice": "0.14922",
+    "quantity": ""
+  },
+  {
+    "file": "79-shareCardEs-light.png",
+    "layout": "shareCardEs",
+    "theme": "light",
+    "symbol": "ETHUSDT",
+    "side": "short",
+    "entryPrice": "3065.02",
+    "exitPrice": "3009.08",
+    "quantity": ""
+  },
+  {
+    "file": "80-shareCardEs-dark.png",
+    "layout": "shareCardEs",
+    "theme": "dark",
+    "symbol": "DOGEUSDT",
+    "side": "short",
+    "entryPrice": "0.15339",
+    "exitPrice": "0.15262",
+    "quantity": ""
   }
 ]

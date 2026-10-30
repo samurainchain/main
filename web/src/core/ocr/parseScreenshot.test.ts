@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { dateTimeIn, normalizeNumber, parseScreenshotText, quantityFromValue, type ParsedScreenshot } from './parseScreenshot'
+import { dateTimeIn, mergeReadings, normalizeNumber, parseScreenshotText, quantityFromValue, type ParsedScreenshot } from './parseScreenshot'
 
 // Text as OCR returns it from screenshots: one line per row, labels and values sometimes on
 // separate lines, stray "|" from table borders, letter-for-digit slips.
@@ -518,6 +518,64 @@ Precio de ejec. ¥3,072.4600`)
 
   it('outside an order, "Цена исполнения" is still the entry', () => {
     expect(parseScreenshotText('BTCUSDT Лонг\nЦена исполнения 61 000,5').entryPrice?.value).toBe('61000.5')
+  })
+})
+
+describe('share card with the ROI (BingX)', () => {
+  // A BingX share card over busy art, read with the art masked out: OCR lost the last digit of
+  // the entry price, and there is no size or PnL in money.
+  const card = `BEATUSDT Бессрочные. «| ЯН 4
+Лонг | 30x | Закрыт; ЧЕ у” Е a
++293.42% ¥. <u
+Цена входа 0.0977. * Rr Ea (A NR
+Цена закрытия 0.10734 £8 ой to » |
+ВЕН CQRJHC НОО`
+
+  it('completes a price from the ROI and the leverage', () => {
+    const parsed = parseScreenshotText(card)
+    expect(values(parsed)).toMatchObject({ symbol: 'BEATUSDT', side: 'long', leverage: '30', entryPrice: '0.09778', exitPrice: '0.10734', quantity: undefined })
+    expect(parsed.entryPrice?.confidence).toBe('low')
+  })
+
+  it('fills a missing price and names BingX', () => {
+    const parsed = parseScreenshotText(`BingX\nBEATUSDT Бессрочные\nЛонг | 30X | Закрыто\n+293.42%\nЦена закрытия 0.10734`)
+    expect(values(parsed)).toMatchObject({ exchange: 'bingx', entryPrice: '0.09778', exitPrice: '0.10734' })
+  })
+
+  it('works for a short and a loss', () => {
+    // Short at 2.000, out at 2.05, 10x: the price rose 2.5%, so −25%; the prices agree with it.
+    const parsed = parseScreenshotText(`SOLUSDT\nShort 10x\n-25.00%\nEntry Price 2.000\nClose Price 2.05`)
+    expect(values(parsed)).toMatchObject({ side: 'short', entryPrice: '2.000', exitPrice: '2.05' })
+    const noExit = parseScreenshotText(`SOLUSDT\nShort 10x\n-25.00%\nEntry Price 2.000`)
+    expect(values(noExit)).toMatchObject({ entryPrice: '2.000', exitPrice: '2.050' })
+  })
+
+  it('keeps prices that agree with the ROI, or that differ by more than lost digits', () => {
+    const agree = parseScreenshotText(`BTCUSDT Long 20x\n+20.00%\nEntry Price 60000\nClose Price 60600`)
+    expect(values(agree)).toMatchObject({ entryPrice: '60000', exitPrice: '60600' })
+    // The ROI after fees is a little lower than the move; nothing is "completed".
+    const fees = parseScreenshotText(`BTCUSDT Long 20x\n+19.10%\nEntry Price 60000.0\nClose Price 60600.0`)
+    expect(values(fees)).toMatchObject({ entryPrice: '60000.0', exitPrice: '60600.0' })
+  })
+
+  it('reads a 7 that OCR took for a slash next to the percent sign', () => {
+    const parsed = parseScreenshotText(`BTCUSDT Perpetuos\nCorto | 25X | Cerrado\n-16.8/%\nPrecio de of 58,908.8\nPrecio de cierre 59,306.3`)
+    expect(values(parsed)).toMatchObject({ side: 'short', entryPrice: '58908.8', exitPrice: '59306.3' })
+    expect(parsed.roi).toBe('-16.87')
+    expect(parseScreenshotText('BEATUSDT Лонг 30x\n+293  42% аб\nЦена закрытия 0.10734').roi).toBe('293.42')
+  })
+
+  it('takes the prices that agree with the ROI when two readings differ by a digit', () => {
+    const plain = parseScreenshotText(`BEATUSDT Бессрочные\nЛонг | 30X | Закрыто\nЦена входа: 0.09788\nЦена закрытия 0.10734`)
+    const masked = parseScreenshotText(card)
+    expect(values(mergeReadings(plain, masked))).toMatchObject({ entryPrice: '0.09778', exitPrice: '0.10734' })
+    expect(values(mergeReadings(masked, plain))).toMatchObject({ entryPrice: '0.09778', exitPrice: '0.10734' })
+  })
+
+  it('fills the gaps of one reading from the other', () => {
+    const plain = parseScreenshotText(`BIngXx\nBEATUSDT BeccPaiiRia As\nонг | 30X | Закрыто ЗМ\nЦена входа 0.097H%S ТАРА\nЦена закрытия 0.10734`)
+    const merged = mergeReadings(plain, parseScreenshotText(card))
+    expect(values(merged)).toMatchObject({ symbol: 'BEATUSDT', side: 'long', entryPrice: '0.09778', exitPrice: '0.10734', leverage: '30' })
   })
 })
 

@@ -256,7 +256,7 @@ export const en = {
   'entry.previewHint': 'PnL appears as you fill in prices and size',
   'entry.noAccountMessage': 'Create an account first: the entry form depends on its market type.',
   'entry.fromScreenshot': 'From screenshot',
-  'entry.ocrHint': 'Pick a screenshot of a closed trade from Binance, OKX, Bybit or TradingView. It is read on this device.',
+  'entry.ocrHint': 'Pick a screenshot of a closed trade from Binance, OKX, Bybit, BingX or TradingView, or a share card. It is read on this device.',
   'entry.ocrRunning': 'Reading the screenshot… {percent}%',
   'entry.ocrDone': 'Filled from the screenshot. Check the highlighted fields.',
   'entry.ocrEmpty': 'Couldn’t find a trade on this screenshot. Fill the fields by hand.',

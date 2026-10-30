@@ -6,6 +6,8 @@
 // for the phone screens, in Russian and Spanish; plus a phone position screen with its order
 // history, where the entry and exit are the opening and closing orders' fill prices. The Spanish
 // screens use the Mexican number format ("61,234.5"), as exchanges show it in Latin America.
+// Share cards print the ROI and the prices over busy artwork, with no size: their expected size
+// is empty.
 //
 // Usage (needs Playwright with Chromium installed):
 //   node scripts/ocr-fixtures/generate.cjs
@@ -83,6 +85,50 @@ const page = (theme, width, body) => `<!doctype html><html><head><meta charset="
   th { color: ${theme.muted}; font-weight: 500; }
   .tag { padding: 1px 6px; border-radius: 4px; font-size: 13px; }
 </style></head><body>${body}</body></html>`
+
+
+// Busy artwork behind a share card: glowing bolts, sparks and a haze, like the art exchanges put
+// on their share cards. Drawn from the same pseudo-random sequence, so it is stable too.
+function artwork(width, height) {
+  const bolts = Array.from({ length: 26 }, () => {
+    let x = width * (0.35 + random() * 0.65)
+    let y = random() * height * 0.3
+    const points = [[x, y]]
+    for (let k = 0; k < 9; k++) {
+      x += (random() - 0.5) * 120
+      y += 40 + random() * 80
+      points.push([x, y])
+    }
+    return `<polyline points="${points.map((p) => p.map((v) => v.toFixed(0)).join(',')).join(' ')}" fill="none" stroke="rgba(${180 + Math.round(random() * 60)},${210 + Math.round(random() * 40)},255,${(0.3 + random() * 0.6).toFixed(2)})" stroke-width="${(1 + random() * 3).toFixed(1)}"/>`
+  }).join('')
+  const sparks = Array.from({ length: 220 }, () => `<circle cx="${(width * random()).toFixed(0)}" cy="${(height * random()).toFixed(0)}" r="${(0.5 + random() * 2.5).toFixed(1)}" fill="rgba(220,235,255,${(0.3 + random() * 0.7).toFixed(2)})"/>`).join('')
+  return `<svg width="${width}" height="${height}" style="position:absolute;inset:0" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="haze" cx="70%" cy="30%" r="70%"><stop offset="0" stop-color="#6d7f99"/><stop offset="1" stop-color="#11161f"/></radialGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="1.5"/></filter></defs>
+    <rect width="100%" height="100%" fill="url(#haze)"/><g filter="url(#glow)">${bolts}</g>${sparks}</svg>`
+}
+
+const roi = (t) => (((t.exit / t.entry - 1) * (t.side === 'long' ? 1 : -1) * t.leverage * 100))
+
+const shareCard = (t, words) => {
+  const value = roi(t)
+  const color = value >= 0 ? '#2ebd85' : '#f6465d'
+  const text = (style, content) => `<div style="position:relative;${style}">${content}</div>`
+  return `<!doctype html><html><head><meta charset="utf-8"><style>
+    body { margin: 0; font: 15px/1.4 -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; }
+    .card { position: relative; width: 446px; height: 564px; overflow: hidden; color: #fff; background: #11161f; }
+  </style></head><body><div class="card">${artwork(446, 470)}
+    <div style="position:absolute;left:24px;top:150px">
+      ${text('font-size:24px;font-weight:600', `${t.symbol} <span style="font-size:14px">${words.perpetual}</span>`)}
+      ${text('font-size:15px;color:#9aa0a6;margin-top:4px', `<span style="color:${t.side === 'long' ? '#2ebd85' : '#f6465d'}">${words.side(t.side)}</span> | ${t.leverage}X | ${words.closed}`)}
+      ${text(`font-size:46px;font-weight:300;color:${color};margin-top:14px`, `${value >= 0 ? '+' : '-'}${Math.abs(value).toFixed(2)}%`)}
+      ${text('font-size:15px;color:#9aa0a6;margin-top:18px', `${words.entry} <b style="color:#fff">${group(t.entry, t.decimals)}</b>`)}
+      ${text('font-size:15px;color:#9aa0a6;margin-top:8px', `${words.exit} <b style="color:#fff">${group(t.exit, t.decimals)}</b>`)}
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;height:94px;background:#000;display:flex;align-items:center;justify-content:space-between;padding:0 24px;box-sizing:border-box">
+      <div style="font-size:13px;color:#9aa0a6">2026-10-30<br>23:12:55</div><div style="text-align:right;font-size:13px;color:#9aa0a6">${words.code}<br><b style="color:#fff;font-size:18px">CQRJHC</b></div>
+    </div></div></body></html>`
+}
 
 // Phone layouts: label and value on one row, or label above value.
 const LAYOUTS = {
@@ -251,6 +297,9 @@ const LAYOUTS = {
       ${order('Abrir', th.green, open, t.entry, '10:15:02')}
     </div>`)
   },
+  // Share cards over artwork, with the ROI and no size (Russian and Spanish).
+  shareCardRu: (t) => shareCard(t, { perpetual: 'Бессрочные', side: sideRu, closed: 'Закрыто', entry: 'Цена входа', exit: 'Цена закрытия', code: 'Код приглашения' }),
+  shareCardEs: (t) => shareCard(t, { perpetual: 'Perpetuos', side: sideEs, closed: 'Cerrado', entry: 'Precio de entrada', exit: 'Precio de cierre', code: 'Código de invitación' }),
 }
 
 async function main() {
@@ -274,7 +323,7 @@ async function main() {
         side: trade.side,
         entryPrice: trade.entry.toFixed(trade.decimals),
         exitPrice: trade.exit.toFixed(trade.decimals),
-        quantity: trade.qty.toFixed(trade.qtyDecimals),
+        quantity: layout.startsWith('shareCard') ? '' : trade.qty.toFixed(trade.qtyDecimals),
       })
     }
   }

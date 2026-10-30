@@ -255,7 +255,7 @@ export const es: Messages = {
   'entry.previewHint': 'El PnL aparece al completar precios y tamaño',
   'entry.noAccountMessage': 'Primero crea una cuenta: el formulario depende de su tipo de mercado.',
   'entry.fromScreenshot': 'Desde captura',
-  'entry.ocrHint': 'Elige una captura de una operación cerrada en Binance, OKX, Bybit o TradingView. Se lee en este dispositivo.',
+  'entry.ocrHint': 'Elige una captura de una operación cerrada en Binance, OKX, Bybit, BingX o TradingView, o una tarjeta para compartir. Se lee en este dispositivo.',
   'entry.ocrRunning': 'Leyendo la captura… {percent}%',
   'entry.ocrDone': 'Completado desde la captura. Revisa los campos resaltados.',
   'entry.ocrEmpty': 'No encontré una operación en esta captura. Completa los campos a mano.',

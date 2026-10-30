@@ -255,7 +255,7 @@ export const ru: Messages = {
   'entry.previewHint': 'PnL появится, когда заполнишь цены и размер',
   'entry.noAccountMessage': 'Сначала создай счёт: поля формы зависят от его типа рынка.',
   'entry.fromScreenshot': 'Из скриншота',
-  'entry.ocrHint': 'Выбери скриншот закрытой сделки с Binance, OKX, Bybit или TradingView. Он распознаётся прямо на устройстве.',
+  'entry.ocrHint': 'Выбери скриншот закрытой сделки с Binance, OKX, Bybit, BingX или TradingView, или карточку «Поделиться». Он распознаётся прямо на устройстве.',
   'entry.ocrRunning': 'Читаю скриншот… {percent}%',
   'entry.ocrDone': 'Заполнено со скриншота. Проверь подсвеченные поля.',
   'entry.ocrEmpty': 'Не нашёл сделку на этом скриншоте. Заполни поля вручную.',

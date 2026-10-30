@@ -13,7 +13,7 @@ import { tradePnl } from '../pnl'
 // Every field carries a confidence; low ones are highlighted for the user to check.
 
 export type Confidence = 'high' | 'low'
-export type Exchange = 'binance' | 'okx' | 'bybit' | 'tradingview'
+export type Exchange = 'binance' | 'okx' | 'bybit' | 'bingx' | 'tradingview'
 
 export interface Recognized<T> {
   value: T
@@ -37,6 +37,8 @@ export interface ParsedScreenshot {
   /** When the position was opened and closed, as `datetime-local` values ("2026-10-26T11:39"). */
   openedAt?: Recognized<string>
   closedAt?: Recognized<string>
+  /** The ROI a share card prints, in percent ("293.42"), used to check the prices. */
+  roi?: string
 }
 
 type NumericField = 'entryPrice' | 'exitPrice' | 'quantity' | 'pnl'
@@ -196,6 +198,7 @@ function cleanLines(text: string): string[] {
 
 function detectExchange(text: string): Exchange | undefined {
   if (/tradingview|\b[A-Z_]{3,}:[A-Z0-9]+/i.test(text)) return 'tradingview'
+  if (/\bbing\s?x\b/i.test(text)) return 'bingx'
   if (/\bbybit\b|closed p&l|p&l cerrado/i.test(text)) return 'bybit'
   if (/\bokx\b|-SWAP\b|realized pnl/i.test(text)) return 'okx'
   if (/binance|closing pnl|perpetual|pnl de cierre/i.test(text)) return 'binance'
@@ -424,7 +427,92 @@ export function parseScreenshotText(text: string, ocrConfidence = 100): ParsedSc
     if (amount) result.pnl = { value: amount.value, confidence: 'low' }
   }
 
-  return deriveQuantity(crossCheck(alignPrices(result)))
+  const roi = findRoi(lines)
+  const checked = deriveQuantity(crossCheck(checkRoi(alignPrices(result), roi)))
+  return roi ? { ...checked, roi } : checked
+}
+
+/** The ROI a share card prints in large type, "+293.42%": a signed percentage. */
+function findRoi(lines: readonly string[]): string | undefined {
+  for (const line of lines) {
+    // OCR reads a 7 next to the percent sign as a slash ("-16.8/%") and may lose the decimal
+    // point to a gap ("+293  42%").
+    const match = line.replace(/(?<=\d)\/(?=\d|%)/g, '7').match(/(?<![\d.,])([+\-−–])\s?(\d{1,5})(?:(?:[.,]|\s{1,3})(\d{1,2}))?\s?%/)
+    if (match) return `${/[+]/.test(match[1]!) ? '' : '-'}${match[2]}${match[3] ? `.${match[3]}` : ''}`
+  }
+  return undefined
+}
+
+/**
+ * Share cards (BingX, Binance, Bybit) print the ROI and the leverage but no size: the ROI is the
+ * price move times the leverage, so one price follows from the other. A missing price is filled
+ * in; a price whose digits are the start of the computed one lost its last digits to OCR (busy
+ * card art: "0.0977" for "0.09778") and is completed. Prices that disagree otherwise are kept,
+ * as the ROI may include fees.
+ */
+/** How far the ROI implied by the prices is from the printed one, in percentage points. */
+function roiGap(roi: string, side: Side, leverage: string, entry: string, exit: string): number {
+  if (Number(entry) <= 0) return Infinity
+  const implied = new Big(exit).div(entry).minus(1).times(side === 'long' ? 1 : -1).times(leverage).times(100)
+  return implied.minus(roi).abs().toNumber()
+}
+
+const roiAgrees = (roi: string, gap: number) => gap <= Math.abs(Number(roi)) * 0.002 + 0.05
+
+function checkRoi(result: ParsedScreenshot, roi: string | undefined): ParsedScreenshot {
+  const { side, leverage, entryPrice, exitPrice } = result
+  if (!roi || !side || !leverage || (!entryPrice && !exitPrice)) return result
+  const factor = new Big(1).plus(new Big(roi).div(100).div(leverage.value).times(side.value === 'long' ? 1 : -1))
+  if (factor.lte(0)) return result
+  const decimals = (number: string) => (number.includes('.') ? number.length - number.indexOf('.') - 1 : 0)
+  const digits = (number: string) => number.replace('.', '').replace(/^0+/, '')
+  const completes = (printed: string, computed: string) => digits(computed).length > digits(printed).length && digits(computed).startsWith(digits(printed))
+  if (entryPrice && exitPrice) {
+    if (roiAgrees(roi, roiGap(roi, side.value, leverage.value, entryPrice.value, exitPrice.value))) return result
+    const entry = new Big(exitPrice.value).div(factor).toFixed(decimals(exitPrice.value))
+    if (completes(entryPrice.value, entry)) return { ...result, entryPrice: { value: entry, confidence: 'low' } }
+    const exit = new Big(entryPrice.value).times(factor).toFixed(decimals(entryPrice.value))
+    if (completes(exitPrice.value, exit)) return { ...result, exitPrice: { value: exit, confidence: 'low' } }
+    return result
+  }
+  if (exitPrice) return { ...result, entryPrice: { value: new Big(exitPrice.value).div(factor).toFixed(decimals(exitPrice.value)), confidence: 'low' } }
+  return { ...result, exitPrice: { value: new Big(entryPrice!.value).times(factor).toFixed(decimals(entryPrice!.value)), confidence: 'low' } }
+}
+
+const RECOGNIZED_FIELDS = ['symbol', 'side', 'entryPrice', 'exitPrice', 'quantity', 'leverage', 'pnl', 'fees', 'openedAt', 'closedAt'] as const
+
+/** How many fields a reading found; the reading with more is the better one. */
+export function recognizedCount(parsed: ParsedScreenshot): number {
+  return RECOGNIZED_FIELDS.filter((field) => parsed[field] !== undefined).length
+}
+
+/**
+ * Joins two readings of one screenshot (the plain one and one with the card art masked out):
+ * the reading that found more is kept, and the other only fills its gaps.
+ */
+export function mergeReadings(first: ParsedScreenshot, second: ParsedScreenshot): ParsedScreenshot {
+  const [main, extra] = recognizedCount(second) > recognizedCount(first) ? [second, first] : [first, second]
+  const merged: ParsedScreenshot = { ...main }
+  for (const field of RECOGNIZED_FIELDS) if (!merged[field] && extra[field]) Object.assign(merged, { [field]: extra[field] })
+  merged.exchange ??= extra.exchange
+  merged.roi ??= extra.roi
+  if (!main.quantity && extra.quantity) merged.quantityUnit = extra.quantityUnit
+  // The readings may disagree on a digit of a price ("0.09788" and "0.09778"): with the ROI known,
+  // the entry and exit that agree with it win.
+  const { roi, side, leverage } = merged
+  if (roi && side && leverage) {
+    const entries = [main.entryPrice, extra.entryPrice].filter((price) => price !== undefined)
+    const exits = [main.exitPrice, extra.exitPrice].filter((price) => price !== undefined)
+    let best: { entry: Recognized<string>; exit: Recognized<string>; gap: number } | undefined
+    for (const entry of entries) {
+      for (const exit of exits) {
+        const gap = roiGap(roi, side.value, leverage.value, entry.value, exit.value)
+        if (roiAgrees(roi, gap) && (!best || gap < best.gap)) best = { entry, exit, gap }
+      }
+    }
+    if (best) Object.assign(merged, { entryPrice: best.entry, exitPrice: best.exit })
+  }
+  return merged
 }
 
 /**
