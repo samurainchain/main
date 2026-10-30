@@ -1,27 +1,23 @@
-# Plan: week of Oct 29 – Nov 6, 2026
+# Plan: week of Oct 30 – Nov 6, 2026 (Spanish)
 
-Read by the ig-* skills. Same videos on Instagram (Reels) and TikTok; carousels go to TikTok as photo posts.
+Read by the ig-* skills. Same videos on Instagram (Reels) and TikTok.
 Faceless brand: app screen recordings and on-screen text, demo journal numbers labelled "demo".
 
-Audience: English-speaking day traders (US first). Post at **7:30 pm New York time**:
-- Thu Oct 29 – Sat Oct 31: 5:30 pm Mexico City (US is still on summer time)
-- Sun Nov 1 onwards: 6:30 pm Mexico City (US clocks go back on Nov 1)
+Audience: on Oct 30 the owner saw that the people who like and see the videos are almost all
+Mexican, so everything is in Spanish (Mexico, "tú") from now on. Post at **7:30 pm Mexico City**
+(evening after the US/Mexico session closes). The hour matters far less than the first two seconds.
 
-The hour matters far less than the first two seconds. Every hook below was scored with hookscore.py.
+| day | time (CDMX) | format | type | angle |
+| --- | --- | --- | --- | --- |
+| Fri Oct 30 | 7:30 pm | REEL (voiced, ES) | OFFER | 03 "Mira cuánto te cuestan tus errores. 30 días gratis." |
+| Sat Oct 31 | 7:30 pm | REEL (voiced, ES) | PROOF | 02 "Deja de hacer operaciones de 15 minutos." |
+| Sun Nov 1 | — | stories + engage | | |
+| Mon Nov 2 | 7:30 pm | REEL (voiced, ES) | OPINION | 04 "No necesitas una estrategia nueva. Necesitas 15 minutos después de una pérdida." |
+| Wed Nov 4 | 7:30 pm | REEL (voiced, ES) | PROOF | 06 "Operar con enojo te costó $680 este mes. Con calma ganaste $885." |
+| Fri Nov 6 | 7:30 pm | REEL (voiced, ES) | STORY | 07 "Mover tu stop 'solo esta vez' te costó $280 este mes." |
 
-| day | time (NY) | format | type | hook formula | angle |
-| --- | --- | --- | --- | --- | --- |
-| Thu Oct 29 | 7:30 pm | REEL (voiced) | OFFER | Cost Confession + Deadline (87) | Reel 03 "See what your mistakes cost. 30 days free." Launch offer is live in the database. |
-| Fri Oct 30 | 7:30 pm | REEL (voiced) | PROOF | #2 Negative Command (94.8) | Reel 02 "Stop taking 15-minute trades." Voiced; end card now says 30 days of Pro free. |
-| Sat Oct 31 | 7:30 pm | REEL (voiced) | OPINION | #20 Permission (78) | Reel 04 "You don't need a new strategy. You need 15 minutes after a loss." |
-| Sun Nov 1 | 7:30 pm | CAROUSEL (IG) + photo post (TikTok) | TEACH | Job B caption | "7 ways traders tilt", posts/01-7-ways-traders-tilt.md. Pin it on IG. |
-| Mon Nov 2 | 7:30 pm | REEL (voiced) | TEACH / DEMO | #2 Negative Command (80) | Reel 05 "Stop logging trades by hand. Drop a screenshot." |
-| Tue Nov 3 | — | stories + engage | | | |
-| Wed Nov 4 | 7:30 pm | REEL (voiced) | PROOF | #1 Cost Confession (100) | Reel 06 "Trading angry cost you $680 this month. Calm made $885." |
-| Thu Nov 5 | — | stories + engage | | | |
-| Fri Nov 6 | 7:30 pm | REEL (voiced) | STORY | #1 Cost Confession (87) | Reel 07 "Moving your stop just this once cost $280 this month." |
-
-All reels are voiced (Callan voice, Higgsfield), with word-by-word subtitles; scripts in reels/04-07. 7:30 pm New York is 5:30 pm Mexico City through Oct 31 and 6:30 pm from Nov 1.
+Captions in reels/es-week-1.md. Held back: reel 05 (screenshot reader) until it reads Spanish
+exchange screens; the "7 ways traders tilt" carousel until it is translated.
 
 Next week's queue (story and demo formats):
 - #18 Cold Open Demo: drop an exchange screenshot, the trade fills itself (rescore once the line is final; no time claims we haven't measured).

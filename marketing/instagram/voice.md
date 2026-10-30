@@ -14,8 +14,10 @@ lines marked TODO are for the owner to fill in.
   what each mistake costs you.
 - **Who I am talking to:** retail day traders of crypto perpetuals, stocks and
   futures who already know a setup or two and keep losing the gains to their own
-  behaviour: one loss, then three trades to win it back. English-speaking first
-  (US, UK, Canada, Australia).
+  behaviour: one loss, then three trades to win it back. Since 2026-10-30: Spanish-speaking,
+  Mexico first (the owner saw that nearly all likes and views come from Mexico). Write in Mexican
+  Spanish with "tú", money as "$1,475" (dollars), "operación" for a trade, app terms as the app
+  says them ("operar por revancha", "tasa de acierto", "Mala hora", "Enojo").
 - **What I sell:** the web app at tiltless.xyz. The journal is free; Pro (deeper analytics,
   screenshot reader, imports) is on sale since 2026-10-28 at $15.99/mo or $44.99/yr, paid in
   crypto, with a 7-day trial (30 days for signups through Nov 30). iOS app to follow.
