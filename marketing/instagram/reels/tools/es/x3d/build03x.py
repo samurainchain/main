@@ -13,12 +13,17 @@ A, P, TR = 'x3d/shots/analytics-full.png', 'x3d/shots/pro-view.png', 'x3d/shots/
 ROWS = [(898, 332.5), (971, 280), (1045, 260), (1118, 182.5)]  # mistake-cost rows on the analytics page
 slabs = ''
 for i, (y, cost) in enumerate(ROWS):
-    depth = round(cost * .9); n = 12
-    layers = ''.join(crop(f'sl{i}-{k}', A, 289, y, 528, 62, '', 6, f'opacity:1;filter:brightness({.35 + .65 * k / n});border:0;box-shadow:none;border-radius:10px') for k in range(n + 1))
-    slabs += f'<div class="slab" id="slab{i}" style="position:absolute;left:{289 - 6}px;top:{44 + y - 700 - 6}px">{layers}</div>'
+    w, h = 540, 74
+    side = 'background:linear-gradient(180deg,#5a1d20,#2a1214)'
+    slabs += (f'<div class="slab" id="slab{i}" style="position:absolute;left:{289 - 6}px;top:{44 + y - 700 - 6}px">'
+              f'<div class="sf" id="sft{i}" style="left:0;top:0;width:{w}px;transform-origin:0 0;{side}"></div>'
+              f'<div class="sf" id="sfb{i}" style="left:0;top:{h}px;width:{w}px;transform-origin:0 0;{side}"></div>'
+              f'<div class="sf" id="sfl{i}" style="left:0;top:0;height:{h}px;transform-origin:0 0;{side}"></div>'
+              f'<div class="sf" id="sfr{i}" style="left:{w}px;top:0;height:{h}px;transform-origin:0 0;{side}"></div>'
+              + crop(f'sfc{i}', A, 289, y, 528, 62, '', 6, 'border-radius:4px;box-shadow:none;border:2px solid #f2555a55') + '</div>')
 
 CSS = """
-  .scene .slab, .scene .slab > div { transform-style:preserve-3d }
+  .scene .slab { transform-style:preserve-3d } .scene .slab > div { transform-style:flat; position:absolute }
   .scene .receipt *, .scene .door *, .scene .tagx, .scene .tagx *, .scene .gift-lbl * { transform-style:flat }
   .receipt { position:absolute; left:190px; top:560px; width:700px; font-size:34px !important; background:#efeee8; color:#151515; border-radius:6px; padding:34px 40px 50px;
     font:600 30px 'JetBrains Mono', monospace; box-shadow:0 50px 100px -20px #000; transform-origin:50% 0 }
@@ -77,7 +82,7 @@ body = f"""<style>{CSS}</style>
 </div>
 
 <div id="s2" class="layer stage3d" style="perspective:1400px;perspective-origin:540px 900px">
-  <div class="scene" id="sc2">{win('w2', '#/analytics', A)}{slabs}
+  <div class="scene" id="sc2f">{win('w2', '#/analytics', A)}</div><div class="scene" id="sc2">{slabs}
     <div class="tagx r" id="t332" style="left:330px;top:130px;opacity:0"><span>Malas horas</span>−$332.50</div></div>
 </div>
 
@@ -151,10 +156,14 @@ if (show('s1', t, W['tiltless'] - .1, W['cada'] - .05, .15)) {{
 if (show('s2', t, W['cada'] - .1, W['también'] - .05, .15)) {{
   $('w2-img').style.transform = 'translateY(-700px)'
   const c = track([[W['cada'] - .1, {{ x: 553, y: 330, z: -900, rx: 10, ry: 40, rz: 0 }}], [W['cada'] + 1.0, {{ x: 553, y: 330, z: -380, rx: 8, ry: 42, rz: 0 }}, 'expo'], [W['malas'], {{ x: 553, y: 310, z: -320, rx: 10, ry: 46, rz: 0 }}], [W['también'], {{ x: 560, y: 300, z: -260, rx: 14, ry: 34, rz: 0 }}]], t)
-  $('sc2').style.transform = camCss(c)
+  $('sc2').style.transform = $('sc2f').style.transform = camCss(c)
   ;{json.dumps([round(c * .9) for _y, c in ROWS])}.forEach((depth, i) => {{
-    const p = easeOutBack(clamp((t - W['cada'] - .5 - i * .3) / .6)), hot = i === 0 && t > W['malas']
-    for (let k = 0; k <= 12; k++) {{ const el = $(`sl${{i}}-${{k}}`); el.style.transform = `translateZ(${{p * depth * k / 12}}px)`; if (k === 12) el.style.boxShadow = hot ? '0 0 60px #f2555a' : 'none'; if (k === 12) el.style.border = hot ? '3px solid #f2555a' : '0' }}
+    const p = easeOutBack(clamp((t - W['cada'] - .5 - i * .3) / .6)), d = Math.max(.5, p * depth), hot = i === 0 && t > W['malas']
+    $('sft' + i).style.height = d + 'px'; $('sft' + i).style.transform = 'rotateX(-90deg)'
+    $('sfb' + i).style.height = d + 'px'; $('sfb' + i).style.transform = 'rotateX(-90deg)'
+    $('sfl' + i).style.width = d + 'px'; $('sfl' + i).style.transform = 'rotateY(90deg)'
+    $('sfr' + i).style.width = d + 'px'; $('sfr' + i).style.transform = 'rotateY(90deg)'
+    const f = $('sfc' + i); f.style.transform = `translateZ(${{d}}px)`; f.style.border = hot ? '3px solid #f2555a' : '2px solid #f2555a55'; f.style.boxShadow = hot ? '0 0 60px #f2555a' : 'none'
   }})
   const tp = easeOutBack(clamp((t - W['$332']) / .5)); $('t332').style.opacity = clamp(tp * 3); $('t332').style.transform = `translateZ(${{360 + tp * 60}}px) rotateY(-30deg)`
 }}
