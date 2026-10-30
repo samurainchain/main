@@ -11,16 +11,8 @@ END = r.end() + 0.9
 A, P, TR = 'x3d/shots/analytics-full.png', 'x3d/shots/pro-view.png', 'x3d/shots/trades-view.png'
 
 ROWS = [(898, 332.5), (971, 280), (1045, 260), (1118, 182.5)]  # mistake-cost rows on the analytics page
-slabs = ''
-for i, (y, cost) in enumerate(ROWS):
-    w, h = 540, 74
-    side = 'background:linear-gradient(180deg,#5a1d20,#2a1214)'
-    slabs += (f'<div class="slab" id="slab{i}" style="position:absolute;left:{289 - 6}px;top:{44 + y - 700 - 6}px">'
-              f'<div class="sf" id="sft{i}" style="left:0;top:0;width:{w}px;transform-origin:0 0;{side}"></div>'
-              f'<div class="sf" id="sfb{i}" style="left:0;top:{h}px;width:{w}px;transform-origin:0 0;{side}"></div>'
-              f'<div class="sf" id="sfl{i}" style="left:0;top:0;height:{h}px;transform-origin:0 0;{side}"></div>'
-              f'<div class="sf" id="sfr{i}" style="left:{w}px;top:0;height:{h}px;transform-origin:0 0;{side}"></div>'
-              + crop(f'sfc{i}', A, 289, y, 528, 62, '', 6, 'border-radius:4px;box-shadow:none;border:2px solid #f2555a55') + '</div>')
+NAMES = ['Malas horas', 'Aguantó pasado el stop', 'FOMO', 'Operar por revancha']
+slabs = ''.join(f'<div class="tagx r" id="pt{i}" style="left:0;top:0;opacity:0;font-size:60px"><span>{NAMES[i]}</span>−${c:,.2f}</div>' for i, (_y, c) in enumerate(ROWS))
 
 CSS = """
   .scene .slab { transform-style:preserve-3d } .scene .slab > div { transform-style:flat; position:absolute }
@@ -83,7 +75,7 @@ body = f"""<style>{CSS}</style>
 
 <div id="s2" class="layer stage3d" style="perspective:1400px;perspective-origin:540px 900px">
   <div class="scene" id="sc2f">{win('w2', '#/analytics', A)}</div><div class="scene" id="sc2">{slabs}
-    <div class="tagx r" id="t332" style="left:330px;top:130px;opacity:0"><span>Malas horas</span>−$332.50</div></div>
+</div>
 </div>
 
 <div id="s3" class="layer stage3d" style="perspective:1300px;perspective-origin:540px 860px">
@@ -155,17 +147,17 @@ if (show('s1', t, W['tiltless'] - .1, W['cada'] - .05, .15)) {{
 // 3. Each cost row extrudes out of the screen, as deep as it cost.
 if (show('s2', t, W['cada'] - .1, W['también'] - .05, .15)) {{
   $('w2-img').style.transform = 'translateY(-700px)'
-  const c = track([[W['cada'] - .1, {{ x: 553, y: 330, z: -900, rx: 10, ry: 40, rz: 0 }}], [W['cada'] + 1.0, {{ x: 553, y: 330, z: -380, rx: 8, ry: 42, rz: 0 }}, 'expo'], [W['malas'], {{ x: 553, y: 310, z: -320, rx: 10, ry: 46, rz: 0 }}], [W['también'], {{ x: 560, y: 300, z: -260, rx: 14, ry: 34, rz: 0 }}]], t)
+  const c = track([[W['cada'] - .1, {{ x: 640, y: 300, z: -1000, rx: 6, ry: 34, rz: 0 }}], [W['cada'] + 1.0, {{ x: 760, y: 300, z: -600, rx: 4, ry: 22, rz: 0 }}, 'expo'], [W['malas'], {{ x: 800, y: 290, z: -560, rx: 4, ry: 18, rz: 0 }}], [W['también'], {{ x: 820, y: 290, z: -500, rx: 4, ry: 14, rz: 0 }}]], t)
   $('sc2').style.transform = $('sc2f').style.transform = camCss(c)
-  ;{json.dumps([round(c * .9) for _y, c in ROWS])}.forEach((depth, i) => {{
-    const p = easeOutBack(clamp((t - W['cada'] - .5 - i * .3) / .6)), d = Math.max(.5, p * depth), hot = i === 0 && t > W['malas']
-    $('sft' + i).style.height = d + 'px'; $('sft' + i).style.transform = 'rotateX(-90deg)'
-    $('sfb' + i).style.height = d + 'px'; $('sfb' + i).style.transform = 'rotateX(-90deg)'
-    $('sfl' + i).style.width = d + 'px'; $('sfl' + i).style.transform = 'rotateY(90deg)'
-    $('sfr' + i).style.width = d + 'px'; $('sfr' + i).style.transform = 'rotateY(90deg)'
-    const f = $('sfc' + i); f.style.transform = `translateZ(${{d}}px)`; f.style.border = hot ? '3px solid #f2555a' : '2px solid #f2555a55'; f.style.boxShadow = hot ? '0 0 60px #f2555a' : 'none'
+  ;{json.dumps([44 + y - 700 + 31 for y, _c in ROWS])}.forEach((ry, i) => {{
+    const p = easeOutBack(clamp((t - W['cada'] - .4 - i * .3) / .6)), q = ease(clamp((t - W['cada'] - .4 - i * .3) / .6))
+    const hot = t > W['malas'] ? (i === 0 ? 1 : -1) : 0, h = clamp((t - W['malas']) / .3)
+    const el = $('pt' + i); el.style.opacity = clamp(q * 3); el.style.filter = hot < 0 ? `brightness(${{1 - h * .55}})` : 'none'
+    const x = lerp(560, 700 + i * 18, p), y = lerp(ry - 40, -10 + i * 178, p), z = lerp(0, 220 + (hot > 0 ? h * 90 : 0), p)
+    el.style.transform = `translate3d(${{x}}px, ${{y}}px, ${{z}}px) rotateY(${{-22 + (1 - q) * 30}}deg) scale(${{lerp(.4, 1, q) * (hot > 0 ? 1 + h * .12 : 1)}})`
+    if (i === 0) el.style.boxShadow = hot > 0 ? `0 0 ${{70 + h * 60}}px #f2555a, 0 40px 80px -10px #000` : ''
   }})
-  const tp = easeOutBack(clamp((t - W['$332']) / .5)); $('t332').style.opacity = clamp(tp * 3); $('t332').style.transform = `translateZ(${{360 + tp * 60}}px) rotateY(-30deg)`
+  const rowHot = $('w2-sweep'); rowHot.style.opacity = 0
 }}
 
 // 4. A four-hour dial; the first hour lifts off it.
