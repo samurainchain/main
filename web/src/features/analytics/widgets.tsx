@@ -19,7 +19,7 @@ import {
 } from '../../core/stats'
 import { byHoldTime, byRating, streaks, tradesPerDay, tradeTotals, type Streak } from '../../core/tradeStats'
 import { PnLText } from '../../design/components'
-import { formatDuration, formatMoney, formatR, formatRatio, formatShare, weekdayNames } from '../../i18n/format'
+import { formatDuration, formatMoney, formatR, formatRatio, formatShare, intlLocale, weekdayNames } from '../../i18n/format'
 import { useI18n } from '../../i18n/i18n'
 import type { MessageKey } from '../../i18n/messages/en'
 import { CheckInResults } from '../checkin/CheckInResults'
@@ -124,7 +124,7 @@ function Performance({ data }: { data: WidgetData }) {
             <span className="breakeven__mark" style={{ left: `${Number(breakevenWinRate.times(100).toFixed(1))}%` }} />
           </div>
           <p className="breakeven__text caption">
-            <span>{t(margin.gte(0) ? 'dashboard.breakeven.above' : 'dashboard.breakeven.below', { points: new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(Number(margin.abs().toFixed(1))) })}</span>
+            <span>{t(margin.gte(0) ? 'dashboard.breakeven.above' : 'dashboard.breakeven.below', { points: new Intl.NumberFormat(intlLocale(locale), { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(Number(margin.abs().toFixed(1))) })}</span>
             <span>{t('dashboard.breakeven.rate', { rate: formatShare(breakevenWinRate, locale) })}</span>
           </p>
         </div>
@@ -149,7 +149,7 @@ function TradeCount({ trades }: { trades: readonly ClosedTrade[] }) {
         ))}
       </div>
       <p className="caption">
-        {tp('dashboard.tradingDays', days.length)} · {t('dashboard.perDay', { value: new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(perDay) })} · {t('dashboard.mostInDay', { value: String(most) })}
+        {tp('dashboard.tradingDays', days.length)} · {t('dashboard.perDay', { value: new Intl.NumberFormat(intlLocale(locale), { maximumFractionDigits: 1 }).format(perDay) })} · {t('dashboard.mostInDay', { value: String(most) })}
       </p>
     </div>
   )
