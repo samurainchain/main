@@ -134,5 +134,22 @@ Extruded amounts turn in space, a cursor picks "Calma" in the desktop entry form
 the end card. Rendered at 60 fps and blended to 30 for motion blur, with grain, vignette and synthesized
 whooshes and hits. The owner liked it ("отлично ваще"); post it on Wed Nov 4 instead of the flat 06 if preferred.
 
+## 02, 04, 07 in 3D (Oct 30)
+
+Same style as 06 in 3D, each with its own idea; demo journal data throughout, labelled demo.
+- `tiltless-es-02-3d.mp4`: words drop in, a stopwatch fills to 15:00 and flips to −$620; a crane shot onto the
+  desktop analytics with pins for 52% and +$255; hold-time towers rise from a grid floor (−$95, −$525, −$855,
+  +$1,730) and the red ones are eaten into the green one, which shrinks to +$255; a laser slices "52%".
+- `tiltless-es-04-3d.mp4`: a billboard with "estrategia nueva" struck out falls over; a split-flap board flips to
+  15:00; the camera rides a road through the evening of Oct 26 where three trades open 4, 4 and 2 minutes after a
+  loss (red zones mark the 15 minutes); a glass slab with "52%" hides the day; REVANCHA stamps land on the three
+  rows; a price tag "Operar por revancha −$182.50" swings on a string.
+- `tiltless-es-07-3d.mp4`: a 3D candlestick chart where the stop sheet sinks three times, −$280 slams in; the four
+  trades that ran past their stop (Oct 26 8:17 and 8:05 p.m., Oct 13, Oct 8) are dealt like cards; a podium puts
+  the habit in second place (Mala hora −$332.50, Aguantó pasado el stop −$280, FOMO −$260); the stop is typed into
+  the desktop entry form; a red stop line wipes to the end card.
+Mistake costs split a losing trade's loss between its mistakes, so card amounts are left off and only the app's
+cost figures are shown.
+
 Sources to rebuild every Spanish reel are in `tools/es/` (stage generators, render scripts, word timings);
 see the commands at the top of each script. Screens, voice audio and frames are not kept in the repo.
