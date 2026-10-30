@@ -124,3 +124,15 @@ TikTok:
 
 #trading #daytrading #psicologiadeltrading #traderslatinos #tradingmexico
 ```
+
+## 06 in 3D (experiment, Oct 30)
+
+`tiltless-es-06-3d.mp4`: same voice and subtitles, desktop app in 3D space. Words fly in from depth and
+the amount slams in with a glitch, then the text turns like a cube to "+$885". The camera flies over the
+desktop analytics and the Enojo, FOMO and Calma rows lift out of the screen with depth-of-field blur.
+Extruded amounts turn in space, a cursor picks "Calma" in the desktop entry form, and the camera dives into
+the end card. Rendered at 60 fps and blended to 30 for motion blur, with grain, vignette and synthesized
+whooshes and hits. The owner liked it ("отлично ваще"); post it on Wed Nov 4 instead of the flat 06 if preferred.
+
+Sources to rebuild every Spanish reel are in `tools/es/` (stage generators, render scripts, word timings);
+see the commands at the top of each script. Screens, voice audio and frames are not kept in the repo.

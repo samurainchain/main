@@ -1,0 +1,49 @@
+<style>
+  :root { --bg:#121212; --border:#2e2e2e; --text:#ededed; --muted:#a0a0a0; --green:#3ecf8e; --red:#f2555a; }
+  * { box-sizing:border-box; margin:0; padding:0 }
+  html,body { width:1080px; height:1920px; overflow:hidden; font-family:'Inter Display', Inter, sans-serif; color:var(--text);
+    background: radial-gradient(900px 700px at 100% 0%, #3ecf8e2e, transparent 65%), radial-gradient(800px 600px at 0% 100%, #3ecf8e1c, transparent 65%), var(--bg) }
+  .grid { position:absolute; inset:0; background-image:linear-gradient(#ffffff08 1px, transparent 1px), linear-gradient(90deg, #ffffff08 1px, transparent 1px); background-size:90px 90px }
+  .layer { position:absolute; inset:0; opacity:0 }
+  /* One centered column, x 140-940, inside the Reels safe zone (y 230-1440). */
+  .label { font-family:'JetBrains Mono', monospace; font-size:28px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted) }
+  .label b { color:var(--green); font-weight:500 }
+  .caption { position:absolute; left:140px; width:800px; top:230px; height:290px }
+  .caption h1 { position:absolute; bottom:0; left:0; width:800px; font-size:70px; line-height:1.06; font-weight:700; letter-spacing:-.02em }
+  .g { color:var(--green); text-shadow:0 0 30px #3ecf8e66 } .r { color:var(--red); text-shadow:0 0 30px #f2555a55 }
+  .card { position:absolute; left:140px; width:800px; top:530px; border-radius:40px; border:2px solid var(--border); overflow:hidden; background:var(--bg); box-shadow:0 -20px 60px -40px #3ecf8eaa }
+  .card img { display:block; width:800px }
+  .hl { position:absolute; border:4px solid var(--green); border-radius:22px; box-shadow:0 0 40px #3ecf8e77; opacity:0 }
+  .hl.red { border-color:var(--red); box-shadow:0 0 40px #f2555a77 }
+  .scan { position:absolute; left:0; right:0; height:6px; background:linear-gradient(90deg,transparent,var(--green),transparent); box-shadow:0 0 30px var(--green); opacity:0 }
+  .hook-h { position:absolute; left:140px; width:800px; top:330px; text-align:center; font-size:100px; font-weight:800; letter-spacing:-.035em; line-height:1.02 }
+  .watch { position:absolute; left:340px; top:760px; width:400px; height:400px }
+  .counter { position:absolute; left:140px; width:800px; top:1210px; text-align:center; font-family:'JetBrains Mono', monospace; font-weight:700; font-size:170px; color:var(--red); letter-spacing:-.05em; text-shadow:0 0 50px #f2555a66 }
+  .center { position:absolute; left:140px; width:800px; text-align:center }
+  .bars { position:absolute; left:140px; width:800px; top:640px }
+  .bar-row { margin-bottom:70px }
+  .bar-row .name { font-size:40px; color:var(--muted); margin-bottom:18px }
+  /* Bars keep their full width and are revealed left to right, so the amount never wraps. */
+  .bar { height:90px; border-radius:18px; display:flex; align-items:center; padding:0 30px; white-space:nowrap; clip-path:inset(0 100% 0 0 round 18px); font-family:'JetBrains Mono', monospace; font-weight:700; font-size:54px; color:#121212 }
+  .bar.red { background:var(--red) } .bar.green { background:var(--green) }
+  /* The glow goes on a wrapper: the bar's own shadow would be cut by its reveal clip. */
+  .glow-g { filter:drop-shadow(0 0 22px #3ecf8e88) } .glow-r { filter:drop-shadow(0 0 22px #f2555a88) }
+  .net { font-family:'JetBrains Mono', monospace; font-size:44px; color:var(--muted) }
+  .big { font-family:'JetBrains Mono', monospace; font-weight:700; font-size:260px; letter-spacing:-.05em }
+  /* The strike sits on the digits' middle and tilts around its own center; it draws left to right. */
+  .wr-num { position:relative; display:inline-block; line-height:1 }
+  .strike { position:absolute; left:-10%; width:120%; top:calc(47% - 7px); height:14px; background:var(--red); border-radius:7px; box-shadow:0 0 30px #f2555a88; transform:rotate(-8deg); transform-origin:50% 50%; clip-path:inset(0 100% 0 0) }
+  .logo { position:absolute; width:240px; height:240px; left:420px }
+  .pill { display:inline-block; border:2px solid var(--green); color:var(--green); border-radius:999px; padding:14px 34px; font-family:'JetBrains Mono', monospace; font-size:44px; box-shadow:0 0 40px #3ecf8e44 }
+</style></head>
+<style>
+  .pill-g { display:inline-block; border:2px solid var(--green); color:var(--green); border-radius:999px; padding:16px 40px; font-family:'JetBrains Mono', monospace; font-size:46px; font-weight:700; letter-spacing:.04em; box-shadow:0 0 50px #3ecf8e55; text-shadow:0 0 20px #3ecf8e88 }
+  .costs { position:absolute; left:140px; width:800px; top:720px }
+  .cost { display:flex; justify-content:space-between; align-items:baseline; padding:26px 0; border-bottom:2px solid var(--border); font-size:48px; opacity:0 }
+  .cost b { font-family:'JetBrains Mono', monospace; color:var(--red); font-size:56px; text-shadow:0 0 30px #f2555a66 }
+  .cal { position:absolute; left:340px; top:640px; width:400px; height:440px; border-radius:40px; border:3px solid var(--green); box-shadow:0 0 70px #3ecf8e55; overflow:hidden; text-align:center }
+  .cal .m { background:var(--green); color:#121212; font-family:'JetBrains Mono', monospace; font-weight:700; font-size:56px; padding:14px 0; letter-spacing:.1em }
+  .cal .d { font-size:250px; font-weight:800; letter-spacing:-.05em; line-height:1.25 }
+  .choice { position:absolute; left:140px; width:800px; border-radius:32px; border:2px solid var(--border); padding:40px 44px; background:#171717 }
+  .choice .t { font-size:54px; font-weight:700 } .choice .s { font-size:38px; color:var(--muted); margin-top:10px }
+</style>
