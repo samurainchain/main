@@ -2,7 +2,7 @@
 # cost rows extruding out of the screen, a clock dial whose first hour lifts, chunks bitten off the account,
 # a calendar flipping to Nov 30, and two doors that open onto the journal.
 import json
-from common3d import build, page, win, crop, bar_html, h1s, save
+from common3d import build, page, win, crop, bar_html, ext, h1s, save
 
 r = build.Reel('03'); T = r.T
 W = {k: T(k) for k in ['mira', '30', 'tiltless', 'primer', 'cada', 'malas', '$332', 'también', 'menos de una', '$1475', 'ahora', 'comiendo', 'el diario', 'registrate', 'sin pagar', 'después', 'tus operaciones']}
@@ -14,6 +14,7 @@ ROWS = [(898, 332.5), (971, 280), (1045, 260), (1118, 182.5)]  # mistake-cost ro
 NAMES = ['Malas horas', 'Aguantó pasado el stop', 'FOMO', 'Operar por revancha']
 slabs = ''.join(f'<div class="tagx r" id="pt{i}" style="left:0;top:0;opacity:0;font-size:60px"><span>{NAMES[i]}</span>−${c:,.2f}</div>' for i, (_y, c) in enumerate(ROWS))
 
+CHIPS = [('Mala hora', '−$332.50'), ('Aguantó pasado el stop', '−$280.00'), ('FOMO', '−$260.00'), ('Operar por revancha', '−$182.50'), ('Sin stop', '−$150.00'), ('Contra el plan', '−$75.00'), ('Apalancamiento alto', '−$60.00')]
 CSS = """
   .scene .slab { transform-style:preserve-3d } .scene .slab > div { transform-style:flat; position:absolute }
   .scene .receipt *, .scene .door *, .scene .tagx, .scene .tagx *, .scene .gift-lbl * { transform-style:flat }
@@ -34,6 +35,8 @@ CSS = """
     display:flex; flex-direction:column; justify-content:center; padding:0 50px }
   .door .t { font:800 84px Inter, sans-serif; letter-spacing:-.03em; line-height:1.05 } .door .s { font:500 42px Inter, sans-serif; color:#a0a0a0; margin-top:20px }
   .door .knob { position:absolute; top:50%; width:22px; height:90px; margin-top:-45px; border-radius:11px; background:#3a3a3a }
+  .chip3 { position:absolute; left:340px; top:990px; width:400px; text-align:center; padding:14px 20px; border-radius:20px; background:#1a0f10f0; border:3px solid #f2555a; color:#f2555a; font:800 50px 'JetBrains Mono', monospace; box-shadow:0 0 40px #f2555a66; opacity:0 }
+  .chip3 span { display:block; font:600 28px Inter, sans-serif; color:#ededed }
   .tagx { position:absolute; padding:22px 34px; border-radius:24px; background:#121212f2; font:800 76px 'JetBrains Mono', monospace; white-space:nowrap }
   .tagx span { display:block; font:600 34px Inter, sans-serif; color:#ededed; margin-bottom:6px }
   .tagx.r { color:#f2555a; border:4px solid #f2555a; box-shadow:0 0 70px #f2555a66, 0 40px 80px -10px #000 } .tagx.g { color:#3ecf8e; border:4px solid #3ecf8e; box-shadow:0 0 70px #3ecf8e66, 0 40px 80px -10px #000 }
@@ -83,15 +86,17 @@ body = f"""<style>{CSS}</style>
     <div class="tagx r" id="t1475" style="left:-400px;top:-330px;opacity:0"><span>Menos de una hora · 11 operaciones</span>−$1,475</div></div>
 </div>
 
-<div id="s4" class="layer stage3d" style="perspective:1300px;perspective-origin:540px 860px">
-  <div class="scene" id="sc4">
-    <div style="position:absolute;left:0;top:0">{bar_html('acct', '#3ecf8e', '<div class="gift-lbl" style="position:absolute;left:-300px;width:600px;top:-120px;text-align:center"><div style="font:800 64px Inter, sans-serif;color:#121212;letter-spacing:-.02em">TU CUENTA</div></div>')}</div>
-    {''.join(f'<div class="chunk" id="ch{i}" style="position:absolute;left:0;top:0">{bar_html(f"chb{i}", "#f2555a", f"<div class=gift-lbl style=\"position:absolute;left:-125px;width:250px;top:-190px;text-align:center;transform:translateZ(90px)\"><div style=\"font:700 30px Inter, sans-serif;color:#ededed\">{n}</div><div style=\"font:700 42px JetBrains Mono, monospace;color:#f2555a\">{a}</div></div>")}</div>' for i, (n, a) in enumerate([('Malas horas', '−$332'), ('Pasó el stop', '−$280'), ('FOMO', '−$260')]))}
+<div id="s4" class="layer" style="perspective:1300px;perspective-origin:540px 900px">
+  <div id="eatw" style="position:absolute;inset:0;transform-style:preserve-3d">
+    <div class="center label" id="eatlbl" style="top:640px;font-size:34px"></div>
+    {ext('acc', '+$1,595', '#3ecf8e', 740, '', 200, 16)}
+    {''.join(f'<div class="chip3" id="cp{i}"><span>{n}</span>{a}</div>' for i, (n, a) in enumerate(CHIPS))}
   </div>
 </div>
 
 <div id="s5" class="layer stage3d" style="perspective:1300px;perspective-origin:540px 900px">
-  <div class="scene" id="sc5"><div id="freec" style="position:absolute;left:0;top:0">{crop('fc', P, 272, 555, 562, 405, 'g', 0, 'transform:scale(1.5);transform-origin:0 0')}</div></div>
+  <div class="scene" id="sc5">{win('w5', '#/trades', TR)}</div>
+  <div id="zerow" style="position:absolute;inset:0;transform-style:preserve-3d">{ext('zero', '$0', '#3ecf8e', 780, 'El diario · para siempre', 330, 18)}</div>
 </div>
 
 <div id="s6" class="layer"><div class="rings"><i></i><i></i></div><div class="cal" id="cal">{''.join(f'<div class="page{" g" if i == 0 else ""}" id="pg{i}"><div class="m">{m}</div><div class="d">{d}</div></div>' for i, (m, d) in enumerate([('NOV', '30'), ('NOV', '23'), ('NOV', '16'), ('NOV', '9'), ('NOV', '2'), ('OCT', '30')]))}</div>
@@ -170,21 +175,29 @@ if (show('s3', t, W['también'] - .1, W['ahora'] - .05, .2)) {{
   const tp = easeOutBack(clamp((t - W['$1475']) / .5)); $('t1475').style.opacity = clamp(tp * 3); $('t1475').style.transform = `translateZ(${{200 + tp * 120}}px) rotateX(${{-c.rx}}deg) rotateZ(${{-c.rz}}deg)`
 }}
 
-// 5. Chunks of the account fly off: the habits eating it.
+// 5. Without these mistakes the month would be at +$1,595 (the app's estimate); each habit eats its share down to +$255.
 if (show('s4', t, W['ahora'] - .1, W['el diario'] - .05, .2)) {{
-  const c = track([[W['ahora'] - .1, {{ x: 0, y: -200, w: 0, z: -900, rx: -20, ry: -40, rz: 0 }}], [W['ahora'] + .8, {{ x: 0, y: -300, w: 0, z: -600, rx: -18, ry: -12, rz: 0 }}, 'expo'], [W['el diario'], {{ x: 0, y: -340, w: 0, z: -560, rx: -14, ry: 4, rz: 0 }}]], t)
-  $('sc4').style.transform = camCss(c)
-  const eat = clamp((t - W['comiendo']) / .9)
-  bar('acct', 320 - eat * 90, 640, 240)
-  ;[-260, 0, 260].forEach((x, i) => {{ const p = easeOutExpo(clamp((t - W['comiendo'] - i * .12) / .7)); bar('chb' + i, 90, 130, 130)
-    $('ch' + i).style.transform = `translate3d(${{x}}px, ${{-320 - p * (220 + (i === 1 ? 40 : 0))}}px, ${{p * 380}}px) rotateX(${{p * 8}}deg)`; $('ch' + i).querySelector('.gift-lbl').style.opacity = clamp(p * 2) }})
+  const costs = [332.5, 280, 260, 182.5, 150, 75, 60], start = W['ahora'] + .45, step = .2
+  let v = 1595
+  costs.forEach((cst, i) => {{ const at = start + i * step, p = clamp((t - at) / .7), e = easeOutExpo(p); if (t >= at + .08) v -= cst
+    const el = $('cp' + i), ang = (i - 3) * 22 * Math.PI / 180
+    el.style.opacity = p > 0 ? (p < .6 ? clamp(p * 6) : 1 - (p - .6) * 2.5) : 0
+    const dir = i % 2 ? 1 : -1; el.style.transform = `translate3d(${{dir * (250 + (i >> 1) * 45) * e}}px, ${{(40 + i * 30) * e}}px, ${{e * 260}}px) rotateY(${{-dir * 20 * e}}deg) rotateZ(${{dir * 6 * e}}deg) scale(${{.55 + .45 * e}})` }})
+  const txt = '+$' + Math.round(v).toLocaleString('en-US')
+  document.querySelectorAll('#acc > div:not(.lbl)').forEach((d) => d.textContent = txt)
+  const done = t > start + costs.length * step + .1
+  $('eatlbl').innerHTML = done ? '<b>Tu cuenta</b> · mes de demostración' : '<b>Sin estos errores</b> · estimación'
+  const ap = easeOutBack(clamp((t - W['ahora'] + .1) / .5)), [sx, sy] = shake(t, W['comiendo'], .6, 6)
+  $('acc').style.opacity = clamp(ap * 3); $('acc').style.transform = `translate(${{sx}}px, ${{sy}}px) translateZ(${{(1 - ap) * -600}}px) rotateY(${{Math.sin(t * .9) * 16}}deg) rotateX(8deg) scale(${{done ? 1 : .92}})`
+  $('eatw').style.transform = `rotateX(${{4 + Math.sin(t * .6) * 3}}deg)`
 }}
 
-// 6. The free plan card spins in.
+// 6. The journal stays free: $0, turning in front of the journal.
 if (show('s5', t, W['el diario'] - .1, W['registrate'] - .05, .15)) {{
-  const p = easeOutBack(clamp((t - W['el diario'] + .1) / .8))
-  $('sc5').style.transform = `translateZ(${{-200 + p * 100}}px)`
-  $('freec').style.transform = `translate(-421px, -280px) rotateY(${{(1 - p) * 300}}deg) rotateX(${{Math.sin(t * 1.2) * 6}}deg)`
+  const c = track([[W['el diario'] - .1, {{ x: 720, y: 472, z: -1400, rx: 20, ry: -40, rz: -4 }}], [W['el diario'] + .8, {{ x: 720, y: 472, z: -1050, rx: 14, ry: -26, rz: -2 }}, 'expo'], [W['registrate'], {{ x: 720, y: 472, z: -980, rx: 12, ry: -20, rz: -2 }}]], t)
+  $('sc5').style.transform = camCss(c); $('w5').style.filter = 'brightness(.55) blur(2px)'
+  const p = easeOutBack(clamp((t - W['el diario']) / .6))
+  $('zero').style.opacity = clamp(p * 3); $('zero').style.transform = `translateZ(${{(1 - p) * -700 + 120}}px) rotateY(${{(1 - p) * -200 + Math.sin(t * 1.1) * 18}}deg)`
 }}
 
 // 7. A desk calendar flips from Oct 30 to Nov 30.
@@ -212,7 +225,7 @@ cues = [['typing', 0.1, .1, 14], ['impact', W['30'] + .3, .55, 80], ['whoosh', W
         ['pop', W['tiltless'] + .5, .35, 500], ['rise', W['tiltless'] + .6, 1.0, .35], ['ping', W['primer'], .2],
         ['whoosh', W['cada'] - .3, .8, .4], ['thud', W['cada'] + .6, .3], ['thud', W['cada'] + .9, .3], ['thud', W['cada'] + 1.2, .3], ['thud', W['cada'] + 1.5, .3], ['pop', W['$332'] + .1, .3, 700],
         ['whoosh', W['también'] - .3, 1.0, .45], ['rise', W['menos de una'] + .1, .6, .35], ['impact', W['$1475'] + .15, .4, 70],
-        ['whoosh', W['ahora'] - .3, .8, .4], ['impact', W['comiendo'], .35, 100], ['whoosh', W['comiendo'], .6, .3],
+        ['whoosh', W['ahora'] - .3, .8, .4], ['pop', W['ahora'] + .45 + 0 * .2, .22, 900], ['pop', W['ahora'] + .45 + 1 * .2, .22, 830], ['pop', W['ahora'] + .45 + 2 * .2, .22, 760], ['pop', W['ahora'] + .45 + 3 * .2, .22, 690], ['pop', W['ahora'] + .45 + 4 * .2, .22, 620], ['pop', W['ahora'] + .45 + 5 * .2, .22, 550], ['pop', W['ahora'] + .45 + 6 * .2, .22, 480], 
         ['whoosh', W['el diario'] - .2, .9, .4], ['flaps', W['registrate'] + .1, .9], ['ping', W['sin pagar'], .2],
         ['whoosh', W['después'] - .3, .8, .4], ['whoosh', W['tus operaciones'] - .1, 1.0, .35], ['whoosh', W['fin'] - .3, .6, .35], ['impact', W['fin'] + .5, .3, 55]]
 save('03', page(r, body, js, heads_html, end_html, END), cues)

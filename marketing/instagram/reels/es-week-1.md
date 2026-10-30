@@ -150,8 +150,9 @@ Same style as 06 in 3D, each with its own idea; demo journal data throughout, la
   the desktop entry form; a red stop line wipes to the end card.
 - `tiltless-es-03-3d.mp4`: a receipt prints the month's mistakes and a "30 DÍAS GRATIS" stamp lands on it; a gift
   box opens and the desktop Pro page rises out of it with the launch offer lit; price tags fly out of the mistake-cost
-  rows and line up in front of the screen; the first hour of a four-hour dial lifts off (−$1,475); chunks fly off "TU
-  CUENTA"; the free plan card spins in; a desk calendar flips to Nov 30; two doors (Pro or free) open onto the journal.
+  rows and line up in front of the screen; the first hour of a four-hour dial lifts off (−$1,475); "+$1,595 sin estos errores" (the
+  app's estimate) counts down as seven mistake chips fly off, to "+$255 · tu cuenta"; an extruded "$0" turns in front
+  of the journal; a desk calendar flips to Nov 30; two doors (Pro or free) open onto the journal.
 The 3D versions replace the flat ones (owner, Oct 30).
 Mistake costs split a losing trade's loss between its mistakes, so card amounts are left off and only the app's
 cost figures are shown.
