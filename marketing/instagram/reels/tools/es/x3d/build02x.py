@@ -44,8 +44,10 @@ body = f"""
 </div>
 
 <div id="s2" class="layer stage3d" style="perspective:1500px;perspective-origin:540px 860px">
+  <div class="scene" id="sc2f">
+    <div id="fl2" style="position:absolute;left:-1600px;top:-1600px;width:3200px;height:3200px;transform:translateY(6px) rotateX(90deg);background-image:radial-gradient(closest-side,#12121200 35%,#121212 100%),linear-gradient(#3ecf8e30 2px, transparent 2px),linear-gradient(90deg, #3ecf8e30 2px, transparent 2px);background-size:100% 100%,100px 100px,100px 100px"></div>
+  </div>
   <div class="scene" id="sc2">
-    <div class="gridfloor" id="fl2" style="left:-1600px;top:-1600px;width:3200px;height:3200px;transform:rotateX(90deg);-webkit-mask-image:radial-gradient(closest-side, #000 40%, transparent)"></div>
     <div id="board" style="position:absolute;left:0;top:0">{crop('holdc', A, 846, 3171, 562, 333, '', 12)}</div>
     <div id="brk" style="position:absolute;left:-620px;top:0;width:0;height:300px;transform:rotateX(90deg);transform-origin:0 0;border-radius:20px;background:#f2555a22;border:4px solid #f2555a;box-shadow:0 0 60px #f2555a88;opacity:0"></div>
     {bar_divs}
@@ -115,7 +117,7 @@ if (show('s2', t, W['ahora ordena'] - .05, W['tu tasa'] - .05, .2)) {{
     [W['las rápidas'], {{ x: 160, y: -380, w: 0, z: -620, rx: -12, ry: -18, rz: 0 }}],
     [W['tu tasa'], {{ x: 300, y: -200, w: 0, z: -420, rx: -24, ry: -28, rz: 0 }}],
   ], t)
-  $('sc2').style.transform = camCss(c)
+  $('sc2').style.transform = $('sc2f').style.transform = camCss(c)
   $('board').style.transform = `translate3d(-293px, -760px, -620px) scale(1.05)`; $('board').style.opacity = 1 - prog(t, W['menos de 15'] - .3, W['menos de 15'] + .3) * .65
   const H = (v) => v / 1730 * 640
   const eat = prog(t, W['las rápidas'] + .3, W['las rápidas'] + 2.0)
@@ -129,7 +131,7 @@ if (show('s2', t, W['ahora ordena'] - .05, W['tu tasa'] - .05, .2)) {{
   rise(0, W['menos de 15'] + .1, 95); rise(1, W['menos de 15'] + .3, 525); rise(2, W['menos de una'] + .2, 855); rise(3, W['de una a'] + .2, 1730)
   if (eat > 0) $('b3-a').textContent = '+$' + Math.round(lerp(1730, 255, eat)).toLocaleString('en-US')
   const bk = t < W['menos de una'] ? prog(t, W['menos de 15'] + .4, W['menos de 15'] + .9) * 720 : 720 + prog(t, W['menos de una'] + .3, W['menos de una'] + .8) * 320
-  $('brk').style.width = bk + 'px'; $('brk').style.opacity = clamp(bk / 100) * (1 - prog(t, W['de una a'], W['de una a'] + .4)); $('brk').style.top = '-150px'
+  $('brk').style.width = bk + 'px'; $('brk').style.opacity = clamp(bk / 100) * (1 - prog(t, W['de una a'], W['de una a'] + .4)); $('brk').style.top = '-3px'; $('brk').style.display = parseFloat($('brk').style.opacity) > 0 ? 'block' : 'none'
   const btp = easeOutBack(clamp((t - W['620']) / .5)); $('bt').style.opacity = clamp(btp * 3) * (1 - prog(t, W['de una a'], W['de una a'] + .3))
   $('bt').style.transform = `translateZ(${{80 + btp * 160}}px) rotateY(${{-c.ry}}deg)`
   if (t > W['menos de una']) {{ $('btn').textContent = '< 1 hora · 11 operaciones'; $('bta').textContent = '0 ganadoras' }} else {{ $('btn').textContent = '< 15 min · 4 operaciones'; $('bta').textContent = '−$620' }}
