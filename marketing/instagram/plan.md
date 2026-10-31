@@ -4,7 +4,7 @@ Read by the ig-* skills. Same videos on Instagram (Reels) and TikTok.
 Faceless brand: app screen recordings and on-screen text, demo journal numbers labelled "demo".
 
 Audience: on Oct 30 the owner saw that the people who like and see the videos are almost all
-Mexican, so everything is in Spanish (Mexico, "tú") from now on. Post at **7:30 pm Mexico City**
+Mexican, so everything is in Spanish (Mexico, "tú") from now on. Post at **7:30 pm Mexico City** (UTC−6), which is **8:30 pm in Cancún** (UTC−5, no daylight saving), where the owner lives
 (evening after the US/Mexico session closes). The hour matters far less than the first two seconds.
 
 | day | time (CDMX) | format | type | angle |
