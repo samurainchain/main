@@ -25,7 +25,7 @@ body = f"""
 <div id="hook" class="layer" style="opacity:1">
   <div class="hook-h" id="hk1" style="top:250px;font-size:104px;perspective:900px">{hw}</div>
   <div class="hook-h" id="hk2" style="top:270px;font-size:104px;opacity:0">Esto es<br><span class="r">lo que cuestan.</span></div>
-  <div style="position:absolute;inset:0;perspective:1200px;perspective-origin:540px 960px">
+  <div id="dialw" style="position:absolute;inset:0;perspective:1200px;perspective-origin:540px 960px">
     <div id="dial" style="position:absolute;left:290px;top:690px;width:500px;height:500px;transform-style:preserve-3d">
       <div class="face3" style="inset:0">{build.WATCH_SVG.format(color='#f2555a').replace('class="watch"', 'style="width:500px;height:500px"')}</div>
       <div class="face3" style="inset:0;transform:rotateX(180deg);border-radius:50%;border:16px solid #f2555a;box-shadow:0 0 80px #f2555a66, inset 0 0 80px #f2555a33;display:flex;align-items:center;justify-content:center;background:#151515">
@@ -89,7 +89,8 @@ if (show('hook', t, 0, W['mes de'] - .1, .15)) {{
   const flip = easeOutBack(clamp((t - W['esto es'] - .05) / .6)), [sx, sy] = shake(t, W['esto es'] + .5)
   const away = clamp((t - (W['mes de'] - .5)) / .4)
   $('dial').style.transform = `translate(${{sx}}px, ${{sy}}px) translateZ(${{away * 900}}px) rotateX(${{flip * 180 + Math.sin(t * 1.4) * 8}}deg) rotateY(${{Math.sin(t * 1.1) * 14}}deg)`
-  $('dial').style.opacity = 1 - away
+  // Fade the wrapper: opacity on the turning dial itself would flatten it and show its back.
+  $('dialw').style.opacity = 1 - away
   $('cnt').textContent = '−$' + Math.round(620 * prog(t, W['esto es'] + .3, W['esto es'] + 1.3))
 }}
 
